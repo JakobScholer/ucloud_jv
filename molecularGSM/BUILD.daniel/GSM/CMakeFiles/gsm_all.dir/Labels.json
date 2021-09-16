@@ -1,0 +1,19 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/work/DanielStuff/nikolai/molecularGSM/BUILD/GSM/CMakeFiles/gsm_all"
+		},
+		{
+			"file" : "/work/DanielStuff/nikolai/molecularGSM/BUILD/GSM/CMakeFiles/gsm_all.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"gsm"
+		],
+		"name" : "gsm_all"
+	}
+}
