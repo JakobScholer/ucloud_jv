@@ -2,58 +2,46 @@ from mod import *
 from rdkit.Chem import MolFromMolFile
 from rdkit.Chem import rdDepictor
 from rdkit.Chem import MolToMolBlock
+from rdkit.Chem import MolFromMolBlock
 from rdkit.Chem.AllChem import EmbedMolecule
 
-g = smiles("CCO")
+# Compound to convert
+g = smiles("Cn1cnc2c1c(=O)n(c(=O)n2C)C")
 
-ids = []
-chemical_elements = []
-atom_ids = []
-charges = []
-degrees = []
+# Count vertices
+vertex_counter = 0
 for v in g.vertices:
-    ids.append(v.id)
-    chemical_elements.append(v.stringLabel)
-    atom_ids.append(int(v.atomId))
-    charges.append(int(v.charge))
-    degrees.append(v.degree)
-
-print(ids)
-print(chemical_elements)
-print(atom_ids)
-print("charge!")
-print(charges)
-print(degrees)
-
-source_ids = []
-target_ids = []
-string_labels = []
-
+    vertex_counter += 1
+# count edges
+edge_counter = 0
 for e in g.edges:
-    source_ids.append(e.source.id)
-    target_ids.append(e.target.id)
-    string_labels.append(e.stringLabel)
+    edge_counter += 1
 
-print(source_ids)
-print(target_ids)
-print(string_labels)
-mol_title = "  mol file\n"
-mol_program = "  ModToMol\n"
-mol_comment = "\n"
+mol_string = ""
 mol_properties_block = ""
-# number of atoms, number of bonds, number of atom list, Chiral flag, number of stext entries, number of lines of additional properties, mol version
-mol_counts = str(len(ids)) + "  " + str(len(source_ids)) + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0999" + "  " + "V2000\n"
+# Title line (can be blank but line must exist)
+mol_string += "  mol file\n"
+# Program / file timestamp line
+# (Name of source program and a file timestamp)
+mol_string += "  ModToMol\n"
+# Comment line (can be blank but line must exist)
+mol_string += "\n"
+# Counts line
+# number of atoms, number of bonds, number of atom list, Chiral flag, number of stext entries, properties, mol version
+mol_string += str(vertex_counter) + "  " + str(edge_counter) + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0999" + "  " + "V2000\n"
 
-mol_atom_block = ""
+# Atom block
+# (1 line for each atom): x, y, z (in angstroms), element, etc.
 for vertex in g.vertices:
     charge_value = "0"
     if vertex.charge != 0:
         charge_value = "5"
         mol_properties_block += "M  CHG  1  " + str(vertex.id + 1) + "  " + str(vertex.charge) + "\n"
     atom_string = "    0.0000    0.0000    0.0000 " + str(vertex.stringLabel).replace("-", "").replace("+", "") + "  " + "0" + "  " + charge_value + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0" "  " + "0" + "  " + "0" "  " + "0" + "  " + "0\n"
-    mol_atom_block += atom_string
+    mol_string += atom_string
 
-mol_bond_block = ""
+# Bond block
+# (1 line for each bond): 1st atom, 2nd atom, type, etc.
 for edge in g.edges:
     if edge.stringLabel == "-":
         bond_type = "1"
@@ -65,23 +53,19 @@ for edge in g.edges:
         bond_type = "4"
     else:
         bond_type = "5"
+    # each bond position is only allowed 3 spaces meaning the number "10" only has 1 space to the left for padding while "1" has two spaces of padding
+    bond_string = str(edge.source.id + 1).rjust(3) + str(edge.target.id + 1).rjust(3) + "  " + bond_type + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0\n"
+    mol_string += bond_string
 
-    bond_string = "  " + str(edge.source.id + 1) + "  " + str(edge.target.id + 1) + "  " + bond_type + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0\n"
-    mol_bond_block += bond_string
-
+# Properties block
 mol_properties_block += "M  END\n"
+mol_string += mol_properties_block
 
-
-f = open("molfile.mol", "w")
-complete_mol_string = mol_title + mol_program + mol_comment + mol_counts + mol_atom_block + mol_bond_block + mol_properties_block
-f.write(complete_mol_string)
-f.close()
-
-mol = MolFromMolFile('molfile.mol')       # read mol from file
+mol = MolFromMolBlock(mol_string)       # Convert to rdkit mol format
 m = rdDepictor.Compute2DCoords(mol)     # generate 2d coordinates
 EmbedMolecule(mol, randomSeed=0xf00d)   # generate 3d coordinates
 
 # save to file
-f = open("molfile3D.mol", "a")
+f = open("molfile3D.mol", "w")
 f.write(MolToMolBlock(mol))
 f.close()
