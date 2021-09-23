@@ -1,9 +1,9 @@
 from mod import *
 from rdkit.Chem import MolFromMolFile
 from rdkit.Chem import rdDepictor
-from rdkit.Chem import MolToMolBlock
 from rdkit.Chem import MolFromMolBlock
 from rdkit.Chem.AllChem import EmbedMolecule
+from rdkit.Chem.rdmolfiles import MolToXYZFile
 
 # Compound to convert
 g = smiles("Cn1cnc2c1c(=O)n(c(=O)n2C)C")
@@ -20,7 +20,7 @@ for e in g.edges:
 mol_string = ""
 mol_properties_block = ""
 # Title line (can be blank but line must exist)
-mol_string += "  mol file\n"
+mol_string += "  mod->mol->xyz\n"
 # Program / file timestamp line
 # (Name of source program and a file timestamp)
 mol_string += "  ModToMol\n"
@@ -62,10 +62,8 @@ mol_properties_block += "M  END\n"
 mol_string += mol_properties_block
 
 mol = MolFromMolBlock(mol_string)       # Convert to rdkit mol format
-m = rdDepictor.Compute2DCoords(mol)     # generate 2d coordinates
+rdDepictor.Compute2DCoords(mol)     # generate 2d coordinates
 EmbedMolecule(mol, randomSeed=0xf00d)   # generate 3d coordinates
 
 # save to file
-f = open("molfile3D.mol", "w")
-f.write(MolToMolBlock(mol))
-f.close()
+MolToXYZFile(mol, "mod_coordinates.xyz")
