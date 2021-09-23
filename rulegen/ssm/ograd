@@ -27,5 +27,5 @@ cat $molfile >> $ofile.xyz
 xtb $ofile.xyz -grad -chrg 0 > $ofile.xtbout
 
 python3 ../tm2orca.py $basename
-rm xtbrestart
+[ -e xtbrestart ] && rm xtbrestart
 cd ..
