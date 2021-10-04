@@ -91,7 +91,7 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, node: int):
     return True
 
 if __name__ == "__main__":
-    gml, ac, bc = reaction_and_product_to_gml('stringfile.xyz0000', visualize=False)
+    gml, ac, bc, ec = reaction_and_product_to_gml('stringfile.xyz0000', visualize=True)
     g = graphGMLString(gml)
 
     m = make_cut_molecule(g, [ac, bc])
@@ -99,6 +99,6 @@ if __name__ == "__main__":
         print("id: " + str(n.id))
         print("bond: " + str(n.children))
 
-    cuts = {}
+    cuts = set()
     find_all_cuts(m, cuts, 0)
     print(cuts)
