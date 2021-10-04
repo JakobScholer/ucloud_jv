@@ -75,7 +75,7 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, node: int):
         return cut_check
 
     # if node has no children return empty cuts list. This case should only happen if all atoms is the core
-    if node.children:
+    if cut_molecule[node].children:
         return True
 
     # check if possible cut
