@@ -5,6 +5,8 @@ from mod_to_xyz import mod_to_xyz
 from igraph import *
 import plotly.graph_objects as go
 
+from root_mean_square import root_mean_square
+
 
 def fig_plot(gmlfile, core_atoms, core_bonds):
     g = Graph.Read_GML(gmlfile)
@@ -112,12 +114,23 @@ def build_bond_map(mol):
     return bmap
 
 
+# takes the content of a stringfile and puts all energy profiles into a list
+def read_energy_profiles(string_content):
+    energy_profiles = []
+    for i in range(1, len(string_content), (int(string_content[0]) + 2)):
+        energy_profiles.append(float(string_content[i]))
+    return energy_profiles
+
+
 def reaction_and_product_to_gml(filename, visualize=False):
     with open(filename) as f:
         content = f.readlines()
     num_atoms = int(content[0])
     xyz_str_reactant: str = "".join(content[:(num_atoms + 2)])
     xyz_str_product: str = "".join(content[len(content) - (num_atoms + 2):])
+
+    # read all energy profiles
+    energy_profiles = read_energy_profiles(content)
 
     reactant = pybel.readstring("xyz", xyz_str_reactant)
     product = pybel.readstring("xyz", xyz_str_product)
@@ -175,31 +188,7 @@ def reaction_and_product_to_gml(filename, visualize=False):
         if (src, tar) in bmap1:
             continue
         right_edges.append(f'edge [ source {src - 1} target {tar - 1} label "{ob_bond}"]')
-    left_verts_str = "\n\t    ".join(left_verts)
-    ctx_verts_str = "\n\t    ".join(ctx_verts)
-    right_verts_str = "\n\t    ".join(right_verts)
-    left_edges_str = "\n\t    ".join(left_edges)
-    ctx_edges_str = "\n\t    ".join(ctx_edges)
-    right_edges_str = "\n\t    ".join(right_edges)
 
-    gml_str = f"""
-    rule [
-        ruleID "{reactant.formula}: {product.energy}"
-
-        left [
-            {left_verts_str}
-            {left_edges_str}
-        ]
-        context [
-            {ctx_verts_str}
-            {ctx_edges_str}
-        ]
-        right [
-            {right_verts_str}
-            {right_edges_str}
-        ]
-    ]
-    """
     verts_str = "\n    ".join(left_verts + ctx_verts)
     edges_str = "\n    ".join(left_edges + ctx_edges)
     gml_str = f"""graph [
@@ -213,8 +202,13 @@ def reaction_and_product_to_gml(filename, visualize=False):
         f.close()
         fig_plot('gmlstring.gml', atom_core, bond_core)
 
-    return gml_str, atom_core, bond_core
+    return gml_str, atom_core, bond_core, energy_profiles
 
 
 if __name__ == "__main__":
-    gml, ac, bc = reaction_and_product_to_gml('stringfile.xyz0000', visualize=True)
+    gml, ac, bc, ep = reaction_and_product_to_gml('stringfile.xyz0000', visualize=True)
+    with open('stringfile.xyz0002') as fi:
+        ct = fi.readlines()
+    curve = read_energy_profiles(ct)
+    x = root_mean_square(ep, curve)
+    print(x)
