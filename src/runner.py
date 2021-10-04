@@ -64,6 +64,7 @@ def make_cut_molecule(g_mod, core):
     return cut_molecule
 
 def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, node: int):
+    print("looking at node " + str(node))
     # Check if node is a leaf based on different atributes
     def is_cut(node, none_leafs):
         cut_check = True
@@ -76,16 +77,20 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, node: int):
 
     # if node has no children return empty cuts list. This case should only happen if all atoms is the core
     if cut_molecule[node].children:
+        print("well shit, this is not suppose to hannep. The core is the whole molecule")
         return True
 
     # check if possible cut
     none_leaf_childs = []
     if is_cut(cut_molecule[node], none_leaf_childs):
+        print("Its a cut!")
         # if not root add cut
         if not node.node_type:
+            print("also not the root ;) so we add it")
             cuts.add(node.id)
     # if not go over childs
     else:
+        print("not a cut, lets look at those babies!")
         for c in none_leaf_childs:
             find_all_cuts(cut_molecule, cuts, c)
     return True
