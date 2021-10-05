@@ -28,7 +28,6 @@ def add_child(child_id, core, parent_molecule, parents_list):
     parent_molecule.children.append(place_id)
     parents_list.append(([child_id], place_id))
 
-
 # core = [[atom ID's],[edge ID's]]
 def make_cut_molecule(g_mod, core):
     cut_molecule = [MoleculeNode(core[0], 1)]
@@ -40,6 +39,7 @@ def make_cut_molecule(g_mod, core):
     edges = []
     edge_counter = 0
     for e in g_mod.edges:
+        # only add edge if its not in the core
         if edge_counter not in core[1]:
             edges.append(e)
         edge_counter += 1
@@ -47,16 +47,19 @@ def make_cut_molecule(g_mod, core):
     # add all edges missing one child layer at the time
     parent_list = [(cut_molecule[0].id, 0)]
     while len(parent_list) > 0:
-
+        # list of edges to work with
         new_edges = []
         new_parent = []
+        # loop over every edge and parent to find matches
         for e in edges:
             for p in parent_list:
+                # check if a edge belongs to a parent
                 if e.source.id in p[0]:
                     add_child(e.target.id, core, cut_molecule[p[1]], new_parent)
                 elif e.target.id in p[0]:
                     add_child(e.source.id, core, cut_molecule[p[1]], new_parent)
                 else:
+                    # else the edge goes to next iteration
                     new_edges.append(e)
         parent_list = new_parent
         edges = new_edges
