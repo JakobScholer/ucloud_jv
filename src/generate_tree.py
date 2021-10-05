@@ -8,12 +8,18 @@ import plotly.graph_objects as go
 from root_mean_square import root_mean_square
 
 
-def fig_plot(gmlfile, core_atoms, core_bonds):
+def fig_plot(gmlfile, core_atoms):
     g = Graph.Read_GML(gmlfile)
     labels = list(g.vs['label'])
     edge_label_list = list(g.es['label'])
     vertex_amount = len(labels)
     edge_list = [e.tuple for e in g.es]  # list of edges
+    core_bonds = []
+    edge_counter = 0
+    for e in edge_list:
+        if e[0] in core_atoms and e[1] in core_atoms:
+            core_bonds.append(edge_counter)
+        edge_counter += 1
     layt = g.layout('kk')  # kamada-kawai layout
 
     atom_x = [layt[k][0] for k in range(vertex_amount)]  # x coordinate of atoms
@@ -172,13 +178,9 @@ def reaction_and_product_to_gml(filename, visualize=False):
     bmap1 = build_bond_map(reactant)
     bmap2 = build_bond_map(product)
     atom_core = []
-    bond_core = []
 
-    bond_counter = 0        # counts number of bonds found so far
     for (src, tar), ob_bond in bmap1.items():
         if (src, tar) not in bmap2:
-            bond_core.append(bond_counter)
-            bond_counter += 1
             left_edges.append(f'edge [ source {src - 1} target {tar - 1} label "{ob_bond}"]')
         else:
             if ob_bond != bmap2[(src, tar)]:
@@ -186,8 +188,6 @@ def reaction_and_product_to_gml(filename, visualize=False):
                     atom_core.append(src - 1)
                 if (tar - 1) not in atom_core:
                     atom_core.append(tar - 1)
-                bond_core.append(bond_counter)
-                bond_counter += 1
                 left_edges.append(f'edge [ source {src - 1} target {tar - 1} label "{ob_bond}"]')
                 right_edges.append(f'edge [ source {src - 1} target {tar - 1} label "{bmap2[(src, tar)]}"]')
             else:
@@ -209,13 +209,13 @@ def reaction_and_product_to_gml(filename, visualize=False):
         f = open("gmlstring.gml", "w")
         f.write(gml_str)
         f.close()
-        fig_plot('gmlstring.gml', atom_core, bond_core)
+        fig_plot('gmlstring.gml', atom_core)
 
-    return gml_str, atom_core, bond_core, energy_profiles
+    return gml_str, atom_core, energy_profiles
 
 
 if __name__ == "__main__":
-    gml, ac, bc, ep = reaction_and_product_to_gml('stringfile.xyz0000', visualize=True)
+    gml, ac, ep = reaction_and_product_to_gml('stringfile.xyz0000', visualize=True)
     with open('stringfile.xyz0002') as fi:
         ct = fi.readlines()
     curve = read_energy_profiles(ct)

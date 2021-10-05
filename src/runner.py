@@ -4,44 +4,45 @@ from generate_tree import reaction_and_product_to_gml
 
 class CutTreeNode:
     def __init__(self, molecule, cuts):
-        self.energy = []  # List for energy leves at different notes for the reaction
-        self.RMS = 0  # the root mean square base on the original molecule reaction
-        self.stringfile = ""  # The string file with the reaction, used for GML rule
-        self.cuts = cuts  # which cuts on the molecule was made
-        self.childs = []  # Childs made from the molecule
+        self.energy = []        # List for energy leves at different notes for the reaction
+        self.RMS = 0            # the root mean square base on the original molecule reaction
+        self.stringfile = ""    # The string file with the reaction, used for GML rule
+        self.cuts = cuts        # which cuts on the molecule was made
+        self.childs = []        # Childs made from the molecule
 
 
 class MoleculeNode:
     def __init__(self, molecule_id, node_type):
-        self.id = molecule_id # List of atom ID's
-        self.children = [] # A list of ints representing the list placement of the children
-        self.root = node_type # 1 = root, 0 = not root
+        self.id = molecule_id   # List of atom ID's
+        self.children = []      # A list of ints representing the list placement of the children
+        self.root = node_type   # 1 = root, 0 = not root
 
 
 # add a edge from parent to child in cut molecule
 def add_child(child_id, core, parent_molecule, parents_list):
     # alter target id
-    if child_id < core[0][0]:
+    if child_id < core[0]:
         place_id = child_id + 1
     else:
-        place_id = child_id + 1 - len(core[0])
+        place_id = child_id + 1 - len(core)
     parent_molecule.children.append(place_id)
     parents_list.append(([child_id], place_id))
 
 
 # core = [[atom ID's],[edge ID's]]
 def make_cut_molecule(g_mod, core):
-    cut_molecule = [MoleculeNode(core[0], 1)]
+    cut_molecule = [MoleculeNode(core, 1)]
     # insert all nodes
     for v in g_mod.vertices:
-        if v.id not in core[0]:
+        if v.id not in core:
             cut_molecule.append(MoleculeNode([v.id], 0))
     # remove internal core edges
     edges = []
     for e in g_mod.edges:
         # only add edge if its not in the core
-        if not e.source.id in core[0] or not e.target.id in core[0]:
+        if not e.source.id in core or not e.target.id in core:
             edges.append(e)
+            print("edge added")
 
     # add all edges missing one child layer at the time
     parent_list = [(cut_molecule[0].id, 0)]
@@ -61,7 +62,9 @@ def make_cut_molecule(g_mod, core):
                     # else the edge goes to next iteration
                     new_edges.append(e)
         parent_list = new_parent
+        print(len(parent_list))
         edges = new_edges
+        print(len(edges))
 
     return cut_molecule
 
@@ -101,11 +104,10 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, node: int):
 
 
 if __name__ == "__main__":
-    gml, ac, bc, ec = reaction_and_product_to_gml('stringfile.xyz0000', visualize=True)
-    print(gml)
+    gml, ac, ec = reaction_and_product_to_gml('stringfile.xyz0000', visualize=True)
     g = graphGMLString(gml)
 
-    m = make_cut_molecule(g, [ac, bc])
+    m = make_cut_molecule(g, ac)
     for n in m:
         print("id: " + str(n.id))
         print("bond: " + str(n.children))
