@@ -38,12 +38,10 @@ def make_cut_molecule(g_mod, core):
             cut_molecule.append(MoleculeNode([v.id], 0))
     # remove internal core edges
     edges = []
-    edge_counter = 0
     for e in g_mod.edges:
         # only add edge if its not in the core
-        if edge_counter not in core[1]:
+        if not e.source.id in core[0] or not e.target.id in core[0]:
             edges.append(e)
-        edge_counter += 1
 
     # add all edges missing one child layer at the time
     parent_list = [(cut_molecule[0].id, 0)]
