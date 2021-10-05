@@ -44,10 +44,6 @@ def make_cut_molecule(g_mod, core):
         if edge_counter not in core[1]:
             edges.append(e)
         edge_counter += 1
-    print("all edges")
-    print(g_mod.edges)
-    print("edges left to check:")
-    print(edges)
 
     # add all edges missing one child layer at the time
     parent_list = [(cut_molecule[0].id, 0)]
@@ -80,7 +76,7 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, node: int):
         cut_check = True
         for child in node.children:
             # if child has no childs or have been cut before.
-            if cut_molecule[child].children and cut_molecule[child].id[0] not in cuts:
+            if cut_molecule[child].children and cut_molecule[child].id not in cuts:
                 cut_check = False
                 none_leafs.append(child)
         return cut_check
@@ -107,7 +103,8 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, node: int):
 
 
 if __name__ == "__main__":
-    gml, ac, bc, ec = reaction_and_product_to_gml('stringfile.xyz0000', visualize=False)
+    gml, ac, bc, ec = reaction_and_product_to_gml('stringfile.xyz0000', visualize=True)
+    print(gml)
     g = graphGMLString(gml)
 
     m = make_cut_molecule(g, [ac, bc])

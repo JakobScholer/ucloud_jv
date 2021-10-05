@@ -49,6 +49,23 @@ def fig_plot(gmlfile, core_atoms, core_bonds):
                                          ),
                              hoverinfo='skip',
                              ))
+
+    fig.add_trace(go.Scatter(x=bond_x,
+                             y=bond_y,
+                             mode='lines',
+                             name='bonds',
+                             line=dict(color='rgb(210,210,210)', width=1),
+                             text=edge_label_list,
+                             hoverinfo='skip'
+                             ))
+    fig.add_trace(go.Scatter(x=bond_middle_x,
+                             y=bond_middle_y,
+                             mode='text',
+                             name='bondIDs',
+                             text=list(range(0, len(edge_label_list))),
+                             hoverinfo='text',
+                             textfont_size=1
+                             ))
     fig.add_trace(go.Scatter(x=bond_core_x,
                              y=bond_core_y,
                              mode='markers',
@@ -58,14 +75,6 @@ def fig_plot(gmlfile, core_atoms, core_bonds):
                                          color='#cf0202'
                                          ),
                              hoverinfo='skip',
-                             ))
-    fig.add_trace(go.Scatter(x=bond_x,
-                             y=bond_y,
-                             mode='lines',
-                             name='bonds',
-                             line=dict(color='rgb(210,210,210)', width=1),
-                             text=edge_label_list,
-                             hoverinfo='skip'
                              ))
     fig.add_trace(go.Scatter(x=bond_middle_x,
                              y=bond_middle_y,
