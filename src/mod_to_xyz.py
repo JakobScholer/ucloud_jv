@@ -6,7 +6,7 @@ from rdkit.Chem.AllChem import EmbedMolecule
 from rdkit.Chem.rdmolfiles import MolToXYZFile
 
 
-def mod_to_xyz(g):
+def mod_to_xyz(g, toFile=True):
     # Count vertices
     vertex_counter = 0
     for v in g.vertices:
@@ -65,4 +65,7 @@ def mod_to_xyz(g):
     EmbedMolecule(mol, randomSeed=0xf00d)   # generate 3d coordinates
 
     # save to file
-    MolToXYZFile(mol, "mod_coordinates.xyz")
+    if toFile:
+        MolToXYZFile(mol, "mod_coordinates.xyz")
+    else:
+        return mol
