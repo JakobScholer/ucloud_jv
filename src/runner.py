@@ -28,6 +28,7 @@ def add_child(child_id, core, parent_molecule, parents_list):
     parent_molecule.children.append(place_id)
     parents_list.append(([child_id], place_id))
 
+
 # core = [[atom ID's],[edge ID's]]
 def make_cut_molecule(g_mod, core):
     cut_molecule = [MoleculeNode(core[0], 1)]
@@ -70,20 +71,22 @@ def make_cut_molecule(g_mod, core):
 
     return cut_molecule
 
+
 def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, node: int):
     print("looking at node " + str(node))
+
     # Check if node is a leaf based on different atributes
     def is_cut(node, none_leafs):
         cut_check = True
         for child in node.children:
             # if child has no childs or have been cut before.
-            if cut_molecule[child].children or cut_molecule[child].id not in cuts:
+            if cut_molecule[child].children and cut_molecule[child].id[0] not in cuts:
                 cut_check = False
-                none_leafs.add(child)
+                none_leafs.append(child)
         return cut_check
 
     # if node has no children return empty cuts list. This case should only happen if all atoms is the core
-    if cut_molecule[node].children:
+    if not cut_molecule[node].children:
         print("well shit, this is not suppose to hannep. The core is the whole molecule")
         return True
 
@@ -92,9 +95,9 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, node: int):
     if is_cut(cut_molecule[node], none_leaf_childs):
         print("Its a cut!")
         # if not root add cut
-        if not node.node_type:
+        if not cut_molecule[node].root:
             print("also not the root ;) so we add it")
-            cuts.add(node.id)
+            cuts.add(cut_molecule[node].id)
     # if not go over childs
     else:
         print("not a cut, lets look at those babies!")
@@ -102,8 +105,9 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, node: int):
             find_all_cuts(cut_molecule, cuts, c)
     return True
 
+
 if __name__ == "__main__":
-    gml, ac, bc = reaction_and_product_to_gml('stringfile.xyz0000', visualize=False)
+    gml, ac, bc, ec = reaction_and_product_to_gml('stringfile.xyz0000', visualize=False)
     g = graphGMLString(gml)
 
     m = make_cut_molecule(g, [ac, bc])
@@ -111,6 +115,6 @@ if __name__ == "__main__":
         print("id: " + str(n.id))
         print("bond: " + str(n.children))
 
-    cuts = {}
+    cuts = set()
     find_all_cuts(m, cuts, 0)
     print(cuts)
