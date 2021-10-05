@@ -1,11 +1,9 @@
 from mod import *
 import openbabel.pybel as pybel
 from openbabel import openbabel
-from mod_to_xyz import mod_to_xyz
 from igraph import *
 import plotly.graph_objects as go
-
-from root_mean_square import root_mean_square
+from src.root_mean_square import root_mean_square
 
 
 def fig_plot(gmlfile, core_atoms):
@@ -214,10 +212,11 @@ def reaction_and_product_to_gml(filename, visualize=False):
     return gml_str, atom_core, energy_profiles
 
 
-if __name__ == "__main__":
+def generate_tree_main():
     gml, ac, ep = reaction_and_product_to_gml('stringfile.xyz0000', visualize=True)
     with open('stringfile.xyz0002') as fi:
         ct = fi.readlines()
     curve = read_energy_profiles(ct)
     x = root_mean_square(ep, curve)
     print(x)
+

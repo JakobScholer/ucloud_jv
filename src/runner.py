@@ -1,5 +1,5 @@
 from mod import *
-from generate_tree import reaction_and_product_to_gml
+from src.generate_tree import reaction_and_product_to_gml
 
 
 class CutTreeNode:
@@ -42,7 +42,6 @@ def make_cut_molecule(g_mod, core):
         # only add edge if its not in the core
         if not e.source.id in core or not e.target.id in core:
             edges.append(e)
-            print("edge added")
 
     # add all edges missing one child layer at the time
     parent_list = [(cut_molecule[0].id, 0)]
@@ -62,49 +61,41 @@ def make_cut_molecule(g_mod, core):
                     # else the edge goes to next iteration
                     new_edges.append(e)
         parent_list = new_parent
-        print(len(parent_list))
         edges = new_edges
-        print(len(edges))
 
     return cut_molecule
 
 
 def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, node: int):
-    print("looking at node " + str(node))
-
     # Check if node is a leaf based on different atributes
     def is_cut(node, none_leafs):
         cut_check = True
         for child in node.children:
             # if child has no childs or have been cut before.
-            if cut_molecule[child].children and cut_molecule[child].id not in cuts:
+            if cut_molecule[child].children and cut_molecule[child].id[0] not in cuts:
                 cut_check = False
                 none_leafs.append(child)
         return cut_check
 
     # if node has no children return empty cuts list. This case should only happen if all atoms is the core
     if not cut_molecule[node].children:
-        print("well shit, this is not suppose to hannep. The core is the whole molecule")
         return True
 
     # check if possible cut
     none_leaf_childs = []
     if is_cut(cut_molecule[node], none_leaf_childs):
-        print("Its a cut!")
         # if not root add cut
         if not cut_molecule[node].root:
-            print("also not the root ;) so we add it")
-            cuts.add(cut_molecule[node].id)
+            cuts.add(cut_molecule[node].id[0])
     # if not go over childs
     else:
-        print("not a cut, lets look at those babies!")
         for c in none_leaf_childs:
             find_all_cuts(cut_molecule, cuts, c)
     return True
 
 
-if __name__ == "__main__":
-    gml, ac, ec = reaction_and_product_to_gml('stringfile.xyz0000', visualize=True)
+def runner_main():
+    gml, ac, ec = reaction_and_product_to_gml('src/stringfile.xyz0000', visualize=True)
     g = graphGMLString(gml)
 
     m = make_cut_molecule(g, ac)
@@ -115,3 +106,4 @@ if __name__ == "__main__":
     cuts = set()
     find_all_cuts(m, cuts, 0)
     print(cuts)
+
