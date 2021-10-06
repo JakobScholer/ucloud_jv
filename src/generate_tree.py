@@ -213,7 +213,9 @@ def reaction_and_product_to_gml(filename, visualize=False):
 
 
 def generate_tree_main():
-    gml, ac, ep = reaction_and_product_to_gml('stringfile.xyz0000', visualize=True)
+    gml, ac, ep = reaction_and_product_to_gml('src/stringfile.xyz0000', visualize=True)
+    print("core")
+    print(ac)
     with open('stringfile.xyz0002') as fi:
         ct = fi.readlines()
     curve = read_energy_profiles(ct)

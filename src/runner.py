@@ -1,5 +1,5 @@
 from mod import *
-from src.generate_tree import reaction_and_product_to_gml
+from src.generate_tree import reaction_and_product_to_gml, fig_plot
 
 
 class CutTreeNode:
@@ -18,23 +18,16 @@ class MoleculeNode:
         self.root = node_type   # 1 = root, 0 = not root
 
 
-# add a edge from parent to child in cut molecule
-def add_child(child_id, core, parent_molecule, parents_list):
-    # alter target id
-    if child_id < core[0]:
-        place_id = child_id + 1
-    else:
-        place_id = child_id + 1 - len(core)
-    parent_molecule.children.append(place_id)
-    parents_list.append(([child_id], place_id))
-
-
 # core = [[atom ID's],[edge ID's]]
 def make_cut_molecule(g_mod, core):
+    lookup = {}
+    for c in core:
+        lookup[c] = 0
     cut_molecule = [MoleculeNode(core, 1)]
     # insert all nodes
     for v in g_mod.vertices:
         if v.id not in core:
+            lookup[v.id] = len(cut_molecule)
             cut_molecule.append(MoleculeNode([v.id], 0))
     # remove internal core edges
     edges = []
@@ -42,35 +35,36 @@ def make_cut_molecule(g_mod, core):
         # only add edge if its not in the core
         if not e.source.id in core or not e.target.id in core:
             edges.append(e)
-
     # add all edges missing one child layer at the time
-    parent_list = [(cut_molecule[0].id, 0)]
+    parent_list = cut_molecule[0].id
     while len(parent_list) > 0:
         # list of edges to work with
-        new_edges = []
         new_parent = []
+        new_edges = edges.copy()
         # loop over every edge and parent to find matches
         for e in edges:
             for p in parent_list:
                 # check if a edge belongs to a parent
-                if e.source.id in p[0]:
-                    add_child(e.target.id, core, cut_molecule[p[1]], new_parent)
-                elif e.target.id in p[0]:
-                    add_child(e.source.id, core, cut_molecule[p[1]], new_parent)
-                else:
-                    # else the edge goes to next iteration
-                    new_edges.append(e)
+                if e.source.id == p:
+                    cut_molecule[lookup.get(p)].children.append(e.target.id)
+                    new_parent.append(e.target.id)
+                    new_edges.remove(e)
+                    break
+                elif e.target.id == p:
+                    cut_molecule[lookup.get(p)].children.append(e.source.id)
+                    new_parent.append(e.source.id)
+                    new_edges.remove(e)
+                    break
         parent_list = new_parent
         edges = new_edges
+    return cut_molecule, lookup
 
-    return cut_molecule
 
-
-def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, node: int):
-    # Check if node is a leaf based on different atributes
-    def is_cut(node, none_leafs):
+def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: int):
+    # Check if node is a leaf based on different attributes
+    def is_cut(nod, none_leafs):
         cut_check = True
-        for child in node.children:
+        for child in nod.children:
             # if child has no childs or have been cut before.
             if cut_molecule[child].children and cut_molecule[child].id[0] not in cuts:
                 cut_check = False
@@ -95,6 +89,19 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, node: int):
 
 
 def runner_main():
+    #fig_plot('gmlstring.gml', [1, 3])
+    with open('gmlstring.gml', 'r') as file:
+        gml = file.read()
+    g = graphGMLString(gml)
+    m, l = make_cut_molecule(g, [1, 3])
+    for n in m:
+        print("id: " + str(n.id))
+        print("bond: " + str(n.children))
+
+    cuts = set()
+    find_all_cuts(m, cuts, l, 0)
+    print(cuts)
+    '''
     gml, ac, ec = reaction_and_product_to_gml('src/stringfile.xyz0000', visualize=True)
     g = graphGMLString(gml)
 
@@ -106,4 +113,6 @@ def runner_main():
     cuts = set()
     find_all_cuts(m, cuts, 0)
     print(cuts)
+    '''
+
 
