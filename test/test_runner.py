@@ -9,9 +9,9 @@ class Test(unittest.TestCase):
     def test_find_cuts_tree(self):
         gml, ac, ec = reaction_and_product_to_gml('test/testfiles/stringfile_tree.xyz0000', visualize=False)
         g = graphGMLString(gml)
-        m = make_cut_molecule(g, ac)
+        m, lookup = make_cut_molecule(g, ac)
         actual = set()
-        find_all_cuts(m, actual, 0)
+        find_all_cuts(m, actual, lookup, 0)
         expected = {0}
         self.assertEqual(actual, expected)
 
@@ -19,10 +19,10 @@ class Test(unittest.TestCase):
     def test_find_cuts_ring(self):
         gml, ac, ec = reaction_and_product_to_gml('test/testfiles/stringfile_ring.xyz0000', visualize=False)
         g = graphGMLString(gml)
-        m = make_cut_molecule(g, ac)
+        m, lookup = make_cut_molecule(g, ac)
         actual = set()
-        find_all_cuts(m, actual, 0)
-        expected = {0}
+        find_all_cuts(m, actual, lookup, 0)
+        expected = {1, 3, 9}
         self.assertEqual(actual, expected)
 
 

@@ -14,7 +14,7 @@ class CutTreeNode:
 class MoleculeNode:
     def __init__(self, molecule_id, node_type):
         self.id = molecule_id   # List of atom ID's
-        self.children = []      # A list of ints representing the list placement of the children
+        self.children = set()      # A list of ints representing the list placement of the children
         self.root = node_type   # 1 = root, 0 = not root
 
 
@@ -46,12 +46,12 @@ def make_cut_molecule(g_mod, core):
             for p in parent_list:
                 # check if a edge belongs to a parent
                 if e.source.id == p:
-                    cut_molecule[lookup.get(p)].children.append(e.target.id)
+                    cut_molecule[lookup.get(p)].children.add(e.target.id)
                     new_parent.append(e.target.id)
                     new_edges.remove(e)
                     break
                 elif e.target.id == p:
-                    cut_molecule[lookup.get(p)].children.append(e.source.id)
+                    cut_molecule[lookup.get(p)].children.add(e.source.id)
                     new_parent.append(e.source.id)
                     new_edges.remove(e)
                     break
@@ -66,7 +66,7 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: i
         cut_check = True
         for child in nod.children:
             # if child has no childs or have been cut before.
-            if cut_molecule[child].children and cut_molecule[child].id[0] not in cuts:
+            if len(cut_molecule[lookup.get(child)].children) > 0 and child not in cuts:
                 cut_check = False
                 none_leafs.append(child)
         return cut_check
@@ -84,7 +84,7 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: i
     # if not go over childs
     else:
         for c in none_leaf_childs:
-            find_all_cuts(cut_molecule, cuts, c)
+            find_all_cuts(cut_molecule, cuts, lookup, lookup.get(c))
     return True
 
 
@@ -93,7 +93,8 @@ def runner_main():
     with open('gmlstring.gml', 'r') as file:
         gml = file.read()
     g = graphGMLString(gml)
-    m, l = make_cut_molecule(g, [1, 3])
+    m, l = make_cut_molecule(g, [13, 8, 6, 5, 4, 11, 12])
+    #print(l)
     for n in m:
         print("id: " + str(n.id))
         print("bond: " + str(n.children))
