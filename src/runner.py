@@ -88,13 +88,24 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: i
     return True
 
 
+def make_cut(mod_graph, molecule_to_cut, molecules):
+    ban_list = molecules
+    print("--------------før---------------")
+    print(mod_graph.getGMLString())
+    gml_string = "graph [\n"
+    for vertex in mod_graph.vertices:
+        gml_string += "    node [ id " + str(vertex.id) + " label \"" + str(vertex.stringLabel) + "\" ]\n"
+    for edge in mod_graph.edges:
+        gml_string += "    edge [ source " + str(edge.source.id) + " target " + str(edge.target.id) + " label \"" + str(
+            edge.bondType) + "\"]\n"
+    print("--------------efter---------------")
+    print(gml_string)
+
+
 def runner_main():
-    #fig_plot('src/gmlstring.gml', [1, 3])
-    with open('src/gmlstring.gml', 'r') as file:
-        gml = file.read()
+    gml, atom_core, ep = reaction_and_product_to_gml('src/stringfile.xyz0000', visualize=False)
     g = graphGMLString(gml)
-    m, l = make_cut_molecule(g, [13, 8, 6, 5, 4, 11, 12])
-    #print(l)
+    m, l = make_cut_molecule(g, atom_core)
     for n in m:
         print("id: " + str(n.id))
         print("bond: " + str(n.children))
@@ -102,18 +113,10 @@ def runner_main():
     cuts = set()
     find_all_cuts(m, cuts, l, 0)
     print(cuts)
-    '''
-    gml, ac, ec = reaction_and_product_to_gml('src/stringfile.xyz0000', visualize=True)
-    g = graphGMLString(gml)
 
-    m = make_cut_molecule(g, ac)
-    for n in m:
-        print("id: " + str(n.id))
-        print("bond: " + str(n.children))
+    make_cut(g, next(iter(cuts)), m)
 
-    cuts = set()
-    find_all_cuts(m, cuts, 0)
-    print(cuts)
-    '''
+
+
 
 

@@ -7,7 +7,7 @@ class Test(unittest.TestCase):
     # Normal behaviour test case
     def test_mod_to_xyz_normal(self):
         g = smiles("CCO")
-        mol = mod_to_xyz(g, toFile=False)
+        mol = mod_to_xyz(g, to_file=False)
         actual = mol.GetNumAtoms()
         expected = 9
         self.assertEqual(actual, expected)

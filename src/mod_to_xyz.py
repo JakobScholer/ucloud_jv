@@ -6,7 +6,7 @@ from rdkit.Chem.AllChem import EmbedMolecule
 from rdkit.Chem.rdmolfiles import MolToXYZFile
 
 
-def mod_to_xyz(g, toFile=True):
+def mod_to_gml(g):
     # Count vertices
     vertex_counter = 0
     for v in g.vertices:
@@ -27,7 +27,8 @@ def mod_to_xyz(g, toFile=True):
     mol_string += "\n"
     # Counts line
     # number of atoms, number of bonds, number of atom list, Chiral flag, number of stext entries, properties, mol version
-    mol_string += str(vertex_counter) + "  " + str(edge_counter) + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0999" + "  " + "V2000\n"
+    mol_string += str(vertex_counter) + "  " + str(
+        edge_counter) + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0999" + "  " + "V2000\n"
 
     # Atom block
     # (1 line for each atom): x, y, z (in angstroms), element, etc.
@@ -36,7 +37,8 @@ def mod_to_xyz(g, toFile=True):
         if vertex.charge != 0:
             charge_value = "5"
             mol_properties_block += "M  CHG  1  " + str(vertex.id + 1) + "  " + str(vertex.charge) + "\n"
-        atom_string = "    0.0000    0.0000    0.0000 " + str(vertex.stringLabel).replace("-", "").replace("+", "") + "  " + "0" + "  " + charge_value + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0" "  " + "0" + "  " + "0" "  " + "0" + "  " + "0\n"
+        atom_string = "    0.0000    0.0000    0.0000 " + str(vertex.stringLabel).replace("-", "").replace("+",
+                                                                                                           "") + "  " + "0" + "  " + charge_value + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0" "  " + "0" + "  " + "0" "  " + "0" + "  " + "0\n"
         mol_string += atom_string
 
     # Bond block
@@ -53,19 +55,31 @@ def mod_to_xyz(g, toFile=True):
         else:
             bond_type = "5"
         # each bond position is only allowed 3 spaces meaning the number "10" only has 1 space to the left for padding while "1" has two spaces of padding
-        bond_string = str(edge.source.id + 1).rjust(3) + str(edge.target.id + 1).rjust(3) + "  " + bond_type + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0\n"
+        bond_string = str(edge.source.id + 1).rjust(3) + str(edge.target.id + 1).rjust(
+            3) + "  " + bond_type + "  " + "0" + "  " + "0" + "  " + "0" + "  " + "0\n"
         mol_string += bond_string
-
-    # Properties block
+        # Properties block
     mol_properties_block += "M  END\n"
     mol_string += mol_properties_block
+    return mol_string
+
+
+def mod_to_xyz(g, to_file=True):
+    mol_string = mod_to_gml(g)
 
     mol = MolFromMolBlock(mol_string, removeHs=False)       # Convert to rdkit mol format
     rdDepictor.Compute2DCoords(mol)     # generate 2d coordinates
     EmbedMolecule(mol, randomSeed=0xf00d)   # generate 3d coordinates
 
     # save to file
-    if toFile:
+    if to_file:
         MolToXYZFile(mol, "mod_coordinates.xyz")
     else:
         return mol
+
+
+def mod_to_xyz_main():
+    g = smiles("CCO")
+    print(mod_to_gml(g))
+    print(g.getGMLString(withCoords=True))
+
