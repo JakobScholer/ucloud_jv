@@ -89,8 +89,8 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: i
 
 
 def runner_main():
-    #fig_plot('gmlstring.gml', [1, 3])
-    with open('gmlstring.gml', 'r') as file:
+    #fig_plot('src/gmlstring.gml', [1, 3])
+    with open('src/gmlstring.gml', 'r') as file:
         gml = file.read()
     g = graphGMLString(gml)
     m, l = make_cut_molecule(g, [13, 8, 6, 5, 4, 11, 12])

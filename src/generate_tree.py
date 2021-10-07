@@ -204,10 +204,10 @@ def reaction_and_product_to_gml(filename, visualize=False):
     ]
         """
     if visualize:
-        f = open("gmlstring.gml", "w")
+        f = open("src/gmlstring.gml", "w")
         f.write(gml_str)
         f.close()
-        fig_plot('gmlstring.gml', atom_core)
+        fig_plot('src/gmlstring.gml', atom_core)
 
     return gml_str, atom_core, energy_profiles
 
@@ -216,7 +216,7 @@ def generate_tree_main():
     gml, ac, ep = reaction_and_product_to_gml('src/stringfile.xyz0000', visualize=True)
     print("core")
     print(ac)
-    with open('stringfile.xyz0002') as fi:
+    with open('src/stringfile.xyz0002') as fi:
         ct = fi.readlines()
     curve = read_energy_profiles(ct)
     x = root_mean_square(ep, curve)
