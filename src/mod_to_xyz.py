@@ -6,7 +6,7 @@ from rdkit.Chem.AllChem import EmbedMolecule
 from rdkit.Chem.rdmolfiles import MolToXYZFile
 
 
-def mod_to_gml(g):
+def mod_to_mol(g):
     # Count vertices
     vertex_counter = 0
     for v in g.vertices:
@@ -65,7 +65,7 @@ def mod_to_gml(g):
 
 
 def mod_to_xyz(g, to_file=True):
-    mol_string = mod_to_gml(g)
+    mol_string = mod_to_mol(g)
 
     mol = MolFromMolBlock(mol_string, removeHs=False)       # Convert to rdkit mol format
     rdDepictor.Compute2DCoords(mol)     # generate 2d coordinates

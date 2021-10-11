@@ -4,18 +4,18 @@ from src.generate_tree import reaction_and_product_to_gml, fig_plot
 
 class CutTreeNode:
     def __init__(self, molecule, cuts):
-        self.energy = []        # List for energy leves at different notes for the reaction
-        self.RMS = 0            # the root mean square base on the original molecule reaction
-        self.stringfile = ""    # The string file with the reaction, used for GML rule
-        self.cuts = cuts        # which cuts on the molecule was made
-        self.childs = []        # Childs made from the molecule
+        self.energy = []  # List for energy leves at different notes for the reaction
+        self.RMS = 0  # the root mean square base on the original molecule reaction
+        self.stringfile = ""  # The string file with the reaction, used for GML rule
+        self.cuts = cuts  # which cuts on the molecule was made
+        self.childs = []  # Childs made from the molecule
 
 
 class MoleculeNode:
     def __init__(self, molecule_id, node_type):
-        self.id = molecule_id   # List of atom ID's
-        self.children = set()      # A list of ints representing the list placement of the children
-        self.root = node_type   # 1 = root, 0 = not root
+        self.id = molecule_id  # List of atom ID's
+        self.children = set()  # A list of ints representing the list placement of the children
+        self.root = node_type  # 1 = root, 0 = not root
 
 
 # core = [[atom ID's],[edge ID's]]
@@ -89,17 +89,28 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: i
 
 
 def make_cut(mod_graph, molecule_to_cut, molecules):
-    ban_list = molecules
+    ban_list = []
+    replace_list = []
+    for mc in molecule_to_cut:
+        for c in molecules[mc + 1].children:
+            ban_list.append(c)
+        replace_list.append(mc)
     print("--------------før---------------")
     print(mod_graph.getGMLString())
     gml_string = "graph [\n"
     for vertex in mod_graph.vertices:
-        gml_string += "    node [ id " + str(vertex.id) + " label \"" + str(vertex.stringLabel) + "\" ]\n"
+        if vertex.id not in ban_list:
+            if vertex.id in replace_list:
+                gml_string += "    node [ id " + str(vertex.id) + " label \"" + "H" + "\" ]\n"
+            else:
+                gml_string += "    node [ id " + str(vertex.id) + " label \"" + str(vertex.stringLabel) + "\" ]\n"
     for edge in mod_graph.edges:
-        gml_string += "    edge [ source " + str(edge.source.id) + " target " + str(edge.target.id) + " label \"" + str(
-            edge.bondType) + "\"]\n"
+        if edge.source.id not in ban_list and edge.target.id not in ban_list:
+            gml_string += "    edge [ source " + str(edge.source.id) + " target " + str(
+                edge.target.id) + " label \"" + str(edge.bondType) + "\"]\n"
     print("--------------efter---------------")
     print(gml_string)
+    return gml_string
 
 
 def runner_main():
@@ -114,9 +125,4 @@ def runner_main():
     find_all_cuts(m, cuts, l, 0)
     print(cuts)
 
-    make_cut(g, next(iter(cuts)), m)
-
-
-
-
-
+    make_cut(g, cuts, m)
