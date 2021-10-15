@@ -59,7 +59,10 @@ def make_cut_molecule(g_mod, core):
         edges = new_edges
     return cut_molecule, lookup
 
-
+# cut_molecule is the mocule to find cuts on
+# Cuts is a set for all cuts already performed
+# Lookup is a dict, for lookup placement with ids in the cut_molecule
+# node is always 0, since its the placement of the root. This is due to the recursive nature of the function
 def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: int):
     # Check if node is a leaf based on different attributes
     def is_cut(nod, none_leafs):
@@ -73,19 +76,22 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: i
 
     # if node has no children return empty cuts list. This case should only happen if all atoms is the core
     if not cut_molecule[node].children:
-        return True
+        return set()
 
     # check if possible cut
     none_leaf_childs = []
+    new_cuts = set()
     if is_cut(cut_molecule[node], none_leaf_childs):
         # if not root add cut
         if not cut_molecule[node].root:
-            cuts.add(cut_molecule[node].id[0])
+            new_cuts.add(cut_molecule[node].id[0])
     # if not go over childs
     else:
         for c in none_leaf_childs:
-            find_all_cuts(cut_molecule, cuts, lookup, lookup.get(c))
-    return True
+            deeper_cuts = find_all_cuts(cut_molecule, cuts, lookup, lookup.get(c))
+            if len(deeper_cuts) > 0:
+                new_cuts = new_cut.union(deeper_cuts)
+    return new_cuts
 
 
 def make_cut(mod_graph, molecule_to_cut, molecules):
