@@ -1,3 +1,4 @@
+import os
 import sys
 from mod import smiles, graphGMLString
 
@@ -21,6 +22,8 @@ if __name__ == '__main__':
         mod_to_xyz(g, to_file=True)             # convert molecule for zstruct to understand it
 
         # run zstruct with molecule.xyz (molecule.frozen is empty for now)
+        if not os.path.exists('ZStruct/scratch'):
+            os.makedirs('ZStruct/scratch')
 
         gml_string, atom_core, energy_curve = reaction_and_product_to_gml('src/stringfile.xyz0000', visualize=True)
         g = graphGMLString(gml_string)
