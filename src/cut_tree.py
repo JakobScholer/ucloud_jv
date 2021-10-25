@@ -17,7 +17,7 @@ class CutTree:
         self.cut_molecule = cut_molecule # the molecule to perfom cuts on
         self.cut_molecule_lookup_dict = lookup_dict # dict for cut_molecule
 
-# generate childs of a nodes
+# generate childs of a node
 def make_childs(node: CutTreeNode, tree: CutTree)
     # find alle cuts på moleculet
     child_cuts = find_all_cuts(tree.cut_molecule, node.cuts, tree.cut_molecule_lookup_dict, 0)
@@ -35,17 +35,19 @@ def make_childs(node: CutTreeNode, tree: CutTree)
             child_nodes.append(CutTreeNode(c))
         tree.layer[len(node.cuts)+1] = child_nodes
     else: # generate all childs and check if the exist before adding
+        layer_list = tree.layer[len(node.cuts)+1]
         for c in child_sets:
+            child_exist = False
             # run over the layer in the tree
-            for node in tree.layer[len(node.cuts)+1] ############################################################
-
-        # tjek hvis laget findes
-        # Tjek hvis childet findes
-        # indsæt børn på layer
-        # indsæt childs i nodes childs
-    # done?
-
-# Check if child already exist
+            for layer_node_placement in len(layer_list):
+                if layer_node.cuts == c:
+                    # add child node to parent node and go to next child
+                    node.Childs.append(layer_node_placement)
+                    continue
+                else:
+                    # add child to parent and add child to list
+                    node.Childs.append(len(layer_list))
+                    layer_list.append(CutTreeNode(c))
 
 # generate root node
 # input: Stringfile from Xtb, boolean for making visuals of the cut molecute
