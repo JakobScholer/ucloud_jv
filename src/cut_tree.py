@@ -13,15 +13,32 @@ class CutTreeNode:
 
 class CutTree:
     def __init__(self, cut_molecule, lookup_dict):
-        self.tree_layers = {} # Dictionary for each layer of the cut tree. Keys are ints of cuts made for a certain tree_layers
+        self.layers = {} # Dictionary for each layer of the cut tree. Keys are ints of cuts made for a certain tree_layers
         self.cut_molecule = cut_molecule # the molecule to perfom cuts on
         self.cut_molecule_lookup_dict = lookup_dict # dict for cut_molecule
 
 # generate childs of a nodes
 def make_childs(node: CutTreeNode, tree: CutTree)
     # find alle cuts på moleculet
-    find_all_cuts(tree.cut_molecule, node.cuts, tree.cut_molecule_lookup_dict, 0)
-    # opret alle børn
+    child_cuts = find_all_cuts(tree.cut_molecule, node.cuts, tree.cut_molecule_lookup_dict, 0)
+    # generate all childs
+    child_sets = []
+    for cut in child_cuts:
+        child_set.append(node.cuts.union(cut))
+    # chek if new layer exist. MUTEX
+    if not len(node.cuts)+1 in tree.layers.keys():
+        # generate child nodes
+        child_nodes = []
+        # add all nodes to the list and as childs in parent node
+        for c in child_sets:
+            node.childs.append(len(child_nodes)) # no -1 is needed, since we do it before adding he child
+            child_nodes.append(CutTreeNode(c))
+        tree.layer[len(node.cuts)+1] = child_nodes
+    else: # generate all childs and check if the exist before adding
+        for c in child_sets:
+            # run over the layer in the tree
+            for node in tree.layer[len(node.cuts)+1] ############################################################
+
         # tjek hvis laget findes
         # Tjek hvis childet findes
         # indsæt børn på layer
@@ -46,7 +63,7 @@ def make_root(stringfile: string, visuals: boolean):
     root.stringfile = stringfile
 
     # Insert root in layers
-    ct.tree_layers[0] = [root]
+    ct.layers[0] = [root]
 
     return ct
 
