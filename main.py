@@ -11,7 +11,7 @@ from src.mod_to_xyz import mod_to_xyz_main, mod_to_xyz
 
 
 def run_zstruct(outdir, offset):
-    os.chdir("zstruct")
+    os.chdir("ZStruct")
     os.system("./zstruct.exe")
     _, _, filenames = next(os.walk("scratch"))
     isomer_count = sum(fn.startswith("ISO") for fn in filenames)
@@ -19,8 +19,10 @@ def run_zstruct(outdir, offset):
 
     for i in range(isomer_count):
         strid = str(i).zfill(4)
-        shutil.move(f"zstruct/scratch/ISOMERS{strid}", f"{outdir}/ISOMERS{str(i+offset).zfill(4)}")
-        shutil.move(f"zstruct/scratch/initial{strid}.xyz", f"{outdir}/initial{str(i+offset).zfill(4)}.xyz")
+        print("HERE")
+        print(strid)
+        shutil.move(f"ZStruct/scratch/ISOMERS{strid}", f"{outdir}/ISOMERS{str(i+offset).zfill(4)}")
+        shutil.move(f"ZStruct/scratch/initial{strid}.xyz", f"{outdir}/initial{str(i+offset).zfill(4)}.xyz")
 
     return isomer_count
 
@@ -33,15 +35,17 @@ def prepare_zstruct(combination, molecules, dir_path):
 
     for i, name in enumerate(combination):
         m = molecules[name]
-        shutil.copy(f"{dir_path}/{m['xyz']}", f"zstruct/react{i+1}.xyz")
-        shutil.copy(f"{dir_path}/{m['frozen']}", f"zstruct/frozen{i+1}.xyz")
+        print("LOOK")
+        print(f"{dir_path}/{m['xyz']}")
+        shutil.copy(f"{dir_path}/{m['xyz']}", f"ZStruct/react{i+1}.xyz")
+        shutil.copy(f"{dir_path}/{m['frozen']}", f"ZStruct/frozen{i+1}.xyz")
 
 
 def generate_isomers(path: str):
     out_dir = "scratch/isomers"
     if os.path.exists(out_dir):
         os.system(f"rm -r {out_dir}")
-    os.mkdir("scratch/isomers")
+    os.makedirs("scratch/isomers")
 
     with open(path) as f:
         data = json.load(f)
@@ -70,8 +74,6 @@ if __name__ == '__main__':
 
         # run zstruct with molecule.xyz (molecule.frozen is empty for now)
         generate_isomers("data/main_example.json")
-        if not os.path.exists('ZStruct/scratch'):
-            os.makedirs('ZStruct/scratch')
         '''
         gml_string, atom_core, energy_curve = reaction_and_product_to_gml('src/stringfile.xyz0000', visualize=True)
         g = graphGMLString(gml_string)
