@@ -17,8 +17,8 @@ class MoleculeNode:
         self.children = set()  # A list of ints representing the list placement of the children
         self.root = node_type  # 1 = root, 0 = not root
 
-
 # core = [[atom ID's],[edge ID's]]
+# g_mod is the graph object from MØD
 def make_cut_molecule(g_mod, core):
     lookup = {}
     for c in core:
@@ -90,7 +90,7 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: i
         for c in none_leaf_childs:
             deeper_cuts = find_all_cuts(cut_molecule, cuts, lookup, lookup.get(c))
             if len(deeper_cuts) > 0:
-                new_cuts = new_cut.union(deeper_cuts)
+                new_cuts = new_cuts.union(deeper_cuts)
     return new_cuts
 
 
@@ -119,7 +119,7 @@ def make_cut(mod_graph, molecule_to_cut, molecules):
     return gml_string
 
 
-def runner_main():
+def cut_molecule_main():
     gml, atom_core, ep = reaction_and_product_to_gml('src/stringfile.xyz0000', visualize=False)
     g = graphGMLString(gml)
     m, l = make_cut_molecule(g, atom_core)

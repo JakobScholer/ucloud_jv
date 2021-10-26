@@ -1,6 +1,6 @@
 import unittest
 from mod import graphGMLString
-from src.runner import find_all_cuts, make_cut_molecule
+from src.cut_molecule import find_all_cuts, make_cut_molecule
 from src.generate_tree import reaction_and_product_to_gml
 
 

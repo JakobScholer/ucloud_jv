@@ -5,9 +5,10 @@ import sys
 from mod import smiles, graphGMLString
 
 from src.root_mean_square import root_mean_square
-from src.runner import runner_main, make_cut_molecule, find_all_cuts, make_cut
+from src.cut_molecule import cut_molecule_main, make_cut_molecule, find_all_cuts, make_cut
 from src.generate_tree import generate_tree_main, reaction_and_product_to_gml, read_energy_profiles
 from src.mod_to_xyz import mod_to_xyz_main, mod_to_xyz
+from src.cut_dag import cut_dag_main
 
 
 def run_zstruct(outdir, offset):
@@ -60,16 +61,18 @@ def generate_isomers(path: str):
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
-        if str(sys.argv[1]) == "runner":
-            runner_main()
+        if str(sys.argv[1]) == "cut_molecule":
+            cut_molecule_main()
         elif str(sys.argv[1]) == "generate_tree":
             generate_tree_main()
         elif str(sys.argv[1]) == "mod_to_xyz":
             mod_to_xyz_main()
         elif str(sys.argv[1]) == "xyz_to_mod":
-            runner_main()
+            cut_molecule_main()
+        elif str(sys.argv[1]) == "cut_dag":
+            cut_dag_main()
     else:
-        g = smiles("CCO")                       # molecule to test reaction on
+        g = smiles("C(CCO)CC(CCO)CCO")                       # molecule to test reaction on
         mod_to_xyz(g, to_file=True)             # convert molecule for zstruct to understand it
 
         # run zstruct with molecule.xyz (molecule.frozen is empty for now)
@@ -91,4 +94,3 @@ if __name__ == '__main__':
         curve = read_energy_profiles(ct)
         x = root_mean_square(energy_curve, curve)   # based on value decide if curve is the same
         '''
-
