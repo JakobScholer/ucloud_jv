@@ -73,7 +73,6 @@ def make_root(stringfile: str, visuals: bool):
 
 def cut_dag_main():
     # for testing
-    print("test")
     test = 'test/testfiles/stringfile_ring.xyz0000'
     graph = False
     tree = make_root(test, graph)

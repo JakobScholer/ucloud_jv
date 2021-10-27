@@ -1,16 +1,6 @@
 from mod import *
 from src.generate_tree import reaction_and_product_to_gml, fig_plot
 
-
-class CutTreeNode:
-    def __init__(self, molecule, cuts):
-        self.energy = []  # List for energy leves at different notes for the reaction
-        self.RMS = 0  # the root mean square base on the original molecule reaction
-        self.stringfile = ""  # The string file with the reaction, used for GML rule
-        self.cuts = cuts  # which cuts on the molecule was made
-        self.childs = []  # Childs made from the molecule
-
-
 class MoleculeNode:
     def __init__(self, molecule_id, node_type):
         self.id = molecule_id  # List of atom ID's
@@ -120,15 +110,13 @@ def make_cut(mod_graph, molecule_to_cut, molecules):
 
 
 def cut_molecule_main():
-    gml, atom_core, ep = reaction_and_product_to_gml('src/stringfile.xyz0000', visualize=False)
+    gml, atom_core, ep = reaction_and_product_to_gml('test/testfiles/stringfile_tree.xyz0000', visualize=False)
     g = graphGMLString(gml)
     m, l = make_cut_molecule(g, atom_core)
     for n in m:
         print("id: " + str(n.id))
         print("bond: " + str(n.children))
+    cuts = find_all_cuts(m, set(), l, 0)
 
-    cuts = set()
-    find_all_cuts(m, cuts, l, 0)
-    print(cuts)
 
     make_cut(g, cuts, m)
