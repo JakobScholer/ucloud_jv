@@ -1,0 +1,46 @@
+# Target labels
+ gsmExes
+ gsmExes
+# Directory labels
+ gsm
+# Source files and their labels
+/work/DanielStuff/nikolai/molecularGSM/GSM/GitSHA1.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/ase.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/ase.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/bmat.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/constants.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/eckart.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/eckart.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/gaussian.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/gaussian.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/grad.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/grad.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/gstring.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/gstring.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/icoord.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/icoord.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/knnr.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/knnr.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/main.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/mem.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/mm_grad.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/molpro.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/molpro.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/mopac.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/mopac.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/optic.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/orca.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/orca.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/pTable.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/pTable.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/print.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/qchem.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/qchemsf.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/qchemsf.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/stringtools.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/stringtools.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/turbomole.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/turbomole.h
+/work/DanielStuff/nikolai/molecularGSM/GSM/utils.cpp
+/work/DanielStuff/nikolai/molecularGSM/GSM/utils.h
+/work/DanielStuff/nikolai/molecularGSM/BUILD/GSM/GitSHA1.cpp

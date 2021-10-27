@@ -1,0 +1,11 @@
+{
+	"sources" : [],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"gsm"
+		],
+		"name" : "list_install_components"
+	}
+}

@@ -1,9 +1,0 @@
-{
-	"molecules": {
-		"iso": { "xyz": "iso.xyz", "frozen": "iso.frozen"},
-		"dimer": { "xyz": "dimer.xyz", "frozen": "dimer.frozen"},
-		"trimer": { "xyz": "trimer.xyz", "frozen": "trimer.frozen"}
-	},
-
-	"combinations": [["iso"],["dimer"]]
-}

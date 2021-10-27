@@ -1,0 +1,5 @@
+# Directory labels
+ gsm
+# Source files and their labels
+/work/DanielStuff/nikolai/molecularGSM/BUILD/GSM/CMakeFiles/gsm_all
+/work/DanielStuff/nikolai/molecularGSM/BUILD/GSM/CMakeFiles/gsm_all.rule

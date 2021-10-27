@@ -1,0 +1,110 @@
+##############################################################################
+#
+# Make variables for use by GSM/gsm clients. 
+#
+# Do not edit: This file was generated automatically by CMake.
+#
+##############################################################################
+
+
+## ---------------------------------------------------------------------------
+## Compilers used by GSM/gsm build
+## ---------------------------------------------------------------------------
+
+gsm_CXX_COMPILER=/work/DanielStuff/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icc
+
+gsm_C_COMPILER=/work/DanielStuff/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icc
+
+gsm_FORTRAN_COMPILER=/work/DanielStuff/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/ifort
+gsm_Fortran_COMPILER=/work/DanielStuff/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/ifort
+
+
+## ---------------------------------------------------------------------------
+## Compiler flags used by GSM/gsm build
+## ---------------------------------------------------------------------------
+
+## Set compiler flags, including those determined by build type
+gsm_CXX_FLAGS= -qopenmp -O3 -DNDEBUG
+gsm_CXX_COMPILER_FLAGS= -qopenmp -O3 -DNDEBUG
+
+gsm_C_FLAGS= -qopenmp -O3 -DNDEBUG
+gsm_C_COMPILER_FLAGS= -qopenmp -O3 -DNDEBUG
+
+gsm_FORTRAN_FLAGS= -O3
+gsm_Fortran_COMPILER_FLAGS= -O3
+
+## Extra link flags (e.g., specification of fortran libraries)
+gsm_EXTRA_LD_FLAGS=
+
+## This is the command-line entry used for setting rpaths. In a build
+## with static libraries it will be empty. 
+gsm_SHARED_LIB_RPATH_COMMAND=
+gsm_BUILD_SHARED_LIBS=FALSE
+
+gsm_LINKER=/usr/bin/ld
+gsm_AR=/usr/bin/ar
+
+## ---------------------------------------------------------------------------
+## Set library specifications and paths 
+## ---------------------------------------------------------------------------
+
+## The project version number
+gsm_VERSION=0.0.1
+
+## List of package include dirs
+gsm_INCLUDE_DIRS= -I/work/DanielStuff/nikolai/molecularGSM/BUILD -I/work/DanielStuff/intel/oneapi/mkl/latest/include -I/work/DanielStuff/nikolai/molecularGSM/BUILD/GSM -I/work/DanielStuff/nikolai/molecularGSM/GSM
+
+## List of package library paths
+gsm_LIBRARY_DIRS=
+
+## List of package libraries
+gsm_LIBRARIES=
+
+## Specification of directories for TPL headers
+gsm_TPL_INCLUDE_DIRS=
+
+## Specification of directories for TPL libraries
+gsm_TPL_LIBRARY_DIRS=
+
+## List of required TPLs
+gsm_TPL_LIBRARIES=
+
+## ---------------------------------------------------------------------------
+## MPI specific variables
+##   These variables are provided to make it easier to get the mpi libraries
+##   and includes on systems that do not use the mpi wrappers for compiling
+## ---------------------------------------------------------------------------
+
+gsm_MPI_LIBRARIES=
+gsm_MPI_LIBRARY_DIRS=
+gsm_MPI_INCLUDE_DIRS=
+gsm_MPI_EXEC=
+gsm_MPI_EXEC_MAX_NUMPROCS=
+gsm_MPI_EXEC_NUMPROCS_FLAG=
+
+## ---------------------------------------------------------------------------
+## Set useful general variables 
+## ---------------------------------------------------------------------------
+
+## The packages enabled for this project
+gsm_PACKAGE_LIST=
+
+## The TPLs enabled for this project
+gsm_TPL_LIST=
+
+## ---------------------------------------------------------------------------
+## Deprecated variables
+##   These variables from the autotools version of Makefile.export.<package>
+##   have been deprecated. To help avoid confusion with projects that haven't
+##   migrated to the new version of the variable names when the don't compile.
+##   This will put an obvious statement in the link line that these Trilinos
+##   Makefile variables are no longer used. Without this there would be a link
+##   error with no obvious reason as to why other than the lack of Trilinos libs
+##   which would be confusing since the link line in the Makefile would have 
+##   stated to put them on the line.
+## ---------------------------------------------------------------------------
+
+GSM_LIBS="The Trilinos variable GSM_LIBS has been deprecated. Please see the documentation on the Makefile.export capability for instructions on how to transition to the new system."
+GSM_INCLUDES="The Trilinos variable GSM_INCLUDES has been deprecated. Please see the documentation on the Makefile.export capability for instructions on how to transition to the new system."
+
+

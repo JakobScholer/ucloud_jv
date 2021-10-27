@@ -1,0 +1,2 @@
+/usr/bin/ar qc libfmangle.a CMakeFiles/fmangle.dir/fmangle.f.o
+/usr/bin/ranlib libfmangle.a

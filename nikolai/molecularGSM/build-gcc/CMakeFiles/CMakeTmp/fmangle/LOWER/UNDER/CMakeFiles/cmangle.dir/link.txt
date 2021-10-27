@@ -1,1 +1,0 @@
-/usr/bin/cc -O3 -DNDEBUG -rdynamic CMakeFiles/cmangle.dir/cmangle.c.o -o cmangle  libfmangle.a -lifport -lifcoremt -limf -lsvml -lm -lipgo -lirc -lpthread -lsvml -lirc_s -ldl 

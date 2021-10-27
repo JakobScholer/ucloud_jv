@@ -1,0 +1,7 @@
+{
+	"molecules": {
+		"mod_coordinates": { "xyz": "mod_coordinates.xyz", "frozen": "mod_coordinates.frozen"}
+	},
+
+	"combinations": [["mod_coordinates"]]
+}

@@ -1,0 +1,11 @@
+{
+	"sources" : [],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"gsm"
+		],
+		"name" : "rebuild_cache"
+	}
+}
