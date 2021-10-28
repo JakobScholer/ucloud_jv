@@ -26,6 +26,8 @@ def make_childs(node: CutDagNode, tree: CutDag):
     child_sets = []
     for cut in child_cuts:
         child_sets.append(node.cuts.union({cut}))
+    # return childs List
+    child_nodes = []
     # chek if new layer exist. MUTEX
     if not len(node.cuts)+1 in tree.layers.keys():
         # generate child nodes
@@ -49,7 +51,10 @@ def make_childs(node: CutDagNode, tree: CutDag):
             if child_not_done:
                 # add child to parent and add child to list
                 node.childs.append(len(layer_list))
-                layer_list.append(CutDagNode(c))
+                child = CutDagNode(c)
+                layer_list.append(child)
+                child_nodes.append(child)
+    return child_nodes
 
 # generate root node
 # input: Stringfile from Xtb, boolean for making visuals of the cut molecute

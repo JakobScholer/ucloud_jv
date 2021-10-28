@@ -7,7 +7,7 @@ from src.generate_tree import reaction_and_product_to_gml
 class Test(unittest.TestCase):
     # Normal tree
     def test_find_cuts_tree(self):
-        gml, ac, ec = reaction_and_product_to_gml('test/testfiles/stringfile_tree.xyz0000', visualize=True)
+        gml, ac, ec = reaction_and_product_to_gml('test/testfiles/stringfile_tree.xyz0000', visualize=False)
         g = graphGMLString(gml)
         m, lookup = make_cut_molecule(g, ac)
         actual= find_all_cuts(m, set(), lookup, 0)

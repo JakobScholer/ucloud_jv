@@ -34,7 +34,7 @@ def generate_isomers(path: str):
     out_dir = "scratch/isomers"
     if os.path.exists(out_dir):
         os.system(f"rm -r {out_dir}")
-    os.mkdir(out_dir)
+    os.makedirs(out_dir)
 
     with open(path) as f:
         data = json.load(f)
