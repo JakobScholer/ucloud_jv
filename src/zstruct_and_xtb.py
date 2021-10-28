@@ -22,7 +22,7 @@ def prepare_zstruct(combination, molecules, dir_path):
     assert(len(combination) <= 2)
     os.system("rm -r zstruct/scratch")
     os.system("rm zstruct/*.xyz")
-    os.makedirs('zstruct/scratch')
+    os.mkdir('zstruct/scratch')
 
     for i, name in enumerate(combination):
         m = molecules[name]
@@ -34,7 +34,7 @@ def generate_isomers(path: str):
     out_dir = "scratch/isomers"
     if os.path.exists(out_dir):
         os.system(f"rm -r {out_dir}")
-    os.makedirs("scratch/isomers")
+    os.mkdir(out_dir)
 
     with open(path) as f:
         data = json.load(f)
@@ -44,15 +44,15 @@ def generate_isomers(path: str):
     for c in data["combinations"]:
         prepare_zstruct(c, data["molecules"], dir_path)
         offset += run_zstruct(out_dir, offset)
-    os.system("rm -r zstruct/scratch")
-    os.system("rm zstruct/*.xyz")
     return offset
 
 
 def prepare_ssm(isomer_path, i: int):
-    os.system("rm -r ssm/scratch")
-    os.mkdir("ssm/scratch")
     ssm_path = "ssm/scratch"
+    if os.path.exists(ssm_path):
+        os.system(f"rm -r {ssm_path}")
+    os.makedirs(ssm_path, exist_ok=True)
+
     ID = str(i).zfill(4)
     init_fn = f"initial{ID}.xyz"
     iso_fn = f"ISOMERS{ID}"
@@ -68,8 +68,9 @@ def execute_ssm():
 
 def run_ssm(isomer_count: int, offset: int = 0):
     outdir = "scratch/stringfiles"
-    if not os.path.exists(outdir):
-        os.mkdir(outdir)
+    if os.path.exists(outdir):
+        os.system(f"rm -r {outdir}")
+    os.makedirs(outdir, exist_ok=True)
     for i in range(isomer_count):
         isomer_id = i + offset
         prepare_ssm("scratch/isomers", isomer_id)

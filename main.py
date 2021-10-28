@@ -1,4 +1,4 @@
-from os import chdir
+from os import chdir, system
 import sys
 from mod import smiles, graphGMLString
 
@@ -25,6 +25,7 @@ if __name__ == '__main__':
     else:
         g = smiles("C(CCO)CC(CCO)CCO")                       # molecule to test reaction on
         mod_to_xyz(g, to_file=True)             # convert molecule for zstruct to understand it
+        system(f"mv mod_coordinates.xyz blackbox/data")
 
         # run zstruct with molecule.xyz (molecule.frozen is empty for now)
         chdir("blackbox")
@@ -32,7 +33,7 @@ if __name__ == '__main__':
         run_ssm(isomer_count)
         chdir("..")
 
-        gml_string, atom_core, energy_curve = reaction_and_product_to_gml('blackbox/scratch/stringfiles/stringfile.xyz0000', visualize=True)
+        gml_string, atom_core, energy_curve = reaction_and_product_to_gml('blackbox/scratch/stringfiles/stringfile.xyz0067', visualize=True)
         g = graphGMLString(gml_string)
         molecule, lookup_dict = make_cut_molecule(g, atom_core)
         cuts = set()
