@@ -30,8 +30,6 @@ def make_childs(node: CutDagNode, tree: CutDag):
     child_nodes = []
     # chek if new layer exist. MUTEX
     if not len(node.cuts)+1 in tree.layers.keys():
-        # generate child nodes
-        child_nodes = []
         # add all nodes to the list and as childs in parent node
         for c in child_sets:
             node.childs.append(len(child_nodes)) # no -1 is needed, since we do it before adding he child
@@ -39,6 +37,53 @@ def make_childs(node: CutDagNode, tree: CutDag):
         tree.layers[len(node.cuts)+1] = child_nodes
     else: # generate all childs and check if the exist before adding
         layer_list = tree.layers[len(node.cuts)+1]
+        for c in child_sets:
+            child_not_done = True
+            # run over the layer in the tree
+            for layer_node_placement in range(len(layer_list)):
+                if layer_list[layer_node_placement].cuts == c:
+                    # add child node to parent node and go to next child
+                    node.childs.append(layer_node_placement)
+                    child_not_done = False
+                    break
+            if child_not_done:
+                # add child to parent and add child to list
+                node.childs.append(len(layer_list))
+                child = CutDagNode(c)
+                layer_list.append(child)
+                child_nodes.append(child)
+    return child_nodes
+
+# find child cuts and return them
+def make_childs_mp(stringfile, cuts, placement): # stringfile for make cut molecule, cuts for what have already been cut on the molecule, placement contaisn l and p tha are the location in the cut dag being layer and placement
+    # make cut molecule
+    gml_string, atom_core, energy_curve = reaction_and_product_to_gml(stringfile, visualize=visuals)
+    g = graphGMLString(gml_string)
+    molecule, lookup_dict = make_cut_molecule(g, atom_core)
+
+    # find cuts on molecule
+    child_cuts = find_all_cuts(molecule, cuts, lookup_dict, 0)
+    # generate all child cuts
+    child_sets = []
+    for cut in child_cuts:
+        child_sets.append(cuts.union({cut}))
+
+    return (child_sets, placement)
+
+# take childs cuts and insert them as nodes in the cutdag, return a list of tasks
+def insert_childs_mp(childs_sets, cd, placement):
+    child_nodes = []
+    task_list = []
+    node = cd.layers[placement[0]][placement[1]]
+    # chek if new layer exist. MUTEX
+    if not len(node.cuts)+1 in cd.layers.keys():
+        # add all nodes to the list and as childs in parent node
+        for c in child_sets:
+            node.childs.append(len(child_nodes)) # no -1 is needed, since we do it before adding he child
+            child_nodes.append(CutDagNode(c))
+        cd.layers[len(node.cuts)+1] = child_nodes
+    else: # generate all childs and check if the exist before adding
+        layer_list = cd.layers[len(node.cuts)+1]
         for c in child_sets:
             child_not_done = True
             # run over the layer in the tree
