@@ -57,7 +57,7 @@ def make_childs(node: CutDagNode, tree: CutDag):
 # find child cuts and return them
 def make_childs_mp(stringfile, cuts, placement): # stringfile for make cut molecule, cuts for what have already been cut on the molecule, placement contaisn l and p tha are the location in the cut dag being layer and placement
     # make cut molecule
-    gml_string, atom_core, energy_curve = reaction_and_product_to_gml(stringfile, visualize=visuals)
+    gml_string, atom_core, energy_curve = reaction_and_product_to_gml(stringfile, False)
     g = graphGMLString(gml_string)
     molecule, lookup_dict = make_cut_molecule(g, atom_core)
 
@@ -71,7 +71,7 @@ def make_childs_mp(stringfile, cuts, placement): # stringfile for make cut molec
     return (child_sets, placement)
 
 # take childs cuts and insert them as nodes in the cutdag, return a list of tasks
-def insert_childs_mp(stringfile, cd, childs_sets, placement):
+def insert_childs_mp(stringfile, cd, child_sets, placement):
     child_nodes = []
     task_list = []
     node = cd.layers[placement[0]][placement[1]]
@@ -108,8 +108,9 @@ def insert_childs_mp(stringfile, cd, childs_sets, placement):
     if len(child_nodes) > 0:
         tasks = []
         for i in range(len(child_nodes)):
-            tasks.append((make_childs_mp, (stringfile, child_nodes[i].cuts, layer_nr, placement_nr[i])))
-    return tasks
+            tasks.append((make_childs_mp, (stringfile, child_nodes[i].cuts, (layer_nr, placement_nr[i]))))
+        return tasks
+    return []
 
 # generate root node
 # input: Stringfile from Xtb, boolean for making visuals of the cut molecute

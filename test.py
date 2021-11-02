@@ -1,6 +1,6 @@
 import time
 import random
-from src.cut_dag import CutDagNode, CutDag, make_root
+from src.cut_dag import CutDagNode, CutDag, make_childs_mp, insert_childs_mp, make_root
 from multiprocessing import Process, Queue, current_process, freeze_support
 
 #
@@ -12,89 +12,71 @@ def worker(input, output):
         result = func(*args)
         output.put(result)
 
-#
-# Function used to calculate result
-#
-
-def calculate(func, args):
-    result = func(*args)
-    return '%s says that %s%s = %s' % \
-        (current_process().name, func.__name__, args, result)
-
-#
-# Functions referenced by tasks
-#
-
-def mul(a, b, d):
-    time.sleep(0.5*random.random())
-    return a * b
-
-def plus(a, b):
-    time.sleep(0.5*random.random())
-    return a + b
-
-def make_childs(node, cutdag):
-    time.sleep(0.5*random.random())
-    return 1
-
-#
-#
-#
-
-def test():
+def make_cut_dag():
     NUMBER_OF_PROCESSES = 4
 
     # make test cut dag
-    test = 'test/testfiles/stringfile_ring.xyz0000'
+    stringfile = 'test/testfiles/stringfile_ring.xyz0000'
     graph = False
-    cd = make_root(test, graph)
-
-    TASKS1 = [(mul, (i, 7, 9)) for i in range(19)]
-    TASKS2 = [(plus, (i, 8)) for i in range(10)]
+    cd = make_root(stringfile, graph)
 
     # Create queues
     task_queue = Queue()
     done_queue = Queue()
 
-    # Submit tasks
-    for task in TASKS1:
-        task_queue.put(task)
-    print("make task for cd")
+    print("make task for root")
     # add first task
     root = cd.layers[0][0]
-    root_task = (make_childs, (2, 1))
-    #task_queue.put(root_task)
+    root_task = (make_childs_mp, (stringfile, set(), (0,0)))
+    task_queue.put(root_task)
     print("done")
 
     # Start worker processes
     for i in range(NUMBER_OF_PROCESSES):
         Process(target=worker, args=(task_queue, done_queue)).start()
 
-    # Get and print results
-    print('Unordered results:')
-    for i in range(1):
-        print('\t', done_queue.get())
-
     # wait for porcesses to end
     wait_for_end = True
     print("staring wait for it")
     while wait_for_end:
         # make sure the quee is empty before stopping porcesses
-        if done_queue.empty():
+        if done_queue.empty() and task_queue.empty():
             print("sleep time")
             time.sleep(2)
             print("waky waky!")
             if done_queue.empty():
                 wait_for_end = False
-        else:
-            print('\t', done_queue.get())
+        else: # there is childs to add the the cut dag
+            print("whuuee got one bunch of childs")
+            child_infos = done_queue.get() # get info
+            tasks = insert_childs_mp(stringfile, cd, child_infos[0], child_infos[1]) # insert child
+            if len(tasks) > 0:
+                print("added " + str(len(tasks)) + " to the tasks")
+                for t in tasks: # add new tasks to the queue
+                    task_queue.put(t)
+            else:
+                print("no new tasks added")
     print("done waiting for it")
 
     # Tell child processes to stop
     for i in range(NUMBER_OF_PROCESSES):
         task_queue.put('STOP')
 
+    # find root og check op på den
+    print("first test")
+    print(cd.layers[0][0].stringfile)
+    print(cd.layers[0][0].energy)
+    print(cd.layers[0][0].cuts)
+    # Lav børn på root og chek op på dem
+    print("Second test")
+    for node in cd.layers[1]:
+        print(node.cuts)
+    print("Second test")
+    for node in cd.layers[2]:
+        print(node.cuts)
+    # lav børn på børnene :D det skal nok blive magisk
+
 
 if __name__ == '__main__':
     freeze_support()
-    test()
+    make_cut_dag()
