@@ -71,19 +71,23 @@ def make_childs_mp(stringfile, cuts, placement): # stringfile for make cut molec
     return (child_sets, placement)
 
 # take childs cuts and insert them as nodes in the cutdag, return a list of tasks
-def insert_childs_mp(childs_sets, cd, placement):
+def insert_childs_mp(stringfile, cd, childs_sets, placement):
     child_nodes = []
     task_list = []
     node = cd.layers[placement[0]][placement[1]]
-    # chek if new layer exist. MUTEX
-    if not len(node.cuts)+1 in cd.layers.keys():
+    # placement knoewledge for tasks
+    layer_nr = len(node.cuts)+1
+    placement_nr = []
+    # chek if new layer exist
+    if not layer_nr in cd.layers.keys():
         # add all nodes to the list and as childs in parent node
         for c in child_sets:
             node.childs.append(len(child_nodes)) # no -1 is needed, since we do it before adding he child
+            placement_nr.append(len(child_nodes)) # get placements for tasks
             child_nodes.append(CutDagNode(c))
-        cd.layers[len(node.cuts)+1] = child_nodes
+        cd.layers[layer_nr] = child_nodes
     else: # generate all childs and check if the exist before adding
-        layer_list = cd.layers[len(node.cuts)+1]
+        layer_list = cd.layers[layer_nr]
         for c in child_sets:
             child_not_done = True
             # run over the layer in the tree
@@ -92,14 +96,20 @@ def insert_childs_mp(childs_sets, cd, placement):
                     # add child node to parent node and go to next child
                     node.childs.append(layer_node_placement)
                     child_not_done = False
-                    continue
+                    break
             if child_not_done:
                 # add child to parent and add child to list
                 node.childs.append(len(layer_list))
+                placement_nr.append(len(layer_list)) # get placements for tasks
                 child = CutDagNode(c)
                 layer_list.append(child)
                 child_nodes.append(child)
-    return child_nodes
+    # making tasks for processes
+    if len(child_nodes) > 0:
+        tasks = []
+        for i in range(len(child_nodes)):
+            tasks.append((make_childs_mp, (stringfile, child_nodes[i].cuts, layer_nr, placement_nr[i])))
+    return tasks
 
 # generate root node
 # input: Stringfile from Xtb, boolean for making visuals of the cut molecute

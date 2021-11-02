@@ -25,7 +25,7 @@ def calculate(func, args):
 # Functions referenced by tasks
 #
 
-def mul(a, b):
+def mul(a, b, d):
     time.sleep(0.5*random.random())
     return a * b
 
@@ -49,7 +49,7 @@ def test():
     graph = False
     cd = make_root(test, graph)
 
-    TASKS1 = [(mul, (i, 7)) for i in range(19)]
+    TASKS1 = [(mul, (i, 7, 9)) for i in range(19)]
     TASKS2 = [(plus, (i, 8)) for i in range(10)]
 
     # Create queues
