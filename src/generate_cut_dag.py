@@ -118,4 +118,3 @@ def generate_cut_dag_main():
     freeze_support()
     cut_dag = make_cut_dag()
     visualizer(cut_dag)
-
