@@ -181,7 +181,7 @@ def reaction_and_product_to_gml(filename, visualize=False):
         if (src, tar) not in bmap2:
             left_edges.append(f'edge [ source {src - 1} target {tar - 1} label "{ob_bond}"]')
         else:
-            if ob_bond != bmap2[(src, tar)]:
+            if bmap1[(src, tar)] != bmap2[(src, tar)]:
                 if (src - 1) not in atom_core:
                     atom_core.append(src - 1)
                 if (tar - 1) not in atom_core:

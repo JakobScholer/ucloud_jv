@@ -94,29 +94,32 @@ def make_cut(mod_graph, molecule_to_cut, molecules):
     print("--------------før---------------")
     print(mod_graph.getGMLString())
     gml_string = "graph [\n"
+    ordering = []
     for vertex in mod_graph.vertices:
         if vertex.id not in ban_list:
             if vertex.id in replace_list:
                 gml_string += "    node [ id " + str(vertex.id) + " label \"" + "H" + "\" ]\n"
+                ordering.append(vertex.id)
             else:
                 gml_string += "    node [ id " + str(vertex.id) + " label \"" + str(vertex.stringLabel) + "\" ]\n"
+                ordering.append(vertex.id)
     for edge in mod_graph.edges:
         if edge.source.id not in ban_list and edge.target.id not in ban_list:
             gml_string += "    edge [ source " + str(edge.source.id) + " target " + str(
                 edge.target.id) + " label \"" + str(edge.bondType) + "\"]\n"
     print("--------------efter---------------")
     print(gml_string)
-    return gml_string
+    print(ordering)
+    return gml_string, ordering
 
 
 def cut_molecule_main():
-    gml, atom_core, ep = reaction_and_product_to_gml('test/testfiles/stringfile_tree.xyz0000', visualize=False)
+    gml, atom_core, ep = reaction_and_product_to_gml('test/testfiles/stringfile.xyz0143', visualize=True)
     g = graphGMLString(gml)
     m, l = make_cut_molecule(g, atom_core)
     for n in m:
         print("id: " + str(n.id))
         print("bond: " + str(n.children))
     cuts = find_all_cuts(m, set(), l, 0)
-
-
-    make_cut(g, cuts, m)
+    print(cuts)
+    gml, order = make_cut(g, cuts, m)

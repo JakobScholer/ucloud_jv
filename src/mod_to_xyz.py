@@ -80,6 +80,7 @@ def mod_to_xyz(g, to_file=True):
 
 def mod_to_xyz_main():
     g = smiles("CCO")
-    print(mod_to_gml(g))
-    print(g.getGMLString(withCoords=True))
+    print(mod_to_mol(g))
+    #print(mod_to_gml(g))
+    #print(g.getGMLString(withCoords=True))
 
