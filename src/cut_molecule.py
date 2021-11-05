@@ -7,7 +7,7 @@ class MoleculeNode:
         self.children = set()  # A list of ints representing the list placement of the children
         self.root = node_type  # 1 = root, 0 = not root
 
-# core = [[atom ID's],[edge ID's]]
+# core = [atom ID's]
 # g_mod is the graph object from MØD
 def make_cut_molecule(g_mod, core):
     lookup = {}
@@ -83,16 +83,19 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: i
                 new_cuts = new_cuts.union(deeper_cuts)
     return new_cuts
 
-
-def make_cut(mod_graph, molecule_to_cut, molecules):
+# functin to make cuts on molecule and return
+# mod_graph is the mod graph representation
+# molecule_to_cut is the set with cuts
+# molecule is a list of moleculenode class
+def make_cut(mod_graph, cuts, molecule, lookup_dict):
     ban_list = []
     replace_list = []
-    for mc in molecule_to_cut:
-        for c in molecules[mc + 1].children:
-            ban_list.append(c)
-        replace_list.append(mc)
-    print("--------------før---------------")
-    print(mod_graph.getGMLString())
+    for c in cuts:
+        for child in molecule[lookup_dict.get(c)].children:
+            ban_list.append(child)
+        replace_list.append(c)
+    #print("--------------før---------------")
+    #print(mod_graph.getGMLString())
     gml_string = "graph [\n"
     ordering = []
     for vertex in mod_graph.vertices:
@@ -107,9 +110,10 @@ def make_cut(mod_graph, molecule_to_cut, molecules):
         if edge.source.id not in ban_list and edge.target.id not in ban_list:
             gml_string += "    edge [ source " + str(edge.source.id) + " target " + str(
                 edge.target.id) + " label \"" + str(edge.bondType) + "\"]\n"
-    print("--------------efter---------------")
-    print(gml_string)
-    print(ordering)
+    gml_string += "]"
+    #print("--------------efter---------------")
+    #print(gml_string)
+    #print(ordering)
     return gml_string, ordering
 
 

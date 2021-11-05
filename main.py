@@ -8,6 +8,7 @@ from src.generate_tree import generate_tree_main, reaction_and_product_to_gml, r
 from src.mod_to_xyz import mod_to_xyz_main, mod_to_xyz
 from src.cut_dag import cut_dag_main
 from src.zstruct_and_xtb import generate_isomers, run_ssm
+from src.generate_cut_dag import generate_cut_dag_main
 
 
 if __name__ == '__main__':
@@ -22,6 +23,8 @@ if __name__ == '__main__':
             cut_molecule_main()
         elif str(sys.argv[1]) == "cut_dag":
             cut_dag_main()
+        elif str(sys.argv[1]) == "generate_cut_dag":
+            generate_cut_dag_main()
     else:
         g = smiles("C(CCO)CC(CCO)CCO")                       # molecule to test reaction on
         mod_to_xyz(g, to_file=True)             # convert molecule for zstruct to understand it
