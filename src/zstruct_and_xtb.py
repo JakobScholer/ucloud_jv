@@ -1,81 +1,66 @@
-import json
-import os
-import shutil
+from os import system, chdir, makedirs, walk, path
+from shutil import move, copyfile, copytree, rmtree
+from uuid import uuid4
 
 
-def run_zstruct(outdir, offset):
-    os.chdir("zstruct")
-    os.system("./zstruct.exe")
-    _, _, filenames = next(os.walk("scratch"))
+def run_zstruct_and_xtb(xyz_string: str, ordering=None, core=None):
+    if ordering is None:    # ordering is None for the first run of a compound, otherwise a dict
+        ordering = {}
+    if core is None:        # core is None for the first run of a compound, otherwise a list
+        core = []
+    clone_name = str(uuid4().hex)  # unique identifier for folders of this process
+    offset = 0
+    makedirs(f"blackbox/output/{clone_name}/isomers")
+    makedirs(f"blackbox/output/{clone_name}/initial")
+    makedirs(f"blackbox/output/{clone_name}/stringfiles")
+
+    prepare_zstruct(clone_name, xyz_string, ordering, core) # make zstruct clone
+    offset += run_zstruct(clone_name, offset)               # run zstruct clone
+    rmtree(f"blackbox/zstruct_clones/{clone_name}")         # remove zstruct clone
+    run_gsm(clone_name, offset)                             # make gsm clone and run gsm clone
+    rmtree(f"blackbox/gsm_clones/{clone_name}")             # remove gsm clone
+
+
+def run_zstruct(clone_name: str, offset: int):
+    chdir(f"blackbox/zstruct_clones/{clone_name}")  # set current folder to zstruct.exe folder
+    system("./zstruct.exe")                         # run zstruct.exe
+    chdir("../../..")                               # reset current folder to ucloud_jv
+    _, _, filenames = next(walk(f"blackbox/zstruct_clones/{clone_name}/scratch"))
     isomer_count = sum(fn.startswith("ISO") for fn in filenames)
-    os.chdir("..")
 
     for i in range(isomer_count):
         strid = str(i).zfill(4)
-        shutil.move(f"zstruct/scratch/ISOMERS{strid}", f"{outdir}/ISOMERS{str(i+offset).zfill(4)}")
-        shutil.move(f"zstruct/scratch/initial{strid}.xyz", f"{outdir}/initial{str(i+offset).zfill(4)}.xyz")
-
+        move(f"blackbox/zstruct_clones/{clone_name}/scratch/ISOMERS{strid}", f"blackbox/output/{clone_name}/isomers/ISOMERS{str(i+offset).zfill(4)}")
+        move(f"blackbox/zstruct_clones/{clone_name}/scratch/initial{strid}.xyz", f"blackbox/output/{clone_name}/initial/initial{str(i+offset).zfill(4)}.xyz")
     return isomer_count
 
 
-def prepare_zstruct(combination, molecules, dir_path):
-    assert(len(combination) <= 2)
-    os.system("rm -r zstruct/scratch")
-    os.system("rm zstruct/*.xyz")
-    os.mkdir('zstruct/scratch')
-
-    for i, name in enumerate(combination):
-        m = molecules[name]
-        shutil.copy(f"{dir_path}/{m['xyz']}", f"zstruct/react{i+1}.xyz")
-        shutil.copy(f"{dir_path}/{m['frozen']}", f"zstruct/frozen{i+1}.xyz")
+def prepare_zstruct(clone_name: str, xyz_str: str, ordering: dict, core: list):
+    copytree("blackbox/zstruct_clones/original", f"blackbox/zstruct_clones/{clone_name}")  # create clone of zstruct
+    with open(f"blackbox/zstruct_clones/{clone_name}/react{1}.xyz", "w") as f:              # create react file
+        f.write(xyz_str)
+    with open(f"blackbox/zstruct_clones/{clone_name}/frozen{1}.xyz", "a") as f:             # create frozen file
+        for element in core:
+            f.write(str(ordering.get(element)) + "\n")
 
 
-def generate_isomers(path: str):
-    out_dir = "scratch/isomers"
-    if os.path.exists(out_dir):
-        os.system(f"rm -r {out_dir}")
-    os.makedirs(out_dir)
-
-    with open(path) as f:
-        data = json.load(f)
-
-    dir_path = os.path.dirname(path)
-    offset = 0
-    for c in data["combinations"]:
-        prepare_zstruct(c, data["molecules"], dir_path)
-        offset += run_zstruct(out_dir, offset)
-    return offset
-
-
-def prepare_ssm(isomer_path, i: int):
-    ssm_path = "ssm/scratch"
-    if os.path.exists(ssm_path):
-        os.system(f"rm -r {ssm_path}")
-    os.makedirs(ssm_path, exist_ok=True)
-
+def run_gsm_round(clone_name, i: int):
     ID = str(i).zfill(4)
     init_fn = f"initial{ID}.xyz"
     iso_fn = f"ISOMERS{ID}"
-    os.system(f"cp {isomer_path}/{init_fn} {ssm_path}/initial0000.xyz")
-    os.system(f"cp {isomer_path}/{iso_fn} {ssm_path}/ISOMERS0000")
+
+    copyfile(f"blackbox/output/{clone_name}/initial/{init_fn}", f"blackbox/gsm_clones/{clone_name}/scratch/initial0000.xyz")
+    copyfile(f"blackbox/output/{clone_name}/isomers/{iso_fn}", f"blackbox/gsm_clones/{clone_name}/scratch/ISOMERS0000")
+
+    chdir(f"blackbox/gsm_clones/{clone_name}")  # set current folder to gsm.orca folder
+    system("./gsm.orca")                        # run gsm.orca
+    chdir("../../..")                           # reset current folder to ucloud_jv
 
 
-def execute_ssm():
-    os.chdir("ssm")
-    os.system("./gsm.orca")
-    os.chdir("..")
-
-
-def run_ssm(isomer_count: int, offset: int = 0):
-    outdir = "scratch/stringfiles"
-    if os.path.exists(outdir):
-        os.system(f"rm -r {outdir}")
-    os.makedirs(outdir, exist_ok=True)
-    for i in range(isomer_count):
-        isomer_id = i + offset
-        prepare_ssm("scratch/isomers", isomer_id)
-        execute_ssm()
-        if os.path.exists("ssm/stringfile.xyz0000"):
-            os.system(f"mv ssm/stringfile.xyz0000 {outdir}/stringfile.xyz{str(isomer_id).zfill(4)}")
-        if os.path.exists("ssm/scratch/tsq0000.xyz"):
-            os.system(f"mv ssm/scratch/tsq0000.xyz {outdir}/tsq.xyz{str(isomer_id).zfill(4)}")
+def run_gsm(clone_name: str, isomer_count: int):
+    copytree("blackbox/gsm_clones/original", f"blackbox/gsm_clones/{clone_name}")   # create clone of gsm
+    for isomer_id in range(isomer_count):                                           # iterate over all isomers/initial pairs
+        run_gsm_round(clone_name, isomer_id)                                        # compute stringfile for pair
+        if path.exists(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000"):     # move stringfile to output if it was made
+            move(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000",
+                 f"blackbox/output/{clone_name}/stringfiles/stringfile.xyz{str(isomer_id).zfill(4)}")

@@ -7,13 +7,7 @@
 # Editor-based HTTP Client requests
 /httpRequests/
 /.idea
-
-/nikolai
 __pycache__/
-/ZStruct
-/xtb
-/scratch
-/blackbox/scratch
-/blackbox/ssm/scratch
-/blackbox/zstruct/scratch
-/blackbox/nikolai
+
+/blackbox/output/
+/blackbox/shit/

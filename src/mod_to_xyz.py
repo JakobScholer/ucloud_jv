@@ -3,7 +3,7 @@ from rdkit.Chem import MolFromMolFile
 from rdkit.Chem import rdDepictor
 from rdkit.Chem import MolFromMolBlock
 from rdkit.Chem.AllChem import EmbedMolecule
-from rdkit.Chem.rdmolfiles import MolToXYZFile
+from rdkit.Chem.rdmolfiles import MolToXYZFile, MolToXYZBlock
 
 
 def mod_to_mol(g):
@@ -75,13 +75,17 @@ def mod_to_xyz(g, to_file=True):
 
     # save to file
     if to_file:
-        MolToXYZFile(mol, "mod_coordinates.xyz")
+        MolToXYZFile(mol, "mod_coordinates.xyz")    # xyz file
     else:
-        return mol
+        return MolToXYZBlock(mol)                   # xyz string
 
 
 def mod_to_xyz_main():
     g = smiles("CCO")
-    print(mod_to_mol(g))
+    print(g.getGMLString(True))
+    #print(mod_to_mol(g))
     #print(mod_to_gml(g))
     #print(g.getGMLString(withCoords=True))
+    #m = mod_to_xyz(g, to_file=False)
+    #print("OUT")
+    #print(m)

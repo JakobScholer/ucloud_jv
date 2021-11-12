@@ -97,15 +97,16 @@ def make_cut(mod_graph, cuts, molecule, lookup_dict):
     #print("--------------før---------------")
     #print(mod_graph.getGMLString())
     gml_string = "graph [\n"
-    ordering = []
+    ordering = {}
+    counter = 0
     for vertex in mod_graph.vertices:
         if vertex.id not in ban_list:
             if vertex.id in replace_list:
                 gml_string += "    node [ id " + str(vertex.id) + " label \"" + "H" + "\" ]\n"
-                ordering.append(vertex.id)
             else:
                 gml_string += "    node [ id " + str(vertex.id) + " label \"" + str(vertex.stringLabel) + "\" ]\n"
-                ordering.append(vertex.id)
+            ordering[vertex.id] = counter
+        counter += 1
     for edge in mod_graph.edges:
         if edge.source.id not in ban_list and edge.target.id not in ban_list:
             gml_string += "    edge [ source " + str(edge.source.id) + " target " + str(
