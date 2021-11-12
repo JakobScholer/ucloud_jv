@@ -19,8 +19,9 @@ def worker(input, output):
         output.put(result)
 
 # prepare all data and calls blackbox, then return data
-def blackbox(stringfile, cuts, placement):
+def blackbox(stringfile, isomer, cuts, placement):
     # make cut molecules
+    print(cuts)
     gml_string, atom_core, energy_curve = reaction_and_product_to_gml(stringfile, False)
     g = graphGMLString(gml_string)
     molecule, lookup_dict = make_cut_molecule(g, atom_core)
@@ -28,13 +29,17 @@ def blackbox(stringfile, cuts, placement):
     gml_string, order = make_cut(g, cuts, molecule, lookup_dict)
     g = graphGMLString(gml_string)
     # transform GML file into xyz
-    xyz_file = mod_to_xyz(g, False)
+    xyz = mod_to_xyz(g, False)
     # call true black box
-    data = test_black_box(xyz, order, atom_core)
+    data = test_black_box(xyz, isomer, order, atom_core)
     # return data
     return [data[0], data[1], placement]
 
-def test_black_box(xyz, order, core):
+def test_black_box(xyz, isomer, order, core):
+    print(xyz)
+    print(isomer)
+    print(order)
+    print(core)
     time.sleep(5)
     return ("random_stringfile", [1,2,3,4,5,6,7,8,9,10])
 
@@ -42,7 +47,9 @@ def make_cut_dag():
     NUMBER_OF_PROCESSES = 4
 
     # make test cut dag
-    stringfile = 'test/testfiles/stringfile_ring.xyz0000'
+    stringfile = 'xyz_test_files/GCD_test_files/stringfile.xyz0003'
+    with open("xyz_test_files/GCD_test_files/ISOMERS0003", "r") as f:
+        isomer = f.read()
     graph = False
     cd = make_root(stringfile, graph)
 
@@ -89,8 +96,9 @@ def make_cut_dag():
     tasks_bx = []
     task_counter = len(tasks_bx)
     for k in cd.layers.keys():
-        for i in range(len(cd.layers[k])):
-            tasks_bx.append((blackbox, (stringfile, cd.layers[k][i].cuts, (k,i))))
+        if k > 0:
+            for i in range(len(cd.layers[k])):
+                tasks_bx.append((blackbox, (stringfile, isomer, cd.layers[k][i].cuts, (k,i))))
 
     # make all tasks for the blackbox
     while len(tasks_bx) > 0: #there is still tasks to perform
@@ -196,4 +204,4 @@ def visualizer(cut_dag):
 def generate_cut_dag_main():
     freeze_support()
     cut_dag = make_cut_dag()
-    visualizer(cut_dag)
+    #visualizer(cut_dag)

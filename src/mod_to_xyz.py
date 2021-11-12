@@ -67,6 +67,8 @@ def mod_to_mol(g):
 def mod_to_xyz(g, to_file=True):
     mol_string = mod_to_mol(g)
 
+    print(g.smiles)
+
     mol = MolFromMolBlock(mol_string, removeHs=False)       # Convert to rdkit mol format
     rdDepictor.Compute2DCoords(mol)     # generate 2d coordinates
     EmbedMolecule(mol, randomSeed=0xf00d)   # generate 3d coordinates
@@ -83,4 +85,3 @@ def mod_to_xyz_main():
     print(mod_to_mol(g))
     #print(mod_to_gml(g))
     #print(g.getGMLString(withCoords=True))
-
