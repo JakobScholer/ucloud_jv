@@ -4,6 +4,7 @@ from src.root_mean_square import root_mean_square
 from src.mod_to_xyz import mod_to_xyz
 from src.cut_molecule import make_cut, make_cut_molecule
 from src.generate_tree import reaction_and_product_to_gml
+from src.zstruct_and_xtb import generate_isomers
 from mod import *
 from igraph import *
 import plotly.graph_objects as go
@@ -30,7 +31,7 @@ def blackbox(stringfile, cuts, placement):
     # transform GML file into xyz
     xyz_file = mod_to_xyz(g, False)
     # call true black box
-    data = test_black_box(xyz, order, atom_core)
+    data = generate_isomers(xyz, order, atom_core)
     # return data
     return [data[0], data[1], placement]
 

@@ -7,7 +7,7 @@ from src.cut_molecule import cut_molecule_main, make_cut_molecule, find_all_cuts
 from src.generate_tree import generate_tree_main, reaction_and_product_to_gml, read_energy_profiles
 from src.mod_to_xyz import mod_to_xyz_main, mod_to_xyz
 from src.cut_dag import cut_dag_main
-from src.zstruct_and_xtb import generate_isomers, run_ssm
+from src.zstruct_and_xtb import run_zstruct_and_xtb
 from src.generate_cut_dag import generate_cut_dag_main
 
 
@@ -27,14 +27,13 @@ if __name__ == '__main__':
             generate_cut_dag_main()
     else:
         g = smiles("C(CCO)CC(CCO)CCO")                       # molecule to test reaction on
-        mod_to_xyz(g, to_file=True)             # convert molecule for zstruct to understand it
-        system(f"mv mod_coordinates.xyz blackbox/data")
-
+        xyz_string = mod_to_xyz(g, to_file=False)             # convert molecule for zstruct to understand it
+        #system(f"mv mod_coordinates.xyz blackbox/data")
+        print("STARTING BLACKBOX")
         # run zstruct with molecule.xyz (molecule.frozen is empty for now)
-        chdir("blackbox")
-        isomer_count = generate_isomers("data/main_example.json")
-        run_ssm(isomer_count)
-        chdir("..")
+        #chdir("blackbox")
+        run_zstruct_and_xtb(xyz_string)
+        #chdir("..")
 
         gml_string, atom_core, energy_curve = reaction_and_product_to_gml('blackbox/scratch/stringfiles/stringfile.xyz0067', visualize=True)
         g = graphGMLString(gml_string)
