@@ -11,45 +11,19 @@ class MoleculeNode:
 # g_mod is the graph object from MØD
 def make_cut_molecule(g_mod, core):
     lookup = {}
-    # insert core
     for c in core:
         lookup[c] = 0
     cut_molecule = [MoleculeNode(core, 1)]
-
-    # Find all double bonds and insert the atoms together
-    big_nodes = core # all the nodes with more than one id
-    for e in g_mod.edges:
-        if e.bondType == "-": # FIX #######################################
-            # check if part of a big node
-            if e.source.id in big_nodes and not e.target.id in big_nodes: # source is in big nodes
-                # find source id i moleculet
-                # tilføj id fra target til den node
-                derp derp
-            elif e.target.id in big_nodes and not e.source.id in big_nodes: # target is in big nodes
-                derp derp
-            elif e.target.id in big_nodes and e.source.id in big_nodes: # both part of a big node
-                # stort problem. alt skal updates, da der bliver fjernet en node
-                # lav ny node
-                # fjern de gamle
-                # update hele moleculet
-                derp derp
-            else: # neither is part of a big node. then make a new one
-                lookup[e.source.id] = len(cut_molecule)
-                lookup[e.target.id] = len(cut_molecule)
-                cut_molecule.append(MoleculeNode(set((e.source.id,e.target.id)), 0))
-                big_nodes.add(e.source.id)
-                big_nodes.add(e.target.id)
-
     # insert all nodes
     for v in g_mod.vertices:
-        if v.id not in big_nodes:
+        if v.id not in core:
             lookup[v.id] = len(cut_molecule)
             cut_molecule.append(MoleculeNode([v.id], 0))
-    # remove internal big node edges
+    # remove internal core edges
     edges = []
     for e in g_mod.edges:
         # only add edge if its not in the core
-        if not e.source.id in big_nodes or not e.target.id in big_nodes:
+        if not e.source.id in core or not e.target.id in core:
             edges.append(e)
     # add all edges missing one child layer at the time
     parent_list = cut_molecule[0].id
@@ -123,15 +97,16 @@ def make_cut(mod_graph, cuts, molecule, lookup_dict):
     #print("--------------før---------------")
     #print(mod_graph.getGMLString())
     gml_string = "graph [\n"
-    ordering = []
+    ordering = {}
+    counter = 0
     for vertex in mod_graph.vertices:
         if vertex.id not in ban_list:
             if vertex.id in replace_list:
                 gml_string += "    node [ id " + str(vertex.id) + " label \"" + "H" + "\" ]\n"
-                ordering.append(vertex.id)
             else:
                 gml_string += "    node [ id " + str(vertex.id) + " label \"" + str(vertex.stringLabel) + "\" ]\n"
-                ordering.append(vertex.id)
+            ordering[vertex.id] = counter
+        counter += 1
     for edge in mod_graph.edges:
         if edge.source.id not in ban_list and edge.target.id not in ban_list:
             gml_string += "    edge [ source " + str(edge.source.id) + " target " + str(

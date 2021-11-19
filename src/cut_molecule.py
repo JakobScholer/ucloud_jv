@@ -1,130 +1,230 @@
-from mod import *
-from src.generate_tree import reaction_and_product_to_gml, fig_plot
+from rdkit.Chem import MolFromSmiles
+from rdkit.Chem import AddHs
+from rdkit.Chem import rdmolops
+from rdkit.Chem import rdDepictor
+from rdkit.Chem import GetSymmSSSR
+from rdkit.Chem import Draw
+from rdkit.Chem.AllChem import Compute2DCoords
 
 class MoleculeNode:
     def __init__(self, molecule_id, node_type):
-        self.id = molecule_id  # List of atom ID's
+        self.id = molecule_id  #set of atom ID's
         self.children = set()  # A list of ints representing the list placement of the children
         self.root = node_type  # 1 = root, 0 = not root
 
-# core = [atom ID's]
-# g_mod is the graph object from MØD
-def make_cut_molecule(g_mod, core):
-    lookup = {}
-    for c in core:
-        lookup[c] = 0
-    cut_molecule = [MoleculeNode(core, 1)]
-    # insert all nodes
-    for v in g_mod.vertices:
-        if v.id not in core:
-            lookup[v.id] = len(cut_molecule)
-            cut_molecule.append(MoleculeNode([v.id], 0))
-    # remove internal core edges
-    edges = []
-    for e in g_mod.edges:
-        # only add edge if its not in the core
-        if not e.source.id in core or not e.target.id in core:
-            edges.append(e)
-    # add all edges missing one child layer at the time
+# core = set(atom ID's) a set of ints
+# rdk_mol is the molecule object from RDKit
+def make_cut_molecule(rdk_mol, core):
+    # for handling of bignodes
+    def dig_node_update(b_nodes, look_up, atom_list, data):
+        intersection = data.intersection(atom_list) # all atoms that are already in a big node
+        if not intersection == set(): # If atoms are shared, merge all possbile groups and update everything
+            # for each intersected atom. find all the big nodes
+            big_nodes_placement = set()
+            for atom in intersection:
+                big_nodes_placement.add(look_up.get(atom))
+            # combine the full set
+            new_big_node = data
+            for p in big_nodes_placement:
+                new_big_node = new_big_node.union(b_nodes[p])
+                b_nodes.pop(p)    # remove all big nodes, pointed to by the intersect
+            # for each atom, update and add the lookup dict for big nodes
+            pos = len(b_nodes)
+            for atom in new_big_node:
+                look_up[atom] = pos
+            # add the new big node
+            b_nodes.append(new_big_node)
+        else: # complete new big node
+            # for each atom, add lockup dict for big nodes.
+            pos = len(b_nodes)
+            for atom in data:
+                look_up[atom] = pos
+            # insert the ring as a set in big nodes
+            b_nodes.append(data)
+
+        for atom in data: # update the atoms_in_big_nodes
+            atom_list.add(atom)
+
+    lookup = {} # look up dict
+    cut_molecule = [] # The "atom" list for the cut molecule
+    ### Find all double bonds, triple adn rings and insert the atoms together ###
+    big_nodes = [core.copy()] # all the nodes with more than one id
+    big_nodes_look_up = {} # atom maps to which big node its in
+    atoms_in_big_nodes = core.copy() # all atoms in a set, which is in the big node
+
+    # for each atom in core add to lookup dict
+    for atom in core:
+        big_nodes_look_up[atom] = 0
+
+    # find alle rings first, and add them as big nodes.
+    rings = GetSymmSSSR(rdk_mol)
+    for r in rings:
+        data = set()
+        for atom in r:
+            data.add(int(atom))
+        dig_node_update(big_nodes, big_nodes_look_up, atoms_in_big_nodes, data)
+
+    # for each bond that is not a single bond. make a big node or add to already existing node
+    bonds = []
+    for bond in mol.GetBonds(): # find all bonds that are not single, and make a big node update
+        start_atom = int(bond.GetBeginAtomIdx())
+        end_atom = int(bond.GetEndAtomIdx())
+        if not big_nodes_look_up.get(start_atom) == big_nodes_look_up.get(end_atom) or (big_nodes_look_up.get(end_atom) == None and big_nodes_look_up.get(start_atom) == None): # Not in the same big node or both not in any bignodes
+            if not str(bond.GetBondType()) == "SINGLE": # make a big node if not a single bond
+                dig_node_update(big_nodes, big_nodes_look_up, atoms_in_big_nodes, set((start_atom , end_atom)))
+            else:
+                bonds.append(bond) # get the bonds that are not internal in a big node, to reduce later iteration over bonds
+
+    # add all nodes to the cut molecule, based on big nodes and not big nodes
+    node_holder = []
+    for node in big_nodes:
+        if not node.intersection(core) == set(): # its the core
+            # add the core to the molecule and insert it on place zero
+            for atom in node:
+                lookup[atom] = 0
+            cut_molecule.append(MoleculeNode(node, 1))
+        else: # not the core
+            # add the node to the placeholder for now, and add the look_up dict with a plus one. Since the core is the first node always
+            for atom in node:
+                lookup[atom] = len(node_holder) + 1
+            node_holder.append(MoleculeNode(node, 0))
+    # concat the to list of nodes to complete the cut moleucle, with the core on place zero
+    cut_molecule = cut_molecule + node_holder
+
+    # add all none big node atom to the cut molecule
+    for atom in mol.GetAtoms():
+        if not atom.GetIdx() in atoms_in_big_nodes: # the atom its not part of any big_node
+            lookup[int(atom.GetIdx())] = len(cut_molecule)
+            cut_molecule.append(MoleculeNode({int(atom.GetIdx())}, 0))
+
+    # add all edges missing. One child layer at the time
     parent_list = cut_molecule[0].id
     while len(parent_list) > 0:
         # list of edges to work with
-        new_parent = []
-        new_edges = edges.copy()
+        new_parent = set()
+        new_bonds = bonds.copy()
         # loop over every edge and parent to find matches
-        for e in edges:
+        for b in bonds:
             for p in parent_list:
                 # check if a edge belongs to a parent
-                if e.source.id == p:
-                    cut_molecule[lookup.get(p)].children.add(e.target.id)
-                    new_parent.append(e.target.id)
-                    new_edges.remove(e)
+                if b.GetBeginAtomIdx() == p:
+                    cut_molecule[lookup.get(p)].children.add(int(b.GetEndAtomIdx()))
+                    if not big_nodes_look_up.get(int(b.GetEndAtomIdx())) == None:
+                        for atom in big_nodes[big_nodes_look_up.get(int(b.GetEndAtomIdx()))]:
+                            new_parent.add(atom)
+                    else:
+                        new_parent.add(int(b.GetEndAtomIdx()))
+                    new_bonds.remove(b)
                     break
-                elif e.target.id == p:
-                    cut_molecule[lookup.get(p)].children.add(e.source.id)
-                    new_parent.append(e.source.id)
-                    new_edges.remove(e)
+                elif b.GetEndAtomIdx() == p:
+                    cut_molecule[lookup.get(p)].children.add(int(b.GetBeginAtomIdx()))
+                    if not big_nodes_look_up.get(int(b.GetBeginAtomIdx())) == None:
+                        for atom in big_nodes[big_nodes_look_up.get(int(b.GetBeginAtomIdx()))]:
+                            new_parent.add(atom)
+                    else:
+                        new_parent.add(int(b.GetBeginAtomIdx()))
+                    new_bonds.remove(b)
                     break
         parent_list = new_parent
-        edges = new_edges
+        bonds = new_bonds
     return cut_molecule, lookup
 
 # cut_molecule is the mocule to find cuts on
-# Cuts is a set for all cuts already performed
+# Cuts is a set for all cuts already performed, this must include all atom ids even if part of a big node, hence flatten the list
 # Lookup is a dict, for lookup placement with ids in the cut_molecule
 # node is always 0, since its the placement of the root. This is due to the recursive nature of the function
-def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: int):
+def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, lookup: dict):
+    # if node has no children return empty cuts list. This case should only happen if all atoms is the core
+    all_childs_are_cut = True
+    for child in cut_molecule[0].children: # check if the childs of the core is already cut
+        if not child in cuts: # if any child is nok cut, break and search for a cut
+            all_childs_are_cut = False
+            break
+    if all_childs_are_cut: # nothing to cut, return empty set
+        return set()
+    else: # else find cuts return set with possible cuts
+        return cut_search(cut_molecule, cuts, lookup, 0)
+
+def cut_search(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: int):
     # Check if node is a leaf based on different attributes
-    def is_cut(nod, none_leafs):
+    def is_cut(node, none_leafs):
         cut_check = True
-        for child in nod.children:
+        for child in node.children:
             # if child has no childs or have been cut before.
-            if len(cut_molecule[lookup.get(child)].children) > 0 and child not in cuts:
+            child_node = cut_molecule[lookup.get(child)]
+            if len(child_node.children) > 0 and child not in cuts: # ordinary leaf
+                cut_check = False
+                none_leafs.append(child)
+            elif len(child_node.children) == 0 and child not in cuts and len(child_node.id) > 1: # check if leaf is a big node
                 cut_check = False
                 none_leafs.append(child)
         return cut_check
 
-    # if node has no children return empty cuts list. This case should only happen if all atoms is the core
-    if not cut_molecule[node].children:
-        return set()
-
     # check if possible cut
     none_leaf_childs = []
-    new_cuts = set()
+    new_cuts = []
     if is_cut(cut_molecule[node], none_leaf_childs):
         # if not root add cut
         if not cut_molecule[node].root:
-            new_cuts.add(cut_molecule[node].id[0])
+            new_cuts.append(cut_molecule[node].id)
     # if not go over childs
     else:
         for c in none_leaf_childs:
-            deeper_cuts = find_all_cuts(cut_molecule, cuts, lookup, lookup.get(c))
+            deeper_cuts = cut_search(cut_molecule, cuts, lookup, lookup.get(c))
             if len(deeper_cuts) > 0:
-                new_cuts = new_cuts.union(deeper_cuts)
+                new_cuts = new_cuts + deeper_cuts
     return new_cuts
 
-# functin to make cuts on molecule and return
-# mod_graph is the mod graph representation
-# molecule_to_cut is the set with cuts
-# molecule is a list of moleculenode class
-def make_cut(mod_graph, cuts, molecule, lookup_dict):
-    ban_list = []
-    replace_list = []
-    for c in cuts:
-        for child in molecule[lookup_dict.get(c)].children:
-            ban_list.append(child)
-        replace_list.append(c)
-    #print("--------------før---------------")
-    #print(mod_graph.getGMLString())
-    gml_string = "graph [\n"
-    ordering = {}
-    counter = 0
-    for vertex in mod_graph.vertices:
-        if vertex.id not in ban_list:
-            if vertex.id in replace_list:
-                gml_string += "    node [ id " + str(vertex.id) + " label \"" + "H" + "\" ]\n"
-            else:
-                gml_string += "    node [ id " + str(vertex.id) + " label \"" + str(vertex.stringLabel) + "\" ]\n"
-            ordering[vertex.id] = counter
-        counter += 1
-    for edge in mod_graph.edges:
-        if edge.source.id not in ban_list and edge.target.id not in ban_list:
-            gml_string += "    edge [ source " + str(edge.source.id) + " target " + str(
-                edge.target.id) + " label \"" + str(edge.bondType) + "\"]\n"
-    gml_string += "]"
-    #print("--------------efter---------------")
-    #print(gml_string)
-    #print(ordering)
-    return gml_string, ordering
 
 
-def cut_molecule_main():
-    gml, atom_core, ep = reaction_and_product_to_gml('test/testfiles/stringfile.xyz0143', visualize=True)
-    g = graphGMLString(gml)
-    m, l = make_cut_molecule(g, atom_core)
-    for n in m:
-        print("id: " + str(n.id))
-        print("bond: " + str(n.children))
-    cuts = find_all_cuts(m, set(), l, 0)
-    print(cuts)
-    gml, order = make_cut(g, cuts, m)
+
+if __name__ == '__main__':
+    #mol = MolFromSmiles('C1=CC=CN=C1')
+    mol = MolFromSmiles('O=N/C(=N\O)[S+](Oc1nnc(O)nn1)Oc2nnnc(O)n2')
+    #mol = MolFromSmiles('C#CC=CC')
+    print("ATOM NUMBERS før h:")
+    print(mol.GetNumAtoms())
+
+    mol = AddHs(mol)
+    print("ATOM NUMBERS efter h:")
+    print(mol.GetNumAtoms())
+
+    rdmolops.Kekulize(mol) # removes the whole aromatic ring thing?
+
+    print("ATOM NUMBER AND LETTERs")
+    for atom in mol.GetAtoms():
+        print("ID " + str(atom.GetIdx()))
+        print(str(atom.GetAtomicNum()) + " " + str(atom.GetSymbol()))
+
+    print("BONDS")
+    for bond in mol.GetBonds():
+        print(str(bond.GetBeginAtomIdx()) + " - " + str(bond.GetEndAtomIdx()) + " with type " + str(bond.GetBondType()))
+
+    print("GET RINGS!")
+    ssr = GetSymmSSSR(mol)
+
+    atoms_in_big_nodes = set()
+
+    for r in ssr:
+        derp = set(r)
+        print(derp)
+
+    cut_molecule, lookup = make_cut_molecule(mol, {5})
+    for m in cut_molecule:
+        print("THE ATOMS " + str(m.id))
+        print("         bonds to: " + str(m.children))
+
+    print("find cuts!")
+    cuts = find_all_cuts(cut_molecule, {0,1}, lookup)
+    print("cuts: " + str({0,1}) + " new cuts " + str(cuts))
+    cuts = find_all_cuts(cut_molecule, {4}, lookup)
+    print("cuts: " + str({4}) + " new cuts " + str(cuts))
+    cuts = find_all_cuts(cut_molecule, {11}, lookup)
+    print("cuts: " + str({11}) + " new cuts " + str(cuts))
+    cuts = find_all_cuts(cut_molecule, {20}, lookup)
+    print("cuts: " + str({20}) + " new cuts " + str(cuts))
+    cuts = find_all_cuts(cut_molecule, set((0,1,4,11,20)), lookup)
+    print("cuts: " + str(set((0,1,4,11,20))) + " new cuts " + str(cuts))
+
+    Compute2DCoords(mol)
+    #Draw.MolToFile(mol,'derp.png')
