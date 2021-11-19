@@ -1,14 +1,13 @@
-from os import chdir, system
 import sys
 from mod import smiles, graphGMLString
-
 from src.root_mean_square import root_mean_square
 from src.cut_molecule import cut_molecule_main, make_cut_molecule, find_all_cuts, make_cut
 from src.generate_tree import generate_tree_main, reaction_and_product_to_gml, read_energy_profiles
 from src.mod_to_xyz import mod_to_xyz_main, mod_to_xyz
 from src.cut_dag import cut_dag_main
-from src.zstruct_and_xtb import run_zstruct_and_xtb
+from src.zstruct_and_gsm import run_zstruct_and_gsm
 from src.generate_cut_dag import generate_cut_dag_main
+import re
 
 
 if __name__ == '__main__':
@@ -26,14 +25,9 @@ if __name__ == '__main__':
         elif str(sys.argv[1]) == "generate_cut_dag":
             generate_cut_dag_main()
     else:
-        g = smiles("C(CCO)CC(CCO)CCO")                       # molecule to test reaction on
+        g = smiles("CCO")                       # molecule to test reaction on
         xyz_string = mod_to_xyz(g, to_file=False)             # convert molecule for zstruct to understand it
-        #system(f"mv mod_coordinates.xyz blackbox/data")
-        print("STARTING BLACKBOX")
-        # run zstruct with molecule.xyz (molecule.frozen is empty for now)
-        #chdir("blackbox")
-        run_zstruct_and_xtb(xyz_string)
-        #chdir("..")
+        run_zstruct_and_gsm(xyz_string)
 
         gml_string, atom_core, energy_curve = reaction_and_product_to_gml('blackbox/scratch/stringfiles/stringfile.xyz0067', visualize=True)
         g = graphGMLString(gml_string)

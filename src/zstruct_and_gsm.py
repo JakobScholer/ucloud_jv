@@ -1,13 +1,16 @@
-from os import system, chdir, makedirs, walk, path
+from os import system, chdir, makedirs, walk, path, listdir
 from shutil import move, copyfile, copytree, rmtree
 from uuid import uuid4
+from re import sub
 
 
-def run_zstruct_and_xtb(xyz_string: str, ordering=None, core=None):
+def run_zstruct_and_gsm(xyz_string: str, ordering=None, core=None, isomers_str=None):
     if ordering is None:    # ordering is None for the first run of a compound, otherwise a dict
         ordering = {}
     if core is None:        # core is None for the first run of a compound, otherwise a list
         core = []
+    if isomers_str is not None:
+        isomers_str = sub(r'\d+', lambda m: ordering.get(m.group(), m.group()), isomers_str)    # replace numbers with dict mapping
     clone_name = str(uuid4().hex)  # unique identifier for folders of this process
     offset = 0
     makedirs(f"blackbox/output/{clone_name}/isomers")
@@ -17,8 +20,10 @@ def run_zstruct_and_xtb(xyz_string: str, ordering=None, core=None):
     prepare_zstruct(clone_name, xyz_string, ordering, core) # make zstruct clone
     offset += run_zstruct(clone_name, offset)               # run zstruct clone
     rmtree(f"blackbox/zstruct_clones/{clone_name}")         # remove zstruct clone
-    run_gsm(clone_name, offset)                             # make gsm clone and run gsm clone
+    run_gsm(clone_name, offset, isomers_str)                # make gsm clone and run gsm clone
     rmtree(f"blackbox/gsm_clones/{clone_name}")             # remove gsm clone
+
+    return listdir(f"blackbox/output/{clone_name}/stringfiles") # returns list of all generated stringfiles
 
 
 def run_zstruct(clone_name: str, offset: int):
@@ -44,23 +49,25 @@ def prepare_zstruct(clone_name: str, xyz_str: str, ordering: dict, core: list):
             f.write(str(ordering.get(element)) + "\n")
 
 
-def run_gsm_round(clone_name, i: int):
+def run_gsm_round(clone_name, i: int, isomers_str: str):
     ID = str(i).zfill(4)
     init_fn = f"initial{ID}.xyz"
     iso_fn = f"ISOMERS{ID}"
+    with open(f"blackbox/output/{clone_name}/initial/{init_fn}", "r") as f:
+        new_isomers_str = f.read()
+    if isomers_str is None or new_isomers_str == isomers_str:               # only run gsm on reaction matching pattern
+        copyfile(f"blackbox/output/{clone_name}/initial/{init_fn}", f"blackbox/gsm_clones/{clone_name}/scratch/initial0000.xyz")
+        copyfile(f"blackbox/output/{clone_name}/isomers/{iso_fn}", f"blackbox/gsm_clones/{clone_name}/scratch/ISOMERS0000")
 
-    copyfile(f"blackbox/output/{clone_name}/initial/{init_fn}", f"blackbox/gsm_clones/{clone_name}/scratch/initial0000.xyz")
-    copyfile(f"blackbox/output/{clone_name}/isomers/{iso_fn}", f"blackbox/gsm_clones/{clone_name}/scratch/ISOMERS0000")
-
-    chdir(f"blackbox/gsm_clones/{clone_name}")  # set current folder to gsm.orca folder
-    system("./gsm.orca")                        # run gsm.orca
-    chdir("../../..")                           # reset current folder to ucloud_jv
+        chdir(f"blackbox/gsm_clones/{clone_name}")  # set current folder to gsm.orca folder
+        system("./gsm.orca")                        # run gsm.orca
+        chdir("../../..")                           # reset current folder to ucloud_jv
 
 
-def run_gsm(clone_name: str, isomer_count: int):
+def run_gsm(clone_name: str, isomer_count: int, isomers_str: str):
     copytree("blackbox/gsm_clones/original", f"blackbox/gsm_clones/{clone_name}")   # create clone of gsm
     for isomer_id in range(isomer_count):                                           # iterate over all isomers/initial pairs
-        run_gsm_round(clone_name, isomer_id)                                        # compute stringfile for pair
+        run_gsm_round(clone_name, isomer_id, isomers_str)                           # compute stringfile for pair
         if path.exists(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000"):     # move stringfile to output if it was made
             move(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000",
                  f"blackbox/output/{clone_name}/stringfiles/stringfile.xyz{str(isomer_id).zfill(4)}")

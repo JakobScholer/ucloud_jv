@@ -8,7 +8,7 @@ from src.generate_tree import generate_tree_main, reaction_and_product_to_gml, r
 from src.mod_to_xyz import mod_to_xyz_main, mod_to_xyz
 from src.cut_dag import cut_dag_main, make_root
 from src.generate_cut_dag import generate_cut_dag_main
-from src.zstruct_and_xtb import generate_isomers, run_ssm
+from src.zstruct_and_gsm import generate_isomers, run_ssm
 
 
 if __name__ == '__main__':
