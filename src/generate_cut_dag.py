@@ -28,7 +28,7 @@ def blackbox(stringfile, isomer, cuts, placement):
     xyz_file, order = make_cut(rdk_mol, cuts, molecule, lookup_dict)
     # call true black box
     print("ORDER: " + str(order))
-    data = run_zstruct_and_gsm(xyz_file, isomer, order, atom_core)
+    data = run_zstruct_and_gsm(xyz_file, order, atom_core, isomer)
     # return data
     print("DATA#############################ss")
     print(data[0])

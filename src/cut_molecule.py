@@ -174,17 +174,17 @@ def cut_search(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: int)
                 new_cuts = new_cuts + deeper_cuts
     return new_cuts
 
-# molecule is a list of moleculenode class
+
 def make_cut(mol, cuts, molecule, lookup_dict):
+    """"takes an rdkit mol, the ids of atoms to cut off, the molecule object and lookup dictionary, returns xyz string"""
+
+    # based on cuts to be performed decides which atoms are removed and which are replaced
     ban_list = []
     for c in cuts:
         for child in molecule[lookup_dict.get(c)].children:
             ban_list.append(child)
     replace_list = [x for x in cuts if x not in ban_list]
-
-
-    print(mol.GetBonds()[0].GetBeginAtom().GetIdx())
-    print(mol.GetAtoms()[1].GetSymbol())
+    # perform atom replacement and removal
     ordering = {}
     counter = 0
     atoms_to_compute_coordinates = []
@@ -193,16 +193,17 @@ def make_cut(mol, cuts, molecule, lookup_dict):
             if atom.GetIdx() in replace_list:
                 mol.ReplaceAtom(atom.GetIdx(), Atom("H"), updateLabel=True, preserveProps=False)
                 atoms_to_compute_coordinates.append(atom)
-            ordering[atom.GetIdx()] = counter
+            ordering[str(atom.GetIdx())] = str(counter)
             counter += 1
         else:
             mol.RemoveAtom(atom.GetIdx())
+    # perform bond removal
     for bond in mol.GetBonds():
         if bond.GetBeginAtom().GetIdx() in ban_list or bond.GetEndAtom().GetIdx() in ban_list:
             mol.RemoveBond(bond.GetIdx())
+    # recompute coordinates of replaced atoms
     for atom in atoms_to_compute_coordinates:
         rdmolops.SetTerminalAtomCoords(mol, atom.GetIdx(), atom.GetNeighbors()[0].GetIdx())
-    fig_plot(mol, [0])
     xyz_string = MolToXYZBlock(mol)
     return xyz_string, ordering
 

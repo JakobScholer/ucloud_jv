@@ -5,6 +5,7 @@ from re import sub
 
 
 def run_zstruct_and_gsm(xyz_string: str, ordering=None, core=None, isomers_str=None):
+    """takes an xyz string, a dictionary mapping the order of atoms, a list of core atoms and the isomer string, in return it creates output in blackbox/output"""
     if ordering is None:    # ordering is None for the first run of a compound, otherwise a dict
         ordering = {}
     if core is None:        # core is None for the first run of a compound, otherwise a list
