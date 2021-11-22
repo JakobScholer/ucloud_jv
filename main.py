@@ -11,7 +11,7 @@ if __name__ == '__main__':
         if str(sys.argv[1]) == "cut_molecule":
             cut_molecule_main()
         elif str(sys.argv[1]) == "generate_tree":
-            generate_tree_main()
+            stringfile_to_rdkit_main()
         elif str(sys.argv[1]) == "mod_to_xyz":
             mod_to_xyz_main()
         elif str(sys.argv[1]) == "xyz_to_mod":
