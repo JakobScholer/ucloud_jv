@@ -1,7 +1,7 @@
 import unittest
 from mod import graphGMLString
 from src.cut_molecule import find_all_cuts, make_cut_molecule
-from src.generate_tree import reaction_and_product_to_gml
+from src.stringfile_to_rdkit import reaction_and_product_to_gml
 
 
 class Test(unittest.TestCase):

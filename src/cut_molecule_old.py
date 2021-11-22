@@ -1,5 +1,5 @@
 from mod import *
-from src.generate_tree import reaction_and_product_to_gml, fig_plot
+from src.stringfile_to_rdkit import reaction_and_product_to_gml, fig_plot
 
 class MoleculeNode:
     def __init__(self, molecule_id, node_type):

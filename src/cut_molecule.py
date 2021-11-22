@@ -1,10 +1,9 @@
-from rdkit.Chem import MolFromSmiles
-from rdkit.Chem import AddHs
-from rdkit.Chem import rdmolops
-from rdkit.Chem import rdDepictor
-from rdkit.Chem import GetSymmSSSR
-from rdkit.Chem import Draw
+from rdkit.Chem import rdmolops, GetSymmSSSR, AddHs, MolFromSmiles, MolToXYZBlock, Atom
 from rdkit.Chem.AllChem import Compute2DCoords
+from rdkit.Chem.rdDistGeom import EmbedMolecule
+
+from src.stringfile_to_rdkit import stringfile_to_rdkit, fig_plot
+
 
 class MoleculeNode:
     def __init__(self, molecule_id, node_type):
@@ -66,7 +65,7 @@ def make_cut_molecule(rdk_mol, core):
 
     # for each bond that is not a single bond. make a big node or add to already existing node
     bonds = []
-    for bond in mol.GetBonds(): # find all bonds that are not single, and make a big node update
+    for bond in rdk_mol.GetBonds(): # find all bonds that are not single, and make a big node update
         start_atom = int(bond.GetBeginAtomIdx())
         end_atom = int(bond.GetEndAtomIdx())
         if not big_nodes_look_up.get(start_atom) == big_nodes_look_up.get(end_atom) or (big_nodes_look_up.get(end_atom) == None and big_nodes_look_up.get(start_atom) == None): # Not in the same big node or both not in any bignodes
@@ -92,7 +91,7 @@ def make_cut_molecule(rdk_mol, core):
     cut_molecule = cut_molecule + node_holder
 
     # add all none big node atom to the cut molecule
-    for atom in mol.GetAtoms():
+    for atom in rdk_mol.GetAtoms():
         if not atom.GetIdx() in atoms_in_big_nodes: # the atom its not part of any big_node
             lookup[int(atom.GetIdx())] = len(cut_molecule)
             cut_molecule.append(MoleculeNode({int(atom.GetIdx())}, 0))
@@ -175,7 +174,45 @@ def cut_search(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: int)
                 new_cuts = new_cuts + deeper_cuts
     return new_cuts
 
+# molecule is a list of moleculenode class
+def make_cut(mol, cuts, molecule, lookup_dict):
+    ban_list = []
+    for c in cuts:
+        for child in molecule[lookup_dict.get(c)].children:
+            ban_list.append(child)
+    replace_list = [x for x in cuts if x not in ban_list]
 
+
+    print(mol.GetBonds()[0].GetBeginAtom().GetIdx())
+    print(mol.GetAtoms()[1].GetSymbol())
+    ordering = {}
+    counter = 0
+    atoms_to_compute_coordinates = []
+    for atom in mol.GetAtoms():
+        if atom.GetIdx() not in ban_list:
+            if atom.GetIdx() in replace_list:
+                mol.ReplaceAtom(atom.GetIdx(), Atom("H"), updateLabel=True, preserveProps=False)
+                atoms_to_compute_coordinates.append(atom)
+            ordering[atom.GetIdx()] = counter
+            counter += 1
+        else:
+            mol.RemoveAtom(atom.GetIdx())
+    for bond in mol.GetBonds():
+        if bond.GetBeginAtom().GetIdx() in ban_list or bond.GetEndAtom().GetIdx() in ban_list:
+            mol.RemoveBond(bond.GetIdx())
+    for atom in atoms_to_compute_coordinates:
+        rdmolops.SetTerminalAtomCoords(mol, atom.GetIdx(), atom.GetNeighbors()[0].GetIdx())
+    fig_plot(mol, [0])
+    xyz_string = MolToXYZBlock(mol)
+    return xyz_string, ordering
+
+def cut_molecule_main():
+    mol, atom_core, energy_profiles = stringfile_to_rdkit('blackbox/output/5af9b18e744943acab7bffa4d3845c4d/stringfiles/stringfile.xyz0003', visualize=True)
+    cut_molecule, lookup = make_cut_molecule(mol, atom_core)
+    cuts = find_all_cuts(cut_molecule, set(), lookup)
+    xyz_string, ordering = make_cut(mol, cuts[0], cut_molecule, lookup)
+    print(xyz_string)
+    print("hello")
 
 
 if __name__ == '__main__':
@@ -196,35 +233,39 @@ if __name__ == '__main__':
         print("ID " + str(atom.GetIdx()))
         print(str(atom.GetAtomicNum()) + " " + str(atom.GetSymbol()))
 
-    print("BONDS")
+    #print("BONDS")
     for bond in mol.GetBonds():
         print(str(bond.GetBeginAtomIdx()) + " - " + str(bond.GetEndAtomIdx()) + " with type " + str(bond.GetBondType()))
 
-    print("GET RINGS!")
+    #print("GET RINGS!")
     ssr = GetSymmSSSR(mol)
 
     atoms_in_big_nodes = set()
 
     for r in ssr:
         derp = set(r)
-        print(derp)
+        #print(derp)
 
     cut_molecule, lookup = make_cut_molecule(mol, {5})
-    for m in cut_molecule:
-        print("THE ATOMS " + str(m.id))
-        print("         bonds to: " + str(m.children))
+    #for m in cut_molecule:
+        #print("THE ATOMS " + str(m.id))
+        #print("         bonds to: " + str(m.children))
 
-    print("find cuts!")
+    #print("find cuts!")
     cuts = find_all_cuts(cut_molecule, {0,1}, lookup)
-    print("cuts: " + str({0,1}) + " new cuts " + str(cuts))
+    #print("cuts: " + str({0,1}) + " new cuts " + str(cuts))
     cuts = find_all_cuts(cut_molecule, {4}, lookup)
-    print("cuts: " + str({4}) + " new cuts " + str(cuts))
+    #print("cuts: " + str({4}) + " new cuts " + str(cuts))
     cuts = find_all_cuts(cut_molecule, {11}, lookup)
-    print("cuts: " + str({11}) + " new cuts " + str(cuts))
+    #print("cuts: " + str({11}) + " new cuts " + str(cuts))
     cuts = find_all_cuts(cut_molecule, {20}, lookup)
-    print("cuts: " + str({20}) + " new cuts " + str(cuts))
+    #print("cuts: " + str({20}) + " new cuts " + str(cuts))
     cuts = find_all_cuts(cut_molecule, set((0,1,4,11,20)), lookup)
-    print("cuts: " + str(set((0,1,4,11,20))) + " new cuts " + str(cuts))
+    #print("cuts: " + str(set((0,1,4,11,20))) + " new cuts " + str(cuts))
 
-    Compute2DCoords(mol)
+    Compute2DCoords(mol)  # generate 2d coordinates
+    EmbedMolecule(mol, randomSeed=0xf00d)  # generate 3d coordinates
+    i, j = make_cut(mol, [0, 1, 4, 11, 20], cut_molecule, lookup)
+    print(i)
+    print(j)
     #Draw.MolToFile(mol,'derp.png')

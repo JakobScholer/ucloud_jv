@@ -1,7 +1,6 @@
-from mod import *
 from src.root_mean_square import root_mean_square
 from src.cut_molecule import cut_molecule_main, make_cut_molecule, find_all_cuts, make_cut
-from src.generate_tree import generate_tree_main, reaction_and_product_to_gml, read_energy_profiles
+from src.stringfile_to_rdkit import generate_tree_main, read_energy_profiles
 from src.mod_to_xyz import mod_to_xyz_main, mod_to_xyz
 
 class CutDagNode:
@@ -55,6 +54,7 @@ def make_childs(node: CutDagNode, tree: CutDag):
     return child_nodes
 
 # find child cuts and return them
+'''
 def make_childs_mp(stringfile, cuts, placement): # stringfile for make cut molecule, cuts for what have already been cut on the molecule, placement contaisn l and p tha are the location in the cut dag being layer and placement
     # make cut molecule
     gml_string, atom_core, energy_curve = reaction_and_product_to_gml(stringfile, False)
@@ -69,7 +69,7 @@ def make_childs_mp(stringfile, cuts, placement): # stringfile for make cut molec
         child_sets.append(cuts.union({cut}))
 
     return (child_sets, placement)
-
+'''
 # take childs cuts and insert them as nodes in the cutdag, return a list of tasks
 def insert_childs_mp(stringfile, cd, child_sets, placement):
     child_nodes = []

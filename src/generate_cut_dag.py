@@ -3,7 +3,7 @@ from multiprocessing import Process, Queue, current_process, freeze_support
 from src.root_mean_square import root_mean_square
 from src.mod_to_xyz import mod_to_xyz
 from src.cut_molecule import make_cut, make_cut_molecule
-from src.generate_tree import reaction_and_product_to_gml
+from src.stringfile_to_rdkit import reaction_and_product_to_gml
 from src.zstruct_and_xtb import run_zstruct_and_xtb
 from mod import *
 from igraph import *
