@@ -1,9 +1,9 @@
 import sys
 from src.root_mean_square import root_mean_square
 from src.cut_molecule import cut_molecule_main, make_cut_molecule, find_all_cuts, make_cut
-from src.stringfile_to_rdkit import generate_tree_main, read_energy_profiles, stringfile_to_rdkit
-from src.mod_to_xyz import mod_to_xyz_main, mod_to_xyz
+from src.stringfile_to_rdkit import stringfile_to_rdkit_main, read_energy_profiles, stringfile_to_rdkit
 from src.cut_dag import cut_dag_main
+from src.generate_cut_dag import generate_cut_dag_main
 
 
 if __name__ == '__main__':
@@ -19,7 +19,7 @@ if __name__ == '__main__':
         elif str(sys.argv[1]) == "cut_dag":
             cut_dag_main()
         elif str(sys.argv[1]) == "generate_cut_dag":
-            print("nothing")
+            generate_cut_dag_main()
         elif str(sys.argv[1]) == "cut_molecule":
             cut_molecule_main()
     else:

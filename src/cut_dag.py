@@ -1,7 +1,8 @@
+from mod import *
 from src.root_mean_square import root_mean_square
 from src.cut_molecule import cut_molecule_main, make_cut_molecule, find_all_cuts, make_cut
-from src.stringfile_to_rdkit import generate_tree_main, read_energy_profiles
-from src.mod_to_xyz import mod_to_xyz_main, mod_to_xyz
+from src.stringfile_to_rdkit import stringfile_to_rdkit, read_energy_profiles
+from src.zstruct_and_gsm import run_zstruct_and_gsm
 
 class CutDagNode:
     def __init__(self, cuts):
@@ -54,22 +55,19 @@ def make_childs(node: CutDagNode, tree: CutDag):
     return child_nodes
 
 # find child cuts and return them
-'''
 def make_childs_mp(stringfile, cuts, placement): # stringfile for make cut molecule, cuts for what have already been cut on the molecule, placement contaisn l and p tha are the location in the cut dag being layer and placement
     # make cut molecule
-    gml_string, atom_core, energy_curve = reaction_and_product_to_gml(stringfile, False)
-    g = graphGMLString(gml_string)
-    molecule, lookup_dict = make_cut_molecule(g, atom_core)
-
+    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile, False)
+    molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
     # find cuts on molecule
-    child_cuts = find_all_cuts(molecule, cuts, lookup_dict, 0)
+    child_cuts = find_all_cuts(molecule, cuts, lookup_dict)
     # generate all child cuts
     child_sets = []
     for cut in child_cuts:
-        child_sets.append(cuts.union({cut}))
+        child_sets.append(cuts.union(cut))
 
     return (child_sets, placement)
-'''
+
 # take childs cuts and insert them as nodes in the cutdag, return a list of tasks
 def insert_childs_mp(stringfile, cd, child_sets, placement):
     child_nodes = []
@@ -112,13 +110,24 @@ def insert_childs_mp(stringfile, cd, child_sets, placement):
         return tasks
     return []
 
+def run_blackbox(stringfile, isomer, cuts, placement):
+    # make cut molecules
+    print(cuts)
+    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile, False)
+    molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
+    # make cuts on it
+    xyz_file, order = make_cut(rdk_mol, cuts, molecule, lookup_dict)
+    # call true black box
+    data = run_zstruct_and_xtb(xyz_file, isomer, order, atom_core)
+    # return data
+    return [data[0], data[1], placement]
+
 # generate root node
 # input: Stringfile from Xtb, boolean for making visuals of the cut molecute
 def make_root(stringfile: str, visuals: bool):
     # make cut molecule and energy_curve
-    gml_string, atom_core, energy_curve = reaction_and_product_to_gml(stringfile, visualize=visuals)
-    g = graphGMLString(gml_string)
-    molecule, lookup_dict = make_cut_molecule(g, atom_core)
+    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile, visualize=visuals)
+    molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
     # generate cut_tree
     ct = CutDag(molecule, lookup_dict)
 

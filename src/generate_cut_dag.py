@@ -1,10 +1,9 @@
-from src.cut_dag import CutDagNode, CutDag, make_childs_mp, insert_childs_mp, make_root
+from src.cut_dag import CutDagNode, CutDag, make_childs_mp, insert_childs_mp, make_root, run_blackbox
 from multiprocessing import Process, Queue, current_process, freeze_support
 from src.root_mean_square import root_mean_square
-from src.mod_to_xyz import mod_to_xyz
 from src.cut_molecule import make_cut, make_cut_molecule
-from src.stringfile_to_rdkit import reaction_and_product_to_gml
-from src.zstruct_and_xtb import run_zstruct_and_xtb
+from src.stringfile_to_rdkit import stringfile_to_rdkit
+from src.zstruct_and_gsm import run_zstruct_and_gsm
 from mod import *
 from igraph import *
 import plotly.graph_objects as go
@@ -23,20 +22,18 @@ def worker(input, output):
 def blackbox(stringfile, isomer, cuts, placement):
     # make cut molecules
     print(cuts)
-    gml_string, atom_core, energy_curve = reaction_and_product_to_gml(stringfile, False)
-    g = graphGMLString(gml_string)
-    molecule, lookup_dict = make_cut_molecule(g, atom_core)
+    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile, False)
+    molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
     # make cuts on it
-    gml_string, order = make_cut(g, cuts, molecule, lookup_dict)
-    g = graphGMLString(gml_string)
-    # transform GML file into xyz
-    xyz = mod_to_xyz(g, False)
+    xyz_file, order = make_cut(rdk_mol, cuts, molecule, lookup_dict)
     # call true black box
-    #data = test_black_box(xyz, isomer, order, atom_core) # TEST
-    data = run_zstruct_and_xtb(xyz, isomer, order, atom_core)
+    print("ORDER: " + str(order))
+    data = run_zstruct_and_gsm(xyz_file, isomer, order, atom_core)
     # return data
-    #return [data[0], data[1], placement]
-    return ["random_stringfile", [1,2,3,4,5,6,7,8,9,10], placement]
+    print("DATA#############################ss")
+    print(data[0])
+    return [data[0], data[1], placement]
+    #return ["random_stringfile", [1,2,3,4,5,6,7,8,9,10], placement]
 
 def test_black_box(xyz, isomer, order, core):
     print(xyz)
@@ -53,6 +50,7 @@ def make_cut_dag():
     stringfile = 'xyz_test_files/GCD_test_files/stringfile.xyz0003'
     with open("xyz_test_files/GCD_test_files/ISOMERS0003", "r") as f:
         isomer = f.read()
+    print(isomer)
     graph = False
     cd = make_root(stringfile, graph)
 
@@ -102,6 +100,7 @@ def make_cut_dag():
         if k > 0:
             for i in range(len(cd.layers[k])):
                 tasks_bx.append((blackbox, (stringfile, isomer, cd.layers[k][i].cuts, (k,i))))
+                #tasks_bx.append((run_blackbox, (stringfile, isomer, cd.layers[k][i].cuts, (k,i)))) # Better version
 
     # make all tasks for the blackbox
     while len(tasks_bx) > 0: #there is still tasks to perform
@@ -153,6 +152,12 @@ def make_cut_dag():
     for i in range(NUMBER_OF_PROCESSES):
         task_queue.put('STOP')
     print("done!")
+
+    for k in cd.layers.keys():
+        for node in cd.layers[k]:
+            print("layer " + str(k))
+            print("node with cuts " + str(node.cuts))
+
     return cd
 
 
@@ -207,4 +212,4 @@ def visualizer(cut_dag):
 def generate_cut_dag_main():
     freeze_support()
     cut_dag = make_cut_dag()
-    #visualizer(cut_dag)
+    visualizer(cut_dag)

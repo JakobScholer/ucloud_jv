@@ -202,7 +202,7 @@ def stringfile_to_rdkit(filename, visualize=False):
     return mol, atom_core, energy_profiles
 
 
-def generate_tree_main():
+def stringfile_to_rdkit_main():
     gml, ac, ep = stringfile_to_rdkit('src/stringfile.xyz0000', visualize=True)
     print("core")
     print(ac)
@@ -211,4 +211,3 @@ def generate_tree_main():
     curve = read_energy_profiles(ct)
     x = root_mean_square(ep, curve)
     print(x)
-
