@@ -30,10 +30,16 @@ def make_cut_dag():
     NUMBER_OF_PROCESSES = 4
 
     # make test cut dag
-    stringfile = 'xyz_test_files/GCD_test_files/stringfile.xyz0003'
+    with open("xyz_test_files/GCD_test_files/initial0003.xyz", "r") as f:
+        xyz = f.read()
+
+    stringfile = run_zstruct_and_gsm(xyz)
+    print(stringfile)
+    if True:
+        return None
+
     with open("xyz_test_files/GCD_test_files/ISOMERS0003", "r") as f:
         isomer = f.read()
-    print(isomer)
     graph = False
     cd = make_root(stringfile, graph)
 
@@ -105,8 +111,9 @@ def make_cut_dag():
                 data = done_queue.get()
                 node = cd.layers[data[1][0]][data[1][1]]
                 node.stringfile = data[0]
-                node.energy = read_energy_profiles(data[0])
-                node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
+                if not data[0] == "NO REACTION":
+                    node.energy = read_energy_profiles(data[0])
+                    node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
                 task_counter -= task_counter # increment the number of tasks needed to be done
         else: # else wait a litle and check again
             print("sleep sleep")
@@ -124,8 +131,9 @@ def make_cut_dag():
                 data = done_queue.get()
                 node = cd.layers[data[1][0]][data[1][1]]
                 node.stringfile = data[0]
-                node.energy = read_energy_profiles(data[0])
-                node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
+                if not data[0] == "NO REACTION":
+                    node.energy = read_energy_profiles(data[0])
+                    node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
                 task_counter -= task_counter # increment the number of tasks needed to be done
         else: # else wait a litle and check again
             print("sleep sleep")
