@@ -18,23 +18,6 @@ def worker(input, output):
         result = func(*args)
         output.put(result)
 
-# prepare all data and calls blackbox, then return data
-def blackbox(stringfile, isomer, cuts, placement):
-    # make cut molecules
-    print(cuts)
-    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile, False)
-    molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
-    # make cuts on it
-    xyz_file, order = make_cut(rdk_mol, cuts, molecule, lookup_dict)
-    # call true black box
-    print("ORDER: " + str(order))
-    data = run_zstruct_and_gsm(xyz_file, isomer, order, atom_core)
-    # return data
-    print("DATA#############################ss")
-    print(data[0])
-    return [data[0], data[1], placement]
-    #return ["random_stringfile", [1,2,3,4,5,6,7,8,9,10], placement]
-
 def test_black_box(xyz, isomer, order, core):
     print(xyz)
     print(isomer)
@@ -99,8 +82,8 @@ def make_cut_dag():
     for k in cd.layers.keys():
         if k > 0:
             for i in range(len(cd.layers[k])):
-                tasks_bx.append((blackbox, (stringfile, isomer, cd.layers[k][i].cuts, (k,i))))
-                #tasks_bx.append((run_blackbox, (stringfile, isomer, cd.layers[k][i].cuts, (k,i)))) # Better version
+                #tasks_bx.append((test_blackbox, (stringfile, isomer, cd.layers[k][i].cuts, (k,i)))) # test call
+                tasks_bx.append((run_blackbox, (stringfile, isomer, cd.layers[k][i].cuts, (k,i)))) # correct version
 
     # make all tasks for the blackbox
     while len(tasks_bx) > 0: #there is still tasks to perform
@@ -120,10 +103,10 @@ def make_cut_dag():
             while done_queue.empty() == False: # empty the gueue
                 print("whuue got some BX data")
                 data = done_queue.get()
-                node = cd.layers[data[2][0]][data[2][1]]
+                node = cd.layers[data[1][0]][data[1][1]]
                 node.stringfile = data[0]
-                node.energy = data[1]
-                node.RMS = root_mean_square(cd.layers[0][0].energy, data[1])
+                node.energy = read_energy_profiles(data[0])
+                node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
                 task_counter -= task_counter # increment the number of tasks needed to be done
         else: # else wait a litle and check again
             print("sleep sleep")
@@ -139,10 +122,10 @@ def make_cut_dag():
             while done_queue.empty() == False: # empty the gueue
                 print("whuue got some BX data")
                 data = done_queue.get()
-                node = cd.layers[data[2][0]][data[2][1]]
+                node = cd.layers[data[1][0]][data[1][1]]
                 node.stringfile = data[0]
-                node.energy = data[1]
-                node.RMS = root_mean_square(cd.layers[0][0].energy, data[1])
+                node.energy = read_energy_profiles(data[0])
+                node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
                 task_counter -= task_counter # increment the number of tasks needed to be done
         else: # else wait a litle and check again
             print("sleep sleep")

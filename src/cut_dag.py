@@ -119,8 +119,10 @@ def run_blackbox(stringfile, isomer, cuts, placement):
     xyz_file, order = make_cut(rdk_mol, cuts, molecule, lookup_dict)
     # call true black box
     data = run_zstruct_and_xtb(xyz_file, isomer, order, atom_core)
+    if len(data) == 0: # check if a stringfile was generated
+        data.append("NO REACTION") # if no stringfile was generated return this string
     # return data
-    return [data[0], data[1], placement]
+    return [data[0], placement]
 
 # generate root node
 # input: Stringfile from Xtb, boolean for making visuals of the cut molecute
