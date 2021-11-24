@@ -12,16 +12,10 @@ if __name__ == '__main__':
             cut_molecule_main()
         elif str(sys.argv[1]) == "generate_tree":
             stringfile_to_rdkit_main()
-        elif str(sys.argv[1]) == "mod_to_xyz":
-            mod_to_xyz_main()
-        elif str(sys.argv[1]) == "xyz_to_mod":
-            cut_molecule_main()
         elif str(sys.argv[1]) == "cut_dag":
             cut_dag_main()
         elif str(sys.argv[1]) == "generate_cut_dag":
             generate_cut_dag_main()
-        elif str(sys.argv[1]) == "cut_molecule":
-            cut_molecule_main()
     else:
         #g = smiles("CCO")                       # molecule to test reaction on
         #xyz_string = mod_to_xyz(g, to_file=False)             # convert molecule for zstruct to understand it

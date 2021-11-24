@@ -7,16 +7,18 @@ from rdkit.Geometry import Point3D
 
 
 def fig_plot(mol, core_atoms):
-    num_atoms = mol.GetNumAtoms()
-    num_bonds = mol.GetNumBonds()
+    """Takes an rdkit mol object and the core atoms of the molecule, displays a visual representation of the molecule"""
+    num_atoms = mol.GetNumAtoms()   # number of atoms
+    num_bonds = mol.GetNumBonds()   # number of bonds
 
-    atom_labels = [mol.GetAtoms()[k].GetSymbol() for k in range(num_atoms)]
-    bond_labels = [mol.GetBonds()[k].GetBondType() for k in range(num_bonds)]
+    atom_labels = [mol.GetAtoms()[k].GetSymbol() for k in range(num_atoms)]     # list of all atom types
+    bond_labels = [mol.GetBonds()[k].GetBondType() for k in range(num_bonds)]   # list of all bond types
 
+    # find all core bonds
     core_bonds = []
     edge_counter = 0
     for bond in mol.GetBonds():
-        if bond.GetBeginAtom().GetIdx() and bond.GetEndAtom().GetIdx() in core_atoms:
+        if bond.GetBeginAtom().GetIdx() in core_atoms and bond.GetEndAtom().GetIdx() in core_atoms:
             core_bonds.append(edge_counter)
             edge_counter += 1
 
@@ -63,6 +65,16 @@ def fig_plot(mol, core_atoms):
                                          ),
                              hoverinfo='skip',
                              ))
+    fig.add_trace(go.Scatter(x=bond_core_x,
+                             y=bond_core_y,
+                             mode='markers',
+                             name='core bonds',
+                             marker=dict(symbol='circle-dot',
+                                         size=25,
+                                         color='#cf0202'
+                                         ),
+                             hoverinfo='skip',
+                             ))
     fig.add_trace(go.Scatter(x=bond_middle_x,
                              y=bond_middle_y,
                              mode='text',
@@ -87,16 +99,7 @@ def fig_plot(mol, core_atoms):
                              text='',
                              hoverinfo='skip'
                              ))
-    fig.add_trace(go.Scatter(x=bond_core_x,
-                             y=bond_core_y,
-                             mode='markers',
-                             name='core bonds',
-                             marker=dict(symbol='circle-dot',
-                                         size=25,
-                                         color='#cf0202'
-                                         ),
-                             hoverinfo='skip',
-                             ))
+
     fig.add_trace(go.Scatter(x=atom_x,
                              y=atom_y,
                              mode='text',
@@ -120,6 +123,7 @@ def fig_plot(mol, core_atoms):
 
 
 def build_bond_map(mol):
+    """Takes an rdkit mol object, returns a bond mapping for all atoms in mol"""
     order_map = {
         1: BondType.SINGLE,
         2: BondType.DOUBLE,
@@ -136,8 +140,8 @@ def build_bond_map(mol):
     return bmap
 
 
-# takes the content of a stringfile and puts all energy profiles into a list
 def read_energy_profiles(string_content):
+    """takes the content of a stringfile, returns a list of all energy values within it."""
     energy_profiles = []
     for i in range(1, len(string_content), (int(string_content[0]) + 2)):
         energy_profiles.append(float(string_content[i]))
@@ -145,12 +149,14 @@ def read_energy_profiles(string_content):
 
 
 def stringfile_to_rdkit(filename, visualize=False):
+    """takes a stringfile, returns a rdkit mol object, the core of the atom and the energy profile."""
     with open(filename) as f:
         content = f.readlines()
     num_atoms = int(content[0])
-    xyz_str_reactant: str = "".join(content[:(num_atoms + 2)])
-    xyz_str_product: str = "".join(content[len(content) - (num_atoms + 2):])
+    xyz_str_reactant: str = "".join(content[:(num_atoms + 2)])                  # string representing reactant
+    xyz_str_product: str = "".join(content[len(content) - (num_atoms + 2):])    # string representing product
 
+    # find all atom coordinates and store in list
     atoms = xyz_str_product.split("\n")
     coordinates = []
     for atom in atoms:
@@ -166,9 +172,9 @@ def stringfile_to_rdkit(filename, visualize=False):
     product = pybel.readstring("xyz", xyz_str_product)
 
     num_atoms: int = len(reactant.atoms)
-
     mol = RWMol(MolFromSmiles(''))
 
+    # create rdkit atoms based on openbabel reading of stringfile
     for i in range(num_atoms):
         a1 = reactant.atoms[i]
         symbol = openbabel.GetSymbol(a1.atomicnum)
@@ -180,6 +186,7 @@ def stringfile_to_rdkit(filename, visualize=False):
     bmap2 = build_bond_map(product)
     atom_core = set()
 
+    # find core and iterate over bonds to add them to rdkit molecule
     for (src, tar), ob_bond in bmap1.items():
         if (src, tar) in bmap2:
             if bmap1[(src, tar)] != bmap2[(src, tar)]:
@@ -189,6 +196,7 @@ def stringfile_to_rdkit(filename, visualize=False):
                     atom_core.add(tar - 1)
         mol.AddBond((src - 1), (tar - 1), ob_bond)
 
+    # set coordinates of rdkit molecule
     conf = Conformer(mol.GetNumAtoms())
     atom_id = 0
     for c in coordinates:
@@ -211,3 +219,4 @@ def stringfile_to_rdkit_main():
     curve = read_energy_profiles(ct)
     x = root_mean_square(ep, curve)
     print(x)
+

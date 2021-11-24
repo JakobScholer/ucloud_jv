@@ -5,6 +5,7 @@ from re import sub
 
 
 def run_zstruct_and_gsm(xyz_string: str, ordering=None, core=None, isomers_str=None):
+    """takes an xyz string, a dictionary mapping the order of atoms, a list of core atoms and the isomer string, in return it creates output in blackbox/output"""
     if ordering is None:    # ordering is None for the first run of a compound, otherwise a dict
         ordering = {}
     if core is None:        # core is None for the first run of a compound, otherwise a list
@@ -23,7 +24,8 @@ def run_zstruct_and_gsm(xyz_string: str, ordering=None, core=None, isomers_str=N
     run_gsm(clone_name, offset, isomers_str)                # make gsm clone and run gsm clone
     rmtree(f"blackbox/gsm_clones/{clone_name}")             # remove gsm clone
 
-    return listdir(f"blackbox/output/{clone_name}/stringfiles") # returns list of all generated stringfiles
+    stringfile_path = listdir(f"blackbox/output/{clone_name}/stringfiles")  # returns list of all generated stringfiles
+    return [f"blackbox/output/{clone_name}/stringfiles/" + s for s in stringfile_path]
 
 
 def run_zstruct(clone_name: str, offset: int):
