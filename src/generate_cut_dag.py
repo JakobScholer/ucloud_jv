@@ -20,7 +20,7 @@ def worker(input, output):
 
 
 def make_cut_dag():
-    NUMBER_OF_PROCESSES = 4
+    NUMBER_OF_PROCESSES = 1
 
     stringfile = "xyz_test_files/GCD_test_files/stringfile.xyz0025"
     with open("xyz_test_files/GCD_test_files/ISOMERS0025", "r") as f:
@@ -89,6 +89,8 @@ def make_cut_dag():
     # make all tasks for the blackbox
     while tasks_completed != tasks_sent: #there is still tasks to perform
         print("tasks completed: " + str(tasks_completed))
+        print("tasks sent: " + str(tasks_sent))
+        print("tasks in queue: " + str(task_queue.qsize()))
         if done_queue.empty() == False: # insert return data in format (stringfile, Energy, placement)
             while done_queue.empty() == False: # empty the gueue
                 print("whuue got some BX data")

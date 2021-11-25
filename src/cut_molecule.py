@@ -2,7 +2,7 @@ from rdkit.Chem import rdmolops, GetSymmSSSR, AddHs, MolFromSmiles, MolToXYZBloc
 from rdkit.Chem.AllChem import Compute2DCoords
 from rdkit.Chem.rdDistGeom import EmbedMolecule
 
-from src.stringfile_to_rdkit import stringfile_to_rdkit, fig_plot
+#from src.stringfile_to_rdkit import stringfile_to_rdkit, fig_plot
 
 
 class MoleculeNode:
@@ -186,7 +186,7 @@ def make_cut(mol, cuts, molecule, lookup_dict):
     replace_list = [x for x in cuts if x not in ban_list]
     # perform atom replacement and removal
     ordering = {}
-    counter = 0
+    counter = 1
     atoms_to_remove = []
     atoms_to_compute_coordinates = []
     for atom in mol.GetAtoms():
@@ -194,7 +194,7 @@ def make_cut(mol, cuts, molecule, lookup_dict):
             if atom.GetIdx() in replace_list:
                 mol.ReplaceAtom(atom.GetIdx(), Atom("H"), updateLabel=True, preserveProps=False)
                 atoms_to_compute_coordinates.append(atom)
-            ordering[str(atom.GetIdx())] = str(counter)
+            ordering[str(atom.GetIdx() + 1)] = str(counter)
             counter += 1
         else:
             atoms_to_remove.append(atom.GetIdx()) # adding id to the list of atoms needed to remove
@@ -212,8 +212,14 @@ def make_cut(mol, cuts, molecule, lookup_dict):
     for atom_id in atoms_to_remove:
         mol.RemoveAtom(atom_id)
     # recompute coordinates of replaced atoms
+    '''
     for atom in atoms_to_compute_coordinates:
+        print("uuwuwuwuwuwuwuw")
+        print("neighbor amount: " + str(len(atom.GetNeighbors())))
+        print("atom id:" + str(atom.GetIdx()))
+        print("neighbor id: " + str(atom.GetNeighbors()[0].GetIdx()))
         rdmolops.SetTerminalAtomCoords(mol, atom.GetIdx(), atom.GetNeighbors()[0].GetIdx())
+    '''
     xyz_string = MolToXYZBlock(mol)
     return xyz_string, ordering
 

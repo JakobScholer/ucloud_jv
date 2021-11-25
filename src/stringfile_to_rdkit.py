@@ -1,6 +1,8 @@
 import openbabel.pybel as pybel
 from openbabel import openbabel
 import plotly.graph_objects as go
+
+from src.cut_molecule import make_cut_molecule, make_cut, find_all_cuts
 from src.root_mean_square import root_mean_square
 from rdkit.Chem import RWMol, MolFromSmiles, Atom, BondType, Conformer
 from rdkit.Geometry import Point3D
@@ -20,7 +22,7 @@ def fig_plot(mol, core_atoms):
     for bond in mol.GetBonds():
         if bond.GetBeginAtom().GetIdx() in core_atoms and bond.GetEndAtom().GetIdx() in core_atoms:
             core_bonds.append(edge_counter)
-            edge_counter += 1
+        edge_counter += 1
 
     bond_x_start = [mol.GetConformer(0).GetAtomPosition(mol.GetBonds()[k].GetBeginAtom().GetIdx())[0] for k in range(num_bonds)]
     bond_y_start = [mol.GetConformer(0).GetAtomPosition(mol.GetBonds()[k].GetBeginAtom().GetIdx())[1] for k in range(num_bonds)]
@@ -79,7 +81,7 @@ def fig_plot(mol, core_atoms):
                              y=bond_middle_y,
                              mode='text',
                              name='bondIDs',
-                             text=list(range(0, num_bonds)),
+                             text=list(range(1, num_bonds+1)),
                              hoverinfo='text',
                              textfont_size=1
                              ))
@@ -104,7 +106,7 @@ def fig_plot(mol, core_atoms):
                              y=atom_y,
                              mode='text',
                              name='atomIDs',
-                             text=list(range(0, num_atoms)),
+                             text=list(range(1, num_atoms+1)),
                              hoverinfo='text',
                              textfont_size=15
                              ))
@@ -217,12 +219,12 @@ def stringfile_to_rdkit(filename, visualize=False):
 
 
 def stringfile_to_rdkit_main():
-    gml, ac, ep = stringfile_to_rdkit('src/stringfile.xyz0000', visualize=True)
-    print("core")
-    print(ac)
-    with open('src/stringfile.xyz0002') as fi:
-        ct = fi.readlines()
-    curve = read_energy_profiles(ct)
-    x = root_mean_square(ep, curve)
-    print(x)
+    mol, core, energy = stringfile_to_rdkit("xyz_test_files/GCD_test_files/stringfile.xyz0025", True)
+    molecule, lookup_dict = make_cut_molecule(mol, core)
+    cuts = find_all_cuts(molecule, set(), lookup_dict)
+    # make cuts on it
+    xyz_file, order = make_cut(mol, cuts[0], molecule, lookup_dict)
+    print(order)
+    print(xyz_file)
+
 

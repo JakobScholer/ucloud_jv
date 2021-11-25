@@ -16,9 +16,13 @@ def run_zstruct_and_gsm(xyz_string: str, ordering=None, core=None, isomers_str=N
         ordering = {}
     if core is None:        # core is None for the first run of a compound, otherwise a list
         core = []
+    print(isomers_str)
     if isomers_str is not None:
         isomers_str = sub(r'\d+', lambda m: ordering.get(m.group(), m.group()), isomers_str)    # replace numbers with dict mapping
     clone_name = str(uuid4().hex)  # unique identifier for folders of this process
+    print(ordering)
+    print(isomers_str)
+    print(clone_name)
     offset = 0
     makedirs(f"blackbox/output/{clone_name}/isomers")
     makedirs(f"blackbox/output/{clone_name}/initial")
@@ -55,9 +59,9 @@ def prepare_zstruct(clone_name: str, xyz_str: str, ordering: dict, core: list):
     copytree("blackbox/zstruct_clones/original", f"blackbox/zstruct_clones/{clone_name}")  # create clone of zstruct
     with open(f"blackbox/zstruct_clones/{clone_name}/react{1}.xyz", "w") as f:              # create react file
         f.write(xyz_str)
-    with open(f"blackbox/zstruct_clones/{clone_name}/frozen{1}.xyz", "a") as f:             # create frozen file
-        for element in core:
-            f.write(str(ordering.get(element)) + "\n")
+    #with open(f"blackbox/zstruct_clones/{clone_name}/frozen{1}.xyz", "a") as f:             # create frozen file
+        #for element in core:
+            #f.write(str(ordering.get(element)) + "\n")
 
 
 def run_gsm_round(clone_name, i: int, isomers_str: str):
@@ -90,8 +94,8 @@ def zstruct_gsm_main():
     Compute2DCoords(mol)  # generate 2d coordinates
     EmbedMolecule(mol, randomSeed=0xf00d)  # generate 3d coordinates
     xyz_str = MolToXYZBlock(mol)
-    folders = run_zstruct_and_gsm(xyz_str)
-    #folders = ["blackbox/output/d9d58d327b364a19b64bd61b10e78407/stringfiles/stringfile.xyz0003", "blackbox/output/d9d58d327b364a19b64bd61b10e78407/stringfiles/stringfile.xyz0022"]
+    #folders = run_zstruct_and_gsm(xyz_str)
+    folders = ["blackbox/output/d9d58d327b364a19b64bd61b10e78407/stringfiles/stringfile.xyz0003", "blackbox/output/d9d58d327b364a19b64bd61b10e78407/stringfiles/stringfile.xyz0022"]
     for file in folders:
         mol, atom_core, energy_profiles = stringfile_to_rdkit(file)
         if atom_core != set():
