@@ -61,6 +61,9 @@ def make_childs_mp(stringfile, cuts, placement): # stringfile for make cut molec
     molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
     # find cuts on molecule
     child_cuts = find_all_cuts(molecule, cuts, lookup_dict)
+    for node in molecule:
+        print("atom(s): " + str(node.id))
+        print("    with childs: " + str(node.children))
     # generate all child cuts
     child_sets = []
     for cut in child_cuts:
@@ -113,13 +116,12 @@ def insert_childs_mp(stringfile, cd, child_sets, placement):
 def run_blackbox(stringfile, isomer, cuts, placement):
     # make cut molecules
     print(cuts)
-    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile, False)
+    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile, True)
     molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
     # make cuts on it
     xyz_file, order = make_cut(rdk_mol, cuts, molecule, lookup_dict)
     # call true black box
-    #data = run_zstruct_and_xtb(xyz_file, isomer, order, atom_core)
-    data = run_zstruct_and_xtb(xyz_file, order, atom_core)
+    data = run_zstruct_and_gsm(xyz_file, order, atom_core, isomer)
     if len(data) == 0: # check if a stringfile was generated
         data.append("NO REACTION") # if no stringfile was generated return this string
     # return data
@@ -130,6 +132,8 @@ def run_blackbox(stringfile, isomer, cuts, placement):
 def make_root(stringfile: str, visuals: bool):
     # make cut molecule and energy_curve
     rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile, visualize=visuals)
+    if len(atom_core) == 0:
+        return None
     molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
     # generate cut_tree
     ct = CutDag(molecule, lookup_dict)

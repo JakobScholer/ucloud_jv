@@ -94,5 +94,5 @@ try:
 
     os.rename(u"energy", basename + u".energy")
     os.rename(u"gradient", basename + u".gradient")
-except (OSError, IndexError) as e:
+except (OSError, IndexError, IOError) as e:
     pass

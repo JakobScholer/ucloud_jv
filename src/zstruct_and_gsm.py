@@ -3,6 +3,12 @@ from shutil import move, copyfile, copytree, rmtree
 from uuid import uuid4
 from re import sub
 
+from rdkit.Chem import MolFromSmiles, MolToXYZBlock, AddHs
+from rdkit.Chem.rdDepictor import Compute2DCoords
+from rdkit.Chem.rdDistGeom import EmbedMolecule
+
+from src.stringfile_to_rdkit import stringfile_to_rdkit
+
 
 def run_zstruct_and_gsm(xyz_string: str, ordering=None, core=None, isomers_str=None):
     """takes an xyz string, a dictionary mapping the order of atoms, a list of core atoms and the isomer string, in return it creates output in blackbox/output"""
@@ -20,9 +26,12 @@ def run_zstruct_and_gsm(xyz_string: str, ordering=None, core=None, isomers_str=N
 
     prepare_zstruct(clone_name, xyz_string, ordering, core) # make zstruct clone
     offset += run_zstruct(clone_name, offset)               # run zstruct clone
-    rmtree(f"blackbox/zstruct_clones/{clone_name}")         # remove zstruct clone
-    run_gsm(clone_name, offset, isomers_str)                # make gsm clone and run gsm clone
-    rmtree(f"blackbox/gsm_clones/{clone_name}")             # remove gsm clone
+    try:
+        rmtree(f"blackbox/zstruct_clones/{clone_name}")         # remove zstruct clone
+        run_gsm(clone_name, offset, isomers_str)                # make gsm clone and run gsm clone
+        rmtree(f"blackbox/gsm_clones/{clone_name}")             # remove gsm clone
+    except:
+        pass
 
     stringfile_path = listdir(f"blackbox/output/{clone_name}/stringfiles")  # returns list of all generated stringfiles
     return [f"blackbox/output/{clone_name}/stringfiles/" + s for s in stringfile_path]
@@ -73,3 +82,21 @@ def run_gsm(clone_name: str, isomer_count: int, isomers_str: str):
         if path.exists(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000"):     # move stringfile to output if it was made
             move(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000",
                  f"blackbox/output/{clone_name}/stringfiles/stringfile.xyz{str(isomer_id).zfill(4)}")
+
+
+def zstruct_gsm_main():
+    mol = MolFromSmiles('COCC(C)C=O')
+    mol = AddHs(mol)
+    Compute2DCoords(mol)  # generate 2d coordinates
+    EmbedMolecule(mol, randomSeed=0xf00d)  # generate 3d coordinates
+    xyz_str = MolToXYZBlock(mol)
+    folders = run_zstruct_and_gsm(xyz_str)
+    #folders = ["blackbox/output/d9d58d327b364a19b64bd61b10e78407/stringfiles/stringfile.xyz0003", "blackbox/output/d9d58d327b364a19b64bd61b10e78407/stringfiles/stringfile.xyz0022"]
+    for file in folders:
+        mol, atom_core, energy_profiles = stringfile_to_rdkit(file)
+        if atom_core != set():
+            print(file)
+            print(atom_core)
+        else:
+            print(file)
+            print("NO CORE")

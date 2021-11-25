@@ -190,11 +190,17 @@ def stringfile_to_rdkit(filename, visualize=False):
     for (src, tar), ob_bond in bmap1.items():
         if (src, tar) in bmap2:
             if bmap1[(src, tar)] != bmap2[(src, tar)]:
-                if (src - 1) not in atom_core:
                     atom_core.add(src - 1)
-                if (tar - 1) not in atom_core:
                     atom_core.add(tar - 1)
+        else:
+            atom_core.add(src - 1)
+            atom_core.add(tar - 1)
         mol.AddBond((src - 1), (tar - 1), ob_bond)
+    for (src, tar), ob_bond in bmap2.items():
+        if (src, tar) not in bmap1:
+            atom_core.add(src - 1)
+            atom_core.add(tar - 1)
+
 
     # set coordinates of rdkit molecule
     conf = Conformer(mol.GetNumAtoms())

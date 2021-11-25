@@ -2,7 +2,7 @@ from src.cut_dag import CutDagNode, CutDag, make_childs_mp, insert_childs_mp, ma
 from multiprocessing import Process, Queue, current_process, freeze_support
 from src.root_mean_square import root_mean_square
 from src.cut_molecule import make_cut, make_cut_molecule
-from src.stringfile_to_rdkit import stringfile_to_rdkit
+from src.stringfile_to_rdkit import stringfile_to_rdkit, read_energy_profiles
 from src.zstruct_and_gsm import run_zstruct_and_gsm
 from mod import *
 from igraph import *
@@ -18,30 +18,17 @@ def worker(input, output):
         result = func(*args)
         output.put(result)
 
-def test_black_box(xyz, isomer, order, core):
-    print(xyz)
-    print(isomer)
-    print(order)
-    print(core)
-    time.sleep(5)
-    return ("random_stringfile", [1,2,3,4,5,6,7,8,9,10])
 
 def make_cut_dag():
     NUMBER_OF_PROCESSES = 4
 
-    # make test cut dag
-    with open("xyz_test_files/GCD_test_files/initial0003.xyz", "r") as f:
-        xyz = f.read()
-
-    stringfile = run_zstruct_and_gsm(xyz)
-    print(stringfile)
-    if True:
-        return None
-
-    with open("xyz_test_files/GCD_test_files/ISOMERS0003", "r") as f:
+    stringfile = "xyz_test_files/GCD_test_files/stringfile.xyz0025"
+    with open("xyz_test_files/GCD_test_files/ISOMERS0025", "r") as f:
         isomer = f.read()
     graph = False
     cd = make_root(stringfile, graph)
+    if cd is None:
+        return None
 
     # Create queues
     task_queue = Queue()
@@ -74,6 +61,8 @@ def make_cut_dag():
                 print("whuuee got one bunch of childs")
                 child_infos = done_queue.get() # get info
                 tasks = insert_childs_mp(stringfile, cd, child_infos[0], child_infos[1]) # insert child
+                print("####################")
+                print(tasks)
                 if len(tasks) > 0:
                     print("added " + str(len(tasks)) + " to the tasks")
                     for t in tasks: # add new tasks to the queue
@@ -81,15 +70,15 @@ def make_cut_dag():
                 else:
                     print("no new tasks added")
     print("Cut dag is generated")
-
+    return cd
     # make all tasks for blackbox
     tasks_bx = []
-    task_counter = len(tasks_bx)
     for k in cd.layers.keys():
         if k > 0:
             for i in range(len(cd.layers[k])):
                 #tasks_bx.append((test_blackbox, (stringfile, isomer, cd.layers[k][i].cuts, (k,i)))) # test call
                 tasks_bx.append((run_blackbox, (stringfile, isomer, cd.layers[k][i].cuts, (k,i)))) # correct version
+    task_counter = len(tasks_bx)
 
     # make all tasks for the blackbox
     while len(tasks_bx) > 0: #there is still tasks to perform
@@ -109,6 +98,8 @@ def make_cut_dag():
             while done_queue.empty() == False: # empty the gueue
                 print("whuue got some BX data")
                 data = done_queue.get()
+                print("------------------------")
+                print(data)
                 node = cd.layers[data[1][0]][data[1][1]]
                 node.stringfile = data[0]
                 if not data[0] == "NO REACTION":
@@ -125,6 +116,8 @@ def make_cut_dag():
 
     # wait for porcesses to end
     while task_counter > 0:
+        print("#############")
+        print(task_counter)
         if done_queue.empty() == False: # insert return data in format (stringfile, Energy, placement)
             while done_queue.empty() == False: # empty the gueue
                 print("whuue got some BX data")
@@ -152,19 +145,35 @@ def make_cut_dag():
     return cd
 
 
-def visualizer(cut_dag):
+def visualizer(cut_dag, borderline_value):
+    cut_option_y_green = []
+    cut_option_x_green = []
+    cut_option_y_red = []
+    cut_option_x_red = []
+    cut_option_y_black = []
+    cut_option_x_black = []
     cut_option_y = []
     cut_option_x = []
     cut_info = []
+    stringfiles = []
     bond_y = []
     bond_x = []
     for layer in cut_dag.layers.keys():
         layer_length = len(cut_dag.layers.get(layer))
         for position in range(layer_length):
-            print(cut_dag.layers.get(layer)[position].childs)
+            if cut_dag.layers.get(layer)[position].stringfile == "NO REACTION":
+                cut_option_y_black.append(layer * 10)
+                cut_option_x_black.append(position * 10 - (layer_length * 10) / 2)
+            elif cut_dag.layers.get(layer)[position].RMS >= borderline_value:
+                cut_option_y_green.append(layer * 10)
+                cut_option_x_green.append(position * 10 - (layer_length * 10) / 2)
+            elif cut_dag.layers.get(layer)[position].RMS < borderline_value:
+                cut_option_y_red.append(layer * 10)
+                cut_option_x_red.append(position * 10 - (layer_length * 10) / 2)
             cut_option_y.append(layer * 10)
-            cut_option_x.append(position * 10 - (layer_length * 10)/2)
+            cut_option_x.append(position * 10 - (layer_length * 10) / 2)
             cut_info.append(cut_dag.layers.get(layer)[position].cuts)
+            stringfiles.append(cut_dag.layers.get(layer)[position].stringfile)
             for child_position in cut_dag.layers.get(layer)[position].childs:
                 bond_y += [layer * 10, (layer+1) * 10, None]
                 bond_x += [position * 10 - (layer_length * 10)/2, child_position * 10 - (len(cut_dag.layers.get(layer+1)) * 10)/2, None]
@@ -184,7 +193,40 @@ def visualizer(cut_dag):
                              name='Cuts',
                              marker=dict(symbol='circle-dot',
                                          size=20,
-                                         color='#d3d3d3'
+                                         color='#800080'
+                                         ),
+                             text=cut_info,
+                             hoverinfo='skip',
+                             ))
+    fig.add_trace(go.Scatter(x=cut_option_x_red,
+                             y=cut_option_y_red,
+                             mode='markers',
+                             name='Cuts',
+                             marker=dict(symbol='circle-dot',
+                                         size=20,
+                                         color='#FF0000'
+                                         ),
+                             text=cut_info,
+                             hoverinfo='skip',
+                             ))
+    fig.add_trace(go.Scatter(x=cut_option_x_green,
+                             y=cut_option_y_green,
+                             mode='markers',
+                             name='Cuts',
+                             marker=dict(symbol='circle-dot',
+                                         size=20,
+                                         color='#008000'
+                                         ),
+                             text=cut_info,
+                             hoverinfo='skip',
+                             ))
+    fig.add_trace(go.Scatter(x=cut_option_x_black,
+                             y=cut_option_y_black,
+                             mode='markers',
+                             name='Cuts',
+                             marker=dict(symbol='circle-dot',
+                                         size=20,
+                                         color='#000000'
                                          ),
                              text=cut_info,
                              hoverinfo='skip',
@@ -197,10 +239,21 @@ def visualizer(cut_dag):
                              hoverinfo='skip',
                              textfont_size=30
                              ))
+    fig.add_trace(go.Scatter(x=cut_option_x,
+                             y=[k - 1 for k in cut_option_y],
+                             mode='text',
+                             name='stringfile',
+                             text=stringfiles,
+                             hoverinfo='skip',
+                             textfont_size=30
+                             ))
 
     fig.show()
 
 def generate_cut_dag_main():
     freeze_support()
     cut_dag = make_cut_dag()
-    visualizer(cut_dag)
+    if cut_dag is not None:
+        visualizer(cut_dag, 100)
+    else:
+        print("No core for molecule")

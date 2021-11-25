@@ -140,7 +140,7 @@ def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, lookup: dict):
             all_childs_are_cut = False
             break
     if all_childs_are_cut: # nothing to cut, return empty set
-        return set()
+        return []
     else: # else find cuts return set with possible cuts
         return cut_search(cut_molecule, cuts, lookup, 0)
 
@@ -208,9 +208,11 @@ def make_cut(mol, cuts, molecule, lookup_dict):
     return xyz_string, ordering
 
 def cut_molecule_main():
-    mol, atom_core, energy_profiles = stringfile_to_rdkit('blackbox/output/5af9b18e744943acab7bffa4d3845c4d/stringfiles/stringfile.xyz0003', visualize=True)
+    mol, atom_core, energy_profiles = stringfile_to_rdkit('xyz_test_files/GCD_test_files/stringfile.xyz0110', visualize=True)
     cut_molecule, lookup = make_cut_molecule(mol, atom_core)
     cuts = find_all_cuts(cut_molecule, set(), lookup)
+    print(cuts)
+    print(atom_core)
     xyz_string, ordering = make_cut(mol, cuts[0], cut_molecule, lookup)
     print(xyz_string)
     print("hello")
