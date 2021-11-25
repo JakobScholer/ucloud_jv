@@ -47,39 +47,65 @@ def make_cut_dag():
 
     # wait for porcesses to end
     wait_for_end = True
+    tasks_sent = 1
+    tasks_completed = 0
     print("staring wait for it")
     while wait_for_end:
-        # make sure the quee is empty before stopping porcesses
-        if done_queue.empty() and task_queue.empty():
+        print("tasks_sent: " + str(tasks_sent))
+        print("tasks_completed: " + str(tasks_completed))
+        if tasks_sent == tasks_completed:
+            wait_for_end = False
+        elif done_queue.empty() == True:
             print("sleep time")
             time.sleep(0.2)
             print("waky waky!")
-            if done_queue.empty():
-                wait_for_end = False
-        else: # there is childs to add the the cut dag
+        else:
             while done_queue.empty() == False:
-                print("whuuee got one bunch of childs")
                 child_infos = done_queue.get() # get info
+                tasks_completed += 1
                 tasks = insert_childs_mp(stringfile, cd, child_infos[0], child_infos[1]) # insert child
-                print("####################")
-                print(tasks)
                 if len(tasks) > 0:
                     print("added " + str(len(tasks)) + " to the tasks")
                     for t in tasks: # add new tasks to the queue
                         task_queue.put(t)
+                    tasks_sent += len(tasks)
                 else:
                     print("no new tasks added")
     print("Cut dag is generated")
-    return cd
+
     # make all tasks for blackbox
     tasks_bx = []
     for k in cd.layers.keys():
         if k > 0:
             for i in range(len(cd.layers[k])):
                 #tasks_bx.append((test_blackbox, (stringfile, isomer, cd.layers[k][i].cuts, (k,i)))) # test call
-                tasks_bx.append((run_blackbox, (stringfile, isomer, cd.layers[k][i].cuts, (k,i)))) # correct version
-    task_counter = len(tasks_bx)
+                #tasks_bx.append((run_blackbox, (stringfile, isomer, cd.layers[k][i].cuts, (k,i)))) # correct version
+                task_queue.put((run_blackbox, (stringfile, isomer, cd.layers[k][i].cuts, (k,i)))) # insert new tasks
+    #task_counter = len(tasks_bx)
 
+    print("que size: " + str(task_queue.qsize()) + " and needed tasks: " + str(tasks_sent))
+
+    tasks_completed = 1 # root is already done as a task
+    # make all tasks for the blackbox
+    while tasks_completed != tasks_sent: #there is still tasks to perform
+        print("tasks completed: " + str(tasks_completed))
+        if done_queue.empty() == False: # insert return data in format (stringfile, Energy, placement)
+            while done_queue.empty() == False: # empty the gueue
+                print("whuue got some BX data")
+                data = done_queue.get()
+                #print("------------------------")
+                #print(data)
+                node = cd.layers[data[1][0]][data[1][1]]
+                node.stringfile = data[0]
+                if not data[0] == "NO REACTION":
+                    node.energy = read_energy_profiles(data[0])
+                    node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
+                tasks_completed += 1 # increment the number of tasks needed to be done
+        else: # else wait a litle and check again
+            print("sleep sleep")
+            time.sleep(2)
+            print("waky waky")
+    '''
     # make all tasks for the blackbox
     while len(tasks_bx) > 0: #there is still tasks to perform
         # insert more tasks if size space
@@ -112,6 +138,7 @@ def make_cut_dag():
             print("waky waky")
     # all tasks has been inserted
 
+
     print("no more tasks only wait for data now!")
 
     # wait for porcesses to end
@@ -132,6 +159,7 @@ def make_cut_dag():
             print("sleep sleep")
             time.sleep(2)
             print("waky waky")
+    '''
     # Tell child processes to stop
     for i in range(NUMBER_OF_PROCESSES):
         task_queue.put('STOP')
@@ -161,13 +189,14 @@ def visualizer(cut_dag, borderline_value):
     for layer in cut_dag.layers.keys():
         layer_length = len(cut_dag.layers.get(layer))
         for position in range(layer_length):
+            print(cut_dag.layers.get(layer)[position].RMS)
             if cut_dag.layers.get(layer)[position].stringfile == "NO REACTION":
                 cut_option_y_black.append(layer * 10)
                 cut_option_x_black.append(position * 10 - (layer_length * 10) / 2)
-            elif cut_dag.layers.get(layer)[position].RMS >= borderline_value:
+            elif cut_dag.layers.get(layer)[position].RMS <= borderline_value:
                 cut_option_y_green.append(layer * 10)
                 cut_option_x_green.append(position * 10 - (layer_length * 10) / 2)
-            elif cut_dag.layers.get(layer)[position].RMS < borderline_value:
+            elif cut_dag.layers.get(layer)[position].RMS > borderline_value:
                 cut_option_y_red.append(layer * 10)
                 cut_option_x_red.append(position * 10 - (layer_length * 10) / 2)
             cut_option_y.append(layer * 10)

@@ -61,9 +61,6 @@ def make_childs_mp(stringfile, cuts, placement): # stringfile for make cut molec
     molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
     # find cuts on molecule
     child_cuts = find_all_cuts(molecule, cuts, lookup_dict)
-    for node in molecule:
-        print("atom(s): " + str(node.id))
-        print("    with childs: " + str(node.children))
     # generate all child cuts
     child_sets = []
     for cut in child_cuts:
@@ -115,8 +112,7 @@ def insert_childs_mp(stringfile, cd, child_sets, placement):
 
 def run_blackbox(stringfile, isomer, cuts, placement):
     # make cut molecules
-    print(cuts)
-    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile, True)
+    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile, False)
     molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
     # make cuts on it
     xyz_file, order = make_cut(rdk_mol, cuts, molecule, lookup_dict)

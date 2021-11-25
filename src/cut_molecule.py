@@ -187,6 +187,7 @@ def make_cut(mol, cuts, molecule, lookup_dict):
     # perform atom replacement and removal
     ordering = {}
     counter = 0
+    atoms_to_remove = []
     atoms_to_compute_coordinates = []
     for atom in mol.GetAtoms():
         if atom.GetIdx() not in ban_list:
@@ -196,11 +197,20 @@ def make_cut(mol, cuts, molecule, lookup_dict):
             ordering[str(atom.GetIdx())] = str(counter)
             counter += 1
         else:
-            mol.RemoveAtom(atom.GetIdx())
+            atoms_to_remove.append(atom.GetIdx()) # adding id to the list of atoms needed to remove
+
     # perform bond removal
+    bonds_to_remove = []
     for bond in mol.GetBonds():
         if bond.GetBeginAtom().GetIdx() in ban_list or bond.GetEndAtom().GetIdx() in ban_list:
-            mol.RemoveBond(bond.GetIdx())
+            bonds_to_remove.append(bond) # add to remove list
+    bonds_to_remove.reverse()
+    for bond in bonds_to_remove: # removing bond
+        mol.RemoveBond(bond.GetBeginAtom().GetIdx(), bond.GetEndAtom().GetIdx())
+    # remove atoms
+    atoms_to_remove.reverse()
+    for atom_id in atoms_to_remove:
+        mol.RemoveAtom(atom_id)
     # recompute coordinates of replaced atoms
     for atom in atoms_to_compute_coordinates:
         rdmolops.SetTerminalAtomCoords(mol, atom.GetIdx(), atom.GetNeighbors()[0].GetIdx())
