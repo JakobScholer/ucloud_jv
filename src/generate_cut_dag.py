@@ -22,8 +22,8 @@ def worker(input, output):
 def make_cut_dag():
     NUMBER_OF_PROCESSES = 1
 
-    stringfile = "xyz_test_files/GCD_test_files/stringfile.xyz0025"
-    with open("xyz_test_files/GCD_test_files/ISOMERS0025", "r") as f:
+    stringfile = "xyz_test_files/GCD_test_files/stringfile.xyz0009"
+    with open("xyz_test_files/GCD_test_files/ISOMERS0009", "r") as f:
         isomer = f.read()
     graph = False
     cd = make_root(stringfile, graph)

@@ -10,32 +10,28 @@ from rdkit.Chem.rdDistGeom import EmbedMolecule
 from src.stringfile_to_rdkit import stringfile_to_rdkit
 
 
-def run_zstruct_and_gsm(xyz_string: str, ordering=None, core=None, isomers_str=None):
+def run_zstruct_and_gsm(xyz_strings: list, ordering=None, core=None, isomers_str=None):
     """takes an xyz string, a dictionary mapping the order of atoms, a list of core atoms and the isomer string, in return it creates output in blackbox/output"""
     if ordering is None:    # ordering is None for the first run of a compound, otherwise a dict
         ordering = {}
     if core is None:        # core is None for the first run of a compound, otherwise a list
         core = []
-    print(isomers_str)
     if isomers_str is not None:
         isomers_str = sub(r'\d+', lambda m: ordering.get(m.group(), m.group()), isomers_str)    # replace numbers with dict mapping
     clone_name = str(uuid4().hex)  # unique identifier for folders of this process
-    print(ordering)
-    print(isomers_str)
-    print(clone_name)
-    offset = 0
     makedirs(f"blackbox/output/{clone_name}/isomers")
     makedirs(f"blackbox/output/{clone_name}/initial")
     makedirs(f"blackbox/output/{clone_name}/stringfiles")
 
-    prepare_zstruct(clone_name, xyz_string, ordering, core) # make zstruct clone
+    offset = 0
+    prepare_zstruct(clone_name, xyz_strings, ordering, core) # make zstruct clone
     offset += run_zstruct(clone_name, offset)               # run zstruct clone
     try:
         rmtree(f"blackbox/zstruct_clones/{clone_name}")         # remove zstruct clone
         run_gsm(clone_name, offset, isomers_str)                # make gsm clone and run gsm clone
         rmtree(f"blackbox/gsm_clones/{clone_name}")             # remove gsm clone
     except:
-        pass
+        print(f"failed to run gsm for {clone_name}")
 
     stringfile_path = listdir(f"blackbox/output/{clone_name}/stringfiles")  # returns list of all generated stringfiles
     return [f"blackbox/output/{clone_name}/stringfiles/" + s for s in stringfile_path]
@@ -55,13 +51,14 @@ def run_zstruct(clone_name: str, offset: int):
     return isomer_count
 
 
-def prepare_zstruct(clone_name: str, xyz_str: str, ordering: dict, core: list):
+def prepare_zstruct(clone_name: str, xyz_strs: list, ordering: dict, core: list):
     copytree("blackbox/zstruct_clones/original", f"blackbox/zstruct_clones/{clone_name}")  # create clone of zstruct
-    with open(f"blackbox/zstruct_clones/{clone_name}/react{1}.xyz", "w") as f:              # create react file
-        f.write(xyz_str)
-    #with open(f"blackbox/zstruct_clones/{clone_name}/frozen{1}.xyz", "a") as f:             # create frozen file
-        #for element in core:
-            #f.write(str(ordering.get(element)) + "\n")
+    for i, str in enumerate(xyz_strs):
+        with open(f"blackbox/zstruct_clones/{clone_name}/react{1+i}.xyz", "w") as f:              # create react file
+            f.write(str)
+        #with open(f"blackbox/zstruct_clones/{clone_name}/frozen{1}.xyz", "a") as f:             # create frozen file
+            #for element in core:
+                #f.write(str(ordering.get(element)) + "\n")
 
 
 def run_gsm_round(clone_name, i: int, isomers_str: str):
@@ -89,13 +86,13 @@ def run_gsm(clone_name: str, isomer_count: int, isomers_str: str):
 
 
 def zstruct_gsm_main():
-    mol = MolFromSmiles('COCC(C)C=O')
+    mol = MolFromSmiles('CN=C([O-])N(C)C(=O)OC(C)=O')
     mol = AddHs(mol)
     Compute2DCoords(mol)  # generate 2d coordinates
     EmbedMolecule(mol, randomSeed=0xf00d)  # generate 3d coordinates
-    xyz_str = MolToXYZBlock(mol)
-    #folders = run_zstruct_and_gsm(xyz_str)
-    folders = ["blackbox/output/d9d58d327b364a19b64bd61b10e78407/stringfiles/stringfile.xyz0003", "blackbox/output/d9d58d327b364a19b64bd61b10e78407/stringfiles/stringfile.xyz0022"]
+    xyz_str_1 = MolToXYZBlock(mol)
+    #folders = run_zstruct_and_gsm([xyz_str_1])
+    folders = ["blackbox/output/ade0008ff58c47a59cc34cc464041810\stringfiles/stringfile.xyz0009"]
     for file in folders:
         mol, atom_core, energy_profiles = stringfile_to_rdkit(file)
         if atom_core != set():

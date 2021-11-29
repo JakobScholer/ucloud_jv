@@ -117,7 +117,7 @@ def run_blackbox(stringfile, isomer, cuts, placement):
     # make cuts on it
     xyz_file, order = make_cut(rdk_mol, cuts, molecule, lookup_dict)
     # call true black box
-    data = run_zstruct_and_gsm(xyz_file, order, atom_core, isomer)
+    data = run_zstruct_and_gsm([xyz_file], order, atom_core, isomer)
     if len(data) == 0: # check if a stringfile was generated
         data.append("NO REACTION") # if no stringfile was generated return this string
     # return data
