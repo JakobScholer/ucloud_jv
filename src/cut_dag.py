@@ -77,8 +77,9 @@ def insert_childs_mp(stringfile, cd, child_sets, placement):
     task_list = []
     node = cd.layers[placement[0]][placement[1]]
     # placement knoewledge for tasks
-    layer_nr = len(node.cuts)+1
+    layer_nr = placement[0]+1
     placement_nr = []
+
     # chek if new layer exist
     if not layer_nr in cd.layers.keys():
         # add all nodes to the list and as childs in parent node

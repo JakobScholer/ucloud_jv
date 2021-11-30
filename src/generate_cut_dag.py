@@ -9,18 +9,22 @@ from igraph import *
 import plotly.graph_objects as go
 import time
 
-#
-# Function run by worker processes
-#
+def removeDuplicates(arr):
+    temp = []
+    for e in arr:
+        if e not in temp:
+            temp.append(e)
+    return temp
 
+# Function run by worker processes
 def worker(input, output):
     for func, args in iter(input.get, 'STOP'):
         result = func(*args)
         output.put(result)
 
-
+# the function that generate the full cut dag
 def make_cut_dag():
-    NUMBER_OF_PROCESSES = 4
+    NUMBER_OF_PROCESSES = 1
 
     stringfile = "xyz_test_files/GCD_test_files/stringfile.xyz0009"
     with open("xyz_test_files/GCD_test_files/ISOMERS0009", "r") as f:
@@ -34,12 +38,12 @@ def make_cut_dag():
     task_queue = Queue()
     done_queue = Queue()
 
-    print("make task for root")
+    print("MAKE ROOT! start")
     # add first task
     root = cd.layers[0][0]
     root_task = (make_childs_mp, (stringfile, set(), (0,0)))
     task_queue.put(root_task)
-    print("done")
+    print("MAKE ROOT! stop")
 
     # Start worker processes
     for i in range(NUMBER_OF_PROCESSES):
@@ -49,29 +53,30 @@ def make_cut_dag():
     wait_for_end = True
     tasks_sent = 1
     tasks_completed = 0
-    print("staring wait for it")
+    print("GENERATE CUT DAG! start")
     while wait_for_end:
-        print("tasks_sent: " + str(tasks_sent))
-        print("tasks_completed: " + str(tasks_completed))
+        print("    TASK STATE INFO!")
+        print("        tasks_sent: " + str(tasks_sent))
+        print("        tasks_completed: " + str(tasks_completed))
         if tasks_sent == tasks_completed:
             wait_for_end = False
         elif done_queue.empty() == True:
-            print("sleep time")
+            print("    No new data recived")
             time.sleep(0.2)
-            print("waky waky!")
         else:
+            print("    DATA REACIVED! start")
             while done_queue.empty() == False:
                 child_infos = done_queue.get() # get info
                 tasks_completed += 1
-                tasks = insert_childs_mp(stringfile, cd, child_infos[0], child_infos[1]) # insert child
+                print("        got info: " + str(removeDuplicates(child_infos[0])))
+                tasks = insert_childs_mp(stringfile, cd, removeDuplicates(child_infos[0]), child_infos[1]) # insert child
                 if len(tasks) > 0:
-                    print("added " + str(len(tasks)) + " to the tasks")
                     for t in tasks: # add new tasks to the queue
+                        print("        sending info: " + str(t[1][1]))
                         task_queue.put(t)
                     tasks_sent += len(tasks)
-                else:
-                    print("no new tasks added")
-    print("Cut dag is generated")
+                print("    DATA REACIVED! stop")
+    print("GENERATE CUT DAG! stop")
 
     # make all tasks for blackbox
     tasks_bx = []
@@ -270,7 +275,7 @@ def visualizer(cut_dag, borderline_value):
                              name='Cut info',
                              text=cut_info,
                              hoverinfo='skip',
-                             textfont_size=30
+                             textfont_size=10
                              ))
     fig.add_trace(go.Scatter(x=cut_option_x,
                              y=[k - 1 for k in cut_option_y],
@@ -278,7 +283,7 @@ def visualizer(cut_dag, borderline_value):
                              name='stringfile',
                              text=stringfiles,
                              hoverinfo='skip',
-                             textfont_size=30
+                             textfont_size=10
                              ))
 
     fig.show()
