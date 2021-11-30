@@ -1,3 +1,6 @@
+import pathlib
+from os import listdir
+
 from mod import *
 from src.root_mean_square import root_mean_square
 from src.cut_molecule import cut_molecule_main, make_cut_molecule, find_all_cuts, make_cut
@@ -118,6 +121,7 @@ def run_blackbox(stringfile, isomer, cuts, placement):
     xyz_file, order = make_cut(rdk_mol, cuts, molecule, lookup_dict)
     # call true black box
     data = run_zstruct_and_gsm([xyz_file], order, atom_core, isomer)
+
     if len(data) == 0: # check if a stringfile was generated
         data.append("NO REACTION") # if no stringfile was generated return this string
     # return data

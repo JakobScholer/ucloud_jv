@@ -20,7 +20,7 @@ def worker(input, output):
 
 
 def make_cut_dag():
-    NUMBER_OF_PROCESSES = 1
+    NUMBER_OF_PROCESSES = 4
 
     stringfile = "xyz_test_files/GCD_test_files/stringfile.xyz0009"
     with open("xyz_test_files/GCD_test_files/ISOMERS0009", "r") as f:
@@ -100,7 +100,9 @@ def make_cut_dag():
                 node = cd.layers[data[1][0]][data[1][1]]
                 node.stringfile = data[0]
                 if not data[0] == "NO REACTION":
-                    node.energy = read_energy_profiles(data[0])
+                    with open(data[0]) as f:
+                        data_stringfile = f.readlines()
+                    node.energy = read_energy_profiles(data_stringfile)
                     node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
                 tasks_completed += 1 # increment the number of tasks needed to be done
         else: # else wait a litle and check again
