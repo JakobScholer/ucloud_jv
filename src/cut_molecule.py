@@ -1,6 +1,7 @@
 from rdkit.Chem import rdmolops, GetSymmSSSR, AddHs, MolFromSmiles, MolToXYZBlock, Atom
 from rdkit.Chem.AllChem import Compute2DCoords
 from rdkit.Chem.rdDistGeom import EmbedMolecule
+from src.stringfile_to_rdkit import stringfile_to_rdkit
 
 #from src.stringfile_to_rdkit import stringfile_to_rdkit, fig_plot
 
@@ -15,7 +16,7 @@ class MoleculeNode:
 # rdk_mol is the molecule object from RDKit
 def make_cut_molecule(rdk_mol, core):
     # for handling of bignodes
-    def dig_node_update(b_nodes, look_up, atom_list, data):
+    def big_node_update(b_nodes, look_up, atom_list, data):
         intersection = data.intersection(atom_list) # all atoms that are already in a big node
         if not intersection == set(): # If atoms are shared, merge all possbile groups and update everything
             # for each intersected atom. find all the big nodes
@@ -44,6 +45,14 @@ def make_cut_molecule(rdk_mol, core):
         for atom in data: # update the atoms_in_big_nodes
             atom_list.add(atom)
 
+    def core_ring(cut_molecule, look_up): # check for a ring, where core connects duo to the chemical reaction. Using recursive depth first search
+        # use a dict to keep track on parents
+        # Make a list of all atoms already visited
+        # Go over each atom starting from the core with breath first search
+        # Check if any new atom is already found. use those two to track the parents and make a ring from the core
+        # do it until all have been found
+        return []
+
     lookup = {} # look up dict
     cut_molecule = [] # The "atom" list for the cut molecule
     ### Find all double bonds, triple adn rings and insert the atoms together ###
@@ -61,7 +70,7 @@ def make_cut_molecule(rdk_mol, core):
         data = set()
         for atom in r:
             data.add(int(atom))
-        dig_node_update(big_nodes, big_nodes_look_up, atoms_in_big_nodes, data)
+        big_node_update(big_nodes, big_nodes_look_up, atoms_in_big_nodes, data)
 
     # for each bond that is not a single bond. make a big node or add to already existing node
     bonds = []
@@ -70,7 +79,7 @@ def make_cut_molecule(rdk_mol, core):
         end_atom = int(bond.GetEndAtomIdx())
         if not big_nodes_look_up.get(start_atom) == big_nodes_look_up.get(end_atom) or (big_nodes_look_up.get(end_atom) == None and big_nodes_look_up.get(start_atom) == None): # Not in the same big node or both not in any bignodes
             if not str(bond.GetBondType()) == "SINGLE": # make a big node if not a single bond
-                dig_node_update(big_nodes, big_nodes_look_up, atoms_in_big_nodes, set((start_atom , end_atom)))
+                big_node_update(big_nodes, big_nodes_look_up, atoms_in_big_nodes, set((start_atom , end_atom)))
             else:
                 bonds.append(bond) # get the bonds that are not internal in a big node, to reduce later iteration over bonds
 
@@ -126,6 +135,10 @@ def make_cut_molecule(rdk_mol, core):
                     break
         parent_list = new_parent
         bonds = new_bonds
+
+    #print("CORE RING: ")
+    #print(core_ring(cut_molecule, lookup, [core], 0))
+
     return cut_molecule, lookup
 
 # cut_molecule is the mocule to find cuts on
@@ -224,7 +237,7 @@ def make_cut(mol, cuts, molecule, lookup_dict):
     return xyz_string, ordering
 
 def cut_molecule_main():
-    mol, atom_core, energy_profiles = stringfile_to_rdkit('xyz_test_files/GCD_test_files/stringfile.xyz0110', visualize=True)
+    mol, atom_core, energy_profiles = stringfile_to_rdkit('xyz_test_files/GCD_test_files/stringfile.xyz0009', visualize=False)
     cut_molecule, lookup = make_cut_molecule(mol, atom_core)
     cuts = find_all_cuts(cut_molecule, set(), lookup)
     print(cuts)
