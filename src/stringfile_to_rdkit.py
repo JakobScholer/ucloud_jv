@@ -2,8 +2,8 @@ import openbabel.pybel as pybel
 from openbabel import openbabel
 import plotly.graph_objects as go
 
-from src.cut_molecule import make_cut_molecule, make_cut, find_all_cuts
-from src.root_mean_square import root_mean_square
+#from src.cut_molecule import make_cut_molecule, make_cut, find_all_cuts
+#from src.root_mean_square import root_mean_square
 from rdkit.Chem import RWMol, MolFromSmiles, Atom, BondType, Conformer
 from rdkit.Geometry import Point3D
 
@@ -226,5 +226,3 @@ def stringfile_to_rdkit_main():
     xyz_file, order = make_cut(mol, cuts[0], molecule, lookup_dict)
     print(order)
     print(xyz_file)
-
-

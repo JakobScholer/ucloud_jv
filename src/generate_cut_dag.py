@@ -4,6 +4,7 @@ from src.root_mean_square import root_mean_square
 from src.cut_molecule import make_cut, make_cut_molecule
 from src.stringfile_to_rdkit import stringfile_to_rdkit, read_energy_profiles
 from src.zstruct_and_gsm import run_zstruct_and_gsm
+from src.stringfile_tester import check_product
 from mod import *
 from igraph import *
 import plotly.graph_objects as go
@@ -291,7 +292,19 @@ def visualizer(cut_dag, borderline_value):
 def generate_cut_dag_main():
     freeze_support()
     cut_dag = make_cut_dag()
+
+    original_stringfile = cut_dag.layers[0][0].stringfile
+    cuts = cut_dag.layers[1][0].cuts
+    modified_strfile = cut_dag.layers[1][0].stringfile
+    # make cut molecules
+    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(original_stringfile, False)
+    molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
+    # make cuts on it
+    xyz_file, ordering = make_cut(rdk_mol, cuts, molecule, lookup_dict)
+    print(check_product(original_stringfile, modified_strfile, cuts, ordering, cut_dag.cut_molecule, cut_dag.cut_molecule_lookup_dict))
+
     if cut_dag is not None:
-        visualizer(cut_dag, 100)
+        #visualizer(cut_dag, 100)
+        print("derp")
     else:
         print("No core for molecule")
