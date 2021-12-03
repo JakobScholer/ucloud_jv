@@ -5,9 +5,12 @@ from src.stringfile_to_rdkit import stringfile_to_rdkit_main, read_energy_profil
 from src.cut_dag import cut_dag_main
 from src.generate_cut_dag import generate_cut_dag_main
 from src.zstruct_and_gsm import zstruct_gsm_main
+from src.smiles_to_reactions import make_reactions
 
 if __name__ == '__main__':
+    print("derp")
     if len(sys.argv) == 2:
+        print("here atleas?")
         if str(sys.argv[1]) == "cut_molecule":
             cut_molecule_main()
         elif str(sys.argv[1]) == "generate_tree":
@@ -20,12 +23,16 @@ if __name__ == '__main__':
             stringfile_to_rdkit("xyz_test_files/GCD_test_files/stringfile.xyz0177", visualize=True)
         elif str(sys.argv[1]) == "zstruct_gsm":
             zstruct_gsm_main()
-    else:
+        elif str(sys.argv[1]) == "smiles_to_reactions":
+            print("we was here")
+            make_reactions("CCO")
+        else:
+            print("derp")
         #g = smiles("CCO")                       # molecule to test reaction on
         #xyz_string = mod_to_xyz(g, to_file=False)             # convert molecule for zstruct to understand it
         #run_zstruct_and_gsm(xyz_string)
 
-        gml_string, atom_core, energy_curve = stringfile_to_rdkit('blackbox/output/5af9b18e744943acab7bffa4d3845c4d/stringfiles/stringfile.xyz0003', visualize=True)
+        #gml_string, atom_core, energy_curve = stringfile_to_rdkit('blackbox/output/5af9b18e744943acab7bffa4d3845c4d/stringfiles/stringfile.xyz0003', visualize=True)
         '''
         g = graphGMLString(gml_string)
         molecule, lookup_dict = make_cut_molecule(g, atom_core)
