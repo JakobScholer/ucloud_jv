@@ -5,7 +5,7 @@ from src.cut_molecule import make_cut, make_cut_molecule
 from src.stringfile_to_rdkit import stringfile_to_rdkit, read_energy_profiles
 from src.zstruct_and_gsm import run_zstruct_and_gsm
 from src.stringfile_tester import check_product
-from mod import *
+#from mod import *
 from igraph import *
 import plotly.graph_objects as go
 import time
@@ -115,61 +115,6 @@ def make_cut_dag():
             print("sleep sleep")
             time.sleep(2)
             print("waky waky")
-    '''
-    # make all tasks for the blackbox
-    while len(tasks_bx) > 0: #there is still tasks to perform
-        # insert more tasks if size space
-        if task_queue.qsize() < (NUMBER_OF_PROCESSES * 2):
-            # insert maximum amount of tasks
-            if (NUMBER_OF_PROCESSES * 2) - task_queue.qsize() < len(tasks_bx):
-                insert_amount = (NUMBER_OF_PROCESSES * 2) - task_queue.qsize()
-            else:
-                insert_amount = len(tasks_bx)
-            print("inserting " + str(insert_amount) + " new tasks")
-            for i in range(insert_amount):
-                task_queue.put(tasks_bx[i]) # insert new tasks
-            for i in range(insert_amount):
-                tasks_bx.pop(i) # remove already inserted tasks
-        if done_queue.empty() == False: # insert return data in format (stringfile, Energy, placement)
-            while done_queue.empty() == False: # empty the gueue
-                print("whuue got some BX data")
-                data = done_queue.get()
-                print("------------------------")
-                print(data)
-                node = cd.layers[data[1][0]][data[1][1]]
-                node.stringfile = data[0]
-                if not data[0] == "NO REACTION":
-                    node.energy = read_energy_profiles(data[0])
-                    node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
-                task_counter -= task_counter # increment the number of tasks needed to be done
-        else: # else wait a litle and check again
-            print("sleep sleep")
-            time.sleep(2)
-            print("waky waky")
-    # all tasks has been inserted
-
-
-    print("no more tasks only wait for data now!")
-
-    # wait for porcesses to end
-    while task_counter > 0:
-        print("#############")
-        print(task_counter)
-        if done_queue.empty() == False: # insert return data in format (stringfile, Energy, placement)
-            while done_queue.empty() == False: # empty the gueue
-                print("whuue got some BX data")
-                data = done_queue.get()
-                node = cd.layers[data[1][0]][data[1][1]]
-                node.stringfile = data[0]
-                if not data[0] == "NO REACTION":
-                    node.energy = read_energy_profiles(data[0])
-                    node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
-                task_counter -= task_counter # increment the number of tasks needed to be done
-        else: # else wait a litle and check again
-            print("sleep sleep")
-            time.sleep(2)
-            print("waky waky")
-    '''
     # Tell child processes to stop
     for i in range(NUMBER_OF_PROCESSES):
         task_queue.put('STOP')

@@ -2,6 +2,15 @@ import openbabel.pybel as pybel
 from openbabel import openbabel
 from src.stringfile_to_rdkit import build_bond_map
 
+def get_educt(strfile):
+    with open(strfile) as f:
+        content = f.readlines()
+    num_atoms = int(content[0])
+    xyz_str_educt: str = "".join(content[:(num_atoms + 2)])
+
+    educt = pybel.readstring("xyz", xyz_str_product)
+    return educt
+
 def get_product(strfile):
     # read xyz data as string
     with open(strfile) as f:
@@ -10,7 +19,6 @@ def get_product(strfile):
     xyz_str_product: str = "".join(content[len(content) - (num_atoms + 2):])    # string representing product
 
     product = pybel.readstring("xyz", xyz_str_product)
-
     return product
 
 def get_removed_atoms(cuts, molecule, lookup_dict):
@@ -24,7 +32,6 @@ def get_removed_atoms(cuts, molecule, lookup_dict):
 def check_product(original_strfile, modified_strfile, cuts, ordering, molecule, lookup_dict):
     if modified_strfile == "NO REACTION":
         return False
-    print(modified_strfile)
     # read the product of both files
     original_product = get_product(original_strfile)
     modified_product = get_product(modified_strfile)
@@ -33,42 +40,47 @@ def check_product(original_strfile, modified_strfile, cuts, ordering, molecule, 
     modified_bmap = build_bond_map(modified_product)
 
     banned_atoms = get_removed_atoms(cuts, molecule, lookup_dict)
-    print(banned_atoms)
-    print(" ")
-    print(cuts)
-    print(" ")
-    print(original_bmap)
-    print(" ")
-    print(ordering)
-    print(" ")
+
     original_bonds = set()
     for bond in original_bmap.keys():
         print(bond)
         if bond[0] not in banned_atoms and bond[1] not in banned_atoms:
             #original_bonds.add((int(ordering.get(str(bond[0]))),int(ordering.get(str(bond[1]))),original_bmap.get(bond)))
             original_bonds.add((int(ordering.get(str(bond[0]))),int(ordering.get(str(bond[1])))))
-    print("### original_bonds ###")
-    print(original_bonds)
 
     modified_bonds = set()
     for bond in modified_bmap:
-        print(bond)
         #modified_bonds.add((bond[0], bond[1], modified_bmap.get(bond)))
         modified_bonds.add((bond[0], bond[1]))
-    print("### modified_bonds ###")
-    print(modified_bonds)
 
     if original_bonds.difference(modified_bonds) == set():
-        print("true")
         return True
     else:
-        print("False")
         return False
+
+def check_educt_to_product(stringfile):
+    # get xyz data for eduxt and product
+    educt = get_educt(stringfile)
+    product = get_product(stringfile)
+
+    # get bmap of both
+    educt_bmap = build_bond_map(educt)
+    product_bmap = build_bond_map(product)
+
+    educt_bonds = set()
+    for bond in educt_bmap:
+        #modified_bonds.add((bond[0], bond[1], modified_bmap.get(bond)))
+        educt_bonds.add((bond[0], bond[1]))
+
+    product_bonds = set()
+    for bond in product_bmap:
+        #modified_bonds.add((bond[0], bond[1], modified_bmap.get(bond)))
+        product_bonds.add((bond[0], bond[1]))
+
+    if educt_bonds.difference(product_bonds) == set(): # no reaction happened
+        return False
+    else:
+        return True
 
 def stringfile_tester_main():
     print("Hello")
-
-if __name__ == '__main__':
-    stringfile = "../xyz_test_files/GCD_test_files/stringfile.xyz0009"
-    #original_product = get_product(stringfile)
-    print((1,2,3))

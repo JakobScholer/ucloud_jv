@@ -1,11 +1,12 @@
 import pathlib
 from os import listdir
 
-from mod import *
+#from mod import *
 from src.root_mean_square import root_mean_square
 from src.cut_molecule import cut_molecule_main, make_cut_molecule, find_all_cuts, make_cut
 from src.stringfile_to_rdkit import stringfile_to_rdkit, read_energy_profiles
 from src.zstruct_and_gsm import run_zstruct_and_gsm
+from src.stringfile_tester import check_product
 
 class CutDagNode:
     def __init__(self, cuts):
@@ -125,8 +126,10 @@ def run_blackbox(stringfile, isomer, cuts, placement):
 
     if len(data) == 0: # check if a stringfile was generated
         data.append("NO REACTION") # if no stringfile was generated return this string
-    # return data
-    return [data[0], placement]
+    elif not check_product(stringfile, data[0], cuts, order, molecule, lookup_dict): # check if reaction is the same
+        return ["NO REACTION", placement]
+    else: # return data
+        return [data[0], placement]
 
 # generate root node
 # input: Stringfile from Xtb, boolean for making visuals of the cut molecute
