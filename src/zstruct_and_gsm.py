@@ -45,9 +45,8 @@ def run_zstruct_and_gsm(xyz_strings: list, smiles_string: str, ordering=None, co
     run_gsm(clone_name, output_folder, offset, isomers_str, reaction_folder, cuts_folder)                         # make gsm clone and run gsm clone
     if path.isdir(f"blackbox/gsm_clones/{clone_name}"):
         rmtree(f"blackbox/gsm_clones/{clone_name}", ignore_errors=True)             # remove gsm clone
-
-    stringfile_path = listdir(f"blackbox/output/{output_folder}")  # returns list of all generated stringfiles
-    return [f"blackbox/output/{output_folder}/" + s for s in stringfile_path]
+        
+    return f"blackbox/output/{output_folder}/"
 
 
 def run_zstruct(clone_name: str, output_folder: str, offset: int):
