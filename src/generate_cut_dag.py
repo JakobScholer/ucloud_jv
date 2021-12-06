@@ -252,9 +252,9 @@ def visualizer(cut_dag, borderline_value):
 
     fig.show()
 
-def generate_cut_dag_main(stringfile, overall_path, reaction_folder):
+def generate_cut_dag_main(stringfile, overall_path, reaction_folder, debug_mode: bool = False):
     freeze_support()
-    cut_dag = make_cut_dag(stringfile, overall_path, reaction_folder)
+    cut_dag = make_cut_dag(stringfile, overall_path, reaction_folder, debug_mode)
 
     if cut_dag is not None:
         print("SUCCES!")
