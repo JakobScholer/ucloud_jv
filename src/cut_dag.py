@@ -127,14 +127,14 @@ def run_blackbox(stringfile, cuts, placement, overall_folder, reaction_folder):
         cut_folder = cut_folder + str(cut) + "_"
     cut_folder = cut_folder[0:-1] + "/"
     # call true black box
-    data = run_zstruct_and_gsm([xyz_file], overall_folder, order, atom_core, reaction_folder, cut_folder)
+    stringfile_path = run_zstruct_and_gsm([xyz_file], overall_folder, order, atom_core, reaction_folder, cut_folder)
 
     if len(data) == 0: # check if a stringfile was generated
         data.append("NO REACTION") # if no stringfile was generated return this string
-    elif not check_product(stringfile, data, cuts, order, molecule, lookup_dict): # check if reaction is the same
+    elif not check_product(stringfile, stringfile_path, cuts, order, molecule, lookup_dict): # check if reaction is the same
         return ["NO REACTION", placement]
     else: # return data
-        return [data, placement]
+        return [stringfile_path, placement]
 
 # generate root node
 # input: Stringfile from Xtb, boolean for making visuals of the cut molecute
