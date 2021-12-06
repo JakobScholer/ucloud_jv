@@ -115,14 +115,19 @@ def insert_childs_mp(stringfile, cd, child_sets, placement):
         return tasks
     return []
 
-def run_blackbox(stringfile, isomer, cuts, placement):
+def run_blackbox(stringfile, cuts, placement, overall_folder, reaction_folder):
     # make cut molecules
     rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile, False)
     molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
     # make cuts on it
     xyz_file, order = make_cut(rdk_mol, cuts, molecule, lookup_dict)
+
+    cut_folder = "/" # make cut folder name
+    for cut in cuts:
+        cut_folder = cut_folder + str(cut) + "_"
+    cut_folder = cut_folder[0:-1] + "/"
     # call true black box
-    data = run_zstruct_and_gsm([xyz_file], order, atom_core, isomer)
+    data = run_zstruct_and_gsm([xyz_file], overall_folder, order, atom_core, reaction_folder, cut_folder)
 
     if len(data) == 0: # check if a stringfile was generated
         data.append("NO REACTION") # if no stringfile was generated return this string

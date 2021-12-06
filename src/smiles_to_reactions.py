@@ -39,4 +39,4 @@ def make_reactions(smiles):# tag en smiles som input
             print("    ISOMER: " + str(isomer_file))
             if check_educt_to_product(stringfile): # if there is a reaction in the stringfile. make a cut dag!
                 print("        Generate cut dag")
-                generate_cut_dag_main(stringfile, isomer_file)
+                generate_cut_dag_main(stringfile, smiles_path, folder)
