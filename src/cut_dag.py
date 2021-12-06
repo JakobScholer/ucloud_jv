@@ -131,10 +131,10 @@ def run_blackbox(stringfile, cuts, placement, overall_folder, reaction_folder):
 
     if len(data) == 0: # check if a stringfile was generated
         data.append("NO REACTION") # if no stringfile was generated return this string
-    elif not check_product(stringfile, data[0], cuts, order, molecule, lookup_dict): # check if reaction is the same
+    elif not check_product(stringfile, data, cuts, order, molecule, lookup_dict): # check if reaction is the same
         return ["NO REACTION", placement]
     else: # return data
-        return [data[0], placement]
+        return [data, placement]
 
 # generate root node
 # input: Stringfile from Xtb, boolean for making visuals of the cut molecute
