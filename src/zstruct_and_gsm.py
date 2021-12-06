@@ -16,8 +16,8 @@ def run_zstruct_and_gsm(xyz_strings: list, smiles_string: str, ordering=None, co
     if ordering is None:
         ordering = {}
     # if smiles_string is an existing folder make it the output folder otherwise make a folder and make it the output folder
-    if not path.isdir(f"blackbox/output/{smiles_string}"):
-        output_folder = smiles_string + "_" + str(uuid4().hex[:4])  # unique identifier for output of this smiles string
+    if not path.isdir(smiles_string):
+        output_folder = "blackbox/output/" + smiles_string + "_" + str(uuid4().hex[:4])  # unique identifier for output of this smiles string
         makedirs(f"blackbox/output/{output_folder}")
     else:
         output_folder = smiles_string
@@ -28,16 +28,16 @@ def run_zstruct_and_gsm(xyz_strings: list, smiles_string: str, ordering=None, co
         offset += run_zstruct(clone_name, output_folder, offset)  # run zstruct clone
         isomers_str = None
     else:
-        makedirs(f"blackbox/output/{output_folder}/{reaction_folder}/{cuts_folder}", exist_ok=True)
-        for file in listdir(f"blackbox/output/{output_folder}/{reaction_folder}"):
+        makedirs(f"{output_folder}/{reaction_folder}/{cuts_folder}", exist_ok=True)
+        for file in listdir(f"{output_folder}/{reaction_folder}"):
             if file.startswith("ISOMERS"):
-                with open(f"blackbox/output/{output_folder}/{reaction_folder}/{file}", "r") as f:
+                with open(f"{output_folder}/{reaction_folder}/{file}", "r") as f:
                     isomers_str = f.read()
                 break
         isomers_str = sub(r'\d+', lambda m: ordering.get(m.group(), m.group()), isomers_str)  # replace numbers with dict mapping
-        with open(f"blackbox/output/{output_folder}/{reaction_folder}/{cuts_folder}/ISOMERS0000", "w") as f:
+        with open(f"{output_folder}/{reaction_folder}/{cuts_folder}/ISOMERS0000", "w") as f:
             f.write(isomers_str)
-        with open(f"blackbox/output/{output_folder}/{reaction_folder}/{cuts_folder}/initial0000.xyz", "w") as f:
+        with open(f"{output_folder}/{reaction_folder}/{cuts_folder}/initial0000.xyz", "w") as f:
             f.write(xyz_strings[0])
         offset += 1
     if path.isdir(f"blackbox/zstruct_clones/{clone_name}"):
@@ -58,9 +58,9 @@ def run_zstruct(clone_name: str, output_folder: str, offset: int):
     isomer_count = sum(filename.startswith("ISOMER") for filename in listdir(f"blackbox/zstruct_clones/{clone_name}/scratch"))  # find number of ISOMER files created
     for i in range(isomer_count):                                                                                            # move all ISOMER and initial files to output folder
         strid = str(i).zfill(4)
-        makedirs(f"blackbox/output/{output_folder}/reaction{strid}")
-        move(f"blackbox/zstruct_clones/{clone_name}/scratch/ISOMERS{strid}", f"blackbox/output/{output_folder}/reaction{strid}/ISOMERS{str(i+offset).zfill(4)}")
-        move(f"blackbox/zstruct_clones/{clone_name}/scratch/initial{strid}.xyz", f"blackbox/output/{output_folder}/reaction{strid}/initial{str(i+offset).zfill(4)}.xyz")
+        makedirs(f"{output_folder}/reaction{strid}")
+        move(f"blackbox/zstruct_clones/{clone_name}/scratch/ISOMERS{strid}", f"{output_folder}/reaction{strid}/ISOMERS{str(i+offset).zfill(4)}")
+        move(f"blackbox/zstruct_clones/{clone_name}/scratch/initial{strid}.xyz", f"{output_folder}/reaction{strid}/initial{str(i+offset).zfill(4)}.xyz")
     return isomer_count
 
 
@@ -82,11 +82,11 @@ def run_gsm_round(clone_name: str, output_folder: str, i: int, isomers_str: str,
         ID = reaction_folder[-4:]
     init_fn = f"initial{ID}.xyz"
     iso_fn = f"ISOMERS{ID}"
-    with open(f"blackbox/output/{output_folder}/{reaction_folder}/{iso_fn}", "r") as f:
+    with open(f"{output_folder}/{reaction_folder}/{iso_fn}", "r") as f:
         new_isomers_str = f.read()
     if isomers_str is None or new_isomers_str == isomers_str:               # only run gsm on reaction matching pattern
-        copyfile(f"blackbox/output/{output_folder}/{reaction_folder}/{init_fn}", f"blackbox/gsm_clones/{clone_name}/scratch/initial0000.xyz")
-        copyfile(f"blackbox/output/{output_folder}/{reaction_folder}/{iso_fn}", f"blackbox/gsm_clones/{clone_name}/scratch/ISOMERS0000")
+        copyfile(f"{output_folder}/{reaction_folder}/{init_fn}", f"blackbox/gsm_clones/{clone_name}/scratch/initial0000.xyz")
+        copyfile(f"{output_folder}/{reaction_folder}/{iso_fn}", f"blackbox/gsm_clones/{clone_name}/scratch/ISOMERS0000")
         try:
             check_call(["./gsm.orca"], stdout=DEVNULL, stderr=STDOUT, cwd=f"blackbox/gsm_clones/{clone_name}")   # run gsm.orca in silent mode
         except CalledProcessError as e:
@@ -95,13 +95,13 @@ def run_gsm_round(clone_name: str, output_folder: str, i: int, isomers_str: str,
         # find stringfile if one was made and move to output
         if path.exists(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000"):
             move(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000",
-                 f"blackbox/output/{output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz{str(i).zfill(4)}")
+                 f"{output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz{str(i).zfill(4)}")
         elif path.exists(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g"):
             move(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g",
-                 f"blackbox/output/{output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz{str(i).zfill(4)}")
+                 f"{output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz{str(i).zfill(4)}")
         elif path.exists(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g1"):
             move(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g1",
-                 f"blackbox/output/{output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz{str(i).zfill(4)}")
+                 f"{output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz{str(i).zfill(4)}")
 
 
 def run_gsm(clone_name: str, output_folder: str, isomer_count: int, isomers_str: str, reaction_folder: str = None, cuts_folder: str = ""):
