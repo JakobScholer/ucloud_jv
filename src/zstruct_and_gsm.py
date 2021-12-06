@@ -9,7 +9,7 @@ from rdkit.Chem.rdDistGeom import EmbedMolecule
 from src.stringfile_to_rdkit import stringfile_to_rdkit
 
 
-def run_zstruct_and_gsm(xyz_strings: list, smiles_string: str, ordering=None, core=None, reaction_folder: str = None, cuts_folder: str = None):
+def run_zstruct_and_gsm(xyz_strings: list, smiles_string: str, ordering=None, core=None, reaction_folder: str = None, cuts_folder: str = ""):
     """takes an xyz string, a dictionary mapping the order of atoms, a list of core atoms and the isomer string, in return it creates output in blackbox/output"""
     if core is None:
         core = []
@@ -119,7 +119,7 @@ def zstruct_gsm_main():
     Compute2DCoords(mol)  # generate 2d coordinates
     EmbedMolecule(mol, randomSeed=0xf00d)  # generate 3d coordinates
     xyz_str_1 = MolToXYZBlock(mol)
-    #folders = run_zstruct_and_gsm([xyz_str_1], smiles_string)
-    run_zstruct_and_gsm(xyz_strings=[xyz_str_1], smiles_string="CCO_518e", ordering={}, core=[], reaction_folder="reaction0001", cuts_folder="/1_2_3/")
+    folders = run_zstruct_and_gsm([xyz_str_1], smiles_string)
+    #run_zstruct_and_gsm(xyz_strings=[xyz_str_1], smiles_string="CCO_518e", ordering={}, core=[], reaction_folder="reaction0001", cuts_folder="/1_2_3/")
     #print(folders)
     #folders = ["blackbox/output/ade0008ff58c47a59cc34cc464041810\stringfiles/stringfile.xyz0009"]
