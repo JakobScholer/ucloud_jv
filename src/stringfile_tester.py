@@ -8,7 +8,7 @@ def get_educt(strfile):
     num_atoms = int(content[0])
     xyz_str_educt: str = "".join(content[:(num_atoms + 2)])
 
-    educt = pybel.readstring("xyz", xyz_str_product)
+    educt = pybel.readstring("xyz", xyz_str_educt)
     return educt
 
 def get_product(strfile):
@@ -45,15 +45,15 @@ def check_product(original_strfile, modified_strfile, cuts, ordering, molecule, 
     for bond in original_bmap.keys():
         print(bond)
         if bond[0] not in banned_atoms and bond[1] not in banned_atoms:
-            #original_bonds.add((int(ordering.get(str(bond[0]))),int(ordering.get(str(bond[1]))),original_bmap.get(bond)))
-            original_bonds.add((int(ordering.get(str(bond[0]))),int(ordering.get(str(bond[1])))))
+            original_bonds.add((int(ordering.get(str(bond[0]))),int(ordering.get(str(bond[1]))),original_bmap.get(bond)))
+            #original_bonds.add((int(ordering.get(str(bond[0]))),int(ordering.get(str(bond[1])))))
 
     modified_bonds = set()
     for bond in modified_bmap:
-        #modified_bonds.add((bond[0], bond[1], modified_bmap.get(bond)))
-        modified_bonds.add((bond[0], bond[1]))
+        modified_bonds.add((bond[0], bond[1], modified_bmap.get(bond)))
+        #modified_bonds.add((bond[0], bond[1]))
 
-    if original_bonds.difference(modified_bonds) == set():
+    if original_bonds.difference(modified_bonds) == set() and modified_bonds.difference(original_bonds) == set():
         return True
     else:
         return False
@@ -77,7 +77,7 @@ def check_educt_to_product(stringfile):
         #modified_bonds.add((bond[0], bond[1], modified_bmap.get(bond)))
         product_bonds.add((bond[0], bond[1]))
 
-    if educt_bonds.difference(product_bonds) == set(): # no reaction happened
+    if educt_bonds.difference(product_bonds) == set() and product_bonds.difference(educt_bonds) == set(): # no reaction happened
         return False
     else:
         return True

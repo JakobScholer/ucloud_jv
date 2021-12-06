@@ -24,11 +24,11 @@ def worker(input, output):
         output.put(result)
 
 # the function that generate the full cut dag
-def make_cut_dag():
-    NUMBER_OF_PROCESSES = 1
+def make_cut_dag(stringfile, isomer_file):
+    NUMBER_OF_PROCESSES = 4
 
-    stringfile = "xyz_test_files/GCD_test_files/stringfile.xyz0009"
-    with open("xyz_test_files/GCD_test_files/ISOMERS0009", "r") as f:
+    #stringfile = "xyz_test_files/GCD_test_files/stringfile.xyz0009"
+    with open(isomer_file, "r") as f:
         isomer = f.read()
     graph = False
     cd = make_root(stringfile, graph)
@@ -78,6 +78,14 @@ def make_cut_dag():
                     tasks_sent += len(tasks)
                 print("    DATA REACIVED! stop")
     print("GENERATE CUT DAG! stop")
+
+    # Tell child processes to stop
+    for i in range(NUMBER_OF_PROCESSES):
+        task_queue.put('STOP')
+    print("done!")
+
+    if True:
+        return cd
 
     # make all tasks for blackbox
     tasks_bx = []
@@ -234,12 +242,11 @@ def visualizer(cut_dag, borderline_value):
 
     fig.show()
 
-def generate_cut_dag_main():
+def generate_cut_dag_main(stringfile, isomer_file):
     freeze_support()
-    cut_dag = make_cut_dag()
+    cut_dag = make_cut_dag(stringfile, isomer_file)
 
     if cut_dag is not None:
-        #visualizer(cut_dag, 100)
-        print("derp")
+        visualizer(cut_dag, 100)
     else:
-        print("No core for molecule")
+        print("ERROR not cut dag for " + str(stringfile))
