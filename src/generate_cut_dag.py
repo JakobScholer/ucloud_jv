@@ -24,7 +24,7 @@ def worker(input, output):
         output.put(result)
 
 # the function that generate the full cut dag
-def make_cut_dag(stringfile, overall_folder, reaction_folder, DEBUG_MODE: boolean = False):
+def make_cut_dag(stringfile, overall_folder, reaction_folder, DEBUG_MODE: bool = False):
     NUMBER_OF_PROCESSES = 4
 
     #stringfile = "xyz_test_files/GCD_test_files/stringfile.xyz0009"
@@ -85,6 +85,12 @@ def make_cut_dag(stringfile, overall_folder, reaction_folder, DEBUG_MODE: boolea
                     print("    DATA REACIVED! stop")
     if DEBUG_MODE:
         print("GENERATE CUT DAG! stop")
+
+    for i in range(NUMBER_OF_PROCESSES):
+        task_queue.put('STOP')
+
+    if True:
+        return cd
 
     # make all tasks for blackbox
     tasks_bx = []
@@ -246,9 +252,9 @@ def visualizer(cut_dag, borderline_value):
 
     fig.show()
 
-def generate_cut_dag_main(stringfile):
+def generate_cut_dag_main(stringfile, overall_path, reaction_folder):
     freeze_support()
-    cut_dag = make_cut_dag(stringfile)
+    cut_dag = make_cut_dag(stringfile, overall_path, reaction_folder)
 
     if cut_dag is not None:
         print("SUCCES!")
