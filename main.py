@@ -8,9 +8,7 @@ from src.zstruct_and_gsm import zstruct_gsm_main
 from src.smiles_to_reactions import make_reactions
 
 if __name__ == '__main__':
-    print("derp")
     if len(sys.argv) == 2:
-        print("here atleas?")
         if str(sys.argv[1]) == "cut_molecule":
             cut_molecule_main()
         elif str(sys.argv[1]) == "generate_tree":
