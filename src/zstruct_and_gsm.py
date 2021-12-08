@@ -41,8 +41,8 @@ def run_zstruct_and_gsm(xyz_strings: list, smiles_string: str, ordering=None, co
         with open(f"{output_folder}/{reaction_folder}{cuts_folder}/initial0000.xyz", "w") as f:
             f.write(xyz_strings[0])
         offset += 1
-    #if path.isdir(f"blackbox/zstruct_clones/{clone_name}"):
-        #rmtree(f"blackbox/zstruct_clones/{clone_name}", ignore_errors=True)         # remove zstruct clone
+    if path.isdir(f"blackbox/zstruct_clones/{clone_name}"):
+        rmtree(f"blackbox/zstruct_clones/{clone_name}", ignore_errors=True)         # remove zstruct clone
     run_gsm(clone_name, output_folder, offset, isomers_str, reaction_folder, cuts_folder)                         # make gsm clone and run gsm clone
     if path.isdir(f"blackbox/gsm_clones/{clone_name}"):
         rmtree(f"blackbox/gsm_clones/{clone_name}", ignore_errors=True)             # remove gsm clone
@@ -83,17 +83,19 @@ def run_gsm_round(clone_name: str, output_folder: str, i: int, isomers_str: str,
     if reaction_folder is None:
         ID = str(i).zfill(4)
         reaction_folder = f"reaction{ID}"
+        reaction_and_cut = reaction_folder
     else:
         ID = reaction_folder[-4:]
+        reaction_and_cut = reaction_folder + cuts_folder[0:-1]
     init_fn = f"initial{ID}.xyz"
     iso_fn = f"ISOMERS{ID}"
     with open(f"{output_folder}/{reaction_folder}/{iso_fn}", "r") as f:
         new_isomers_str = f.read()
     if isomers_str is None or new_isomers_str == isomers_str:               # only run gsm on reaction matching pattern
-        copyfile(f"{output_folder}/{reaction_folder}/{init_fn}", f"blackbox/gsm_clones/{clone_name}/scratch/initial0000.xyz")
-        copyfile(f"{output_folder}/{reaction_folder}/{iso_fn}", f"blackbox/gsm_clones/{clone_name}/scratch/ISOMERS0000")
+        copyfile(f"{output_folder}/{reaction_and_cut}/initial0000.xyz", f"blackbox/gsm_clones/{clone_name}/scratch/initial0000.xyz")
+        copyfile(f"{output_folder}/{reaction_and_cut}/ISOMERS0000", f"blackbox/gsm_clones/{clone_name}/scratch/ISOMERS0000")
         try:
-            check_call(["./gsm.orca"], stdout=DEVNULL, stderr=STDOUT, cwd=f"blackbox/gsm_clones/{clone_name}")   # run gsm.orca in silent mode
+            check_call(["./gsm.orca"], cwd=f"blackbox/gsm_clones/{clone_name}")   # run gsm.orca in silent mode
         except CalledProcessError as e:
             #print(e.output)
             pass

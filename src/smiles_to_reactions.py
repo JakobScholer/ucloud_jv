@@ -21,7 +21,7 @@ def make_reactions(smiles):# tag en smiles som input
         reaction_name = reaction_name + "_+_" + string
     # kør blackbox
     #smiles_path = run_zstruct_and_gsm(xyz_list, reaction_name)
-    smiles_path = "blackbox/output/CC(C)C(C)C(C)N=C([O-])OC=O_bc48"
+    smiles_path = "blackbox/output/CC(C)C(C)C(C)N=C([O-])OC=O_5ae5"
     #smiles_path = "test_folder/" # black box wannabe tester
     stringfile_path = listdir(smiles_path)#
     reaction_folders = [smiles_path + "/" + s for s in stringfile_path]
