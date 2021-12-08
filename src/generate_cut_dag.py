@@ -86,12 +86,6 @@ def make_cut_dag(stringfile, overall_folder, reaction_folder, DEBUG_MODE: bool =
     if DEBUG_MODE:
         print("GENERATE CUT DAG! stop")
 
-    for i in range(NUMBER_OF_PROCESSES):
-        task_queue.put('STOP')
-
-    if True:
-        return cd
-
     # make all tasks for blackbox
     tasks_bx = []
     for k in cd.layers.keys():
@@ -115,8 +109,6 @@ def make_cut_dag(stringfile, overall_folder, reaction_folder, DEBUG_MODE: bool =
                 if DEBUG_MODE:
                     print("whuue got some BX data")
                 data = done_queue.get()
-                #print("------------------------")
-                #print(data)
                 node = cd.layers[data[1][0]][data[1][1]]
                 node.stringfile = data[0]
                 if not data[0] == "NO REACTION":
@@ -162,7 +154,6 @@ def visualizer(cut_dag, borderline_value):
     for layer in cut_dag.layers.keys():
         layer_length = len(cut_dag.layers.get(layer))
         for position in range(layer_length):
-            print(cut_dag.layers.get(layer)[position].RMS)
             if cut_dag.layers.get(layer)[position].stringfile == "NO REACTION":
                 cut_option_y_black.append(layer * 10)
                 cut_option_x_black.append(position * 10 - (layer_length * 10) / 2)
@@ -257,7 +248,7 @@ def generate_cut_dag_main(stringfile, overall_path, reaction_folder, debug_mode:
     cut_dag = make_cut_dag(stringfile, overall_path, reaction_folder, debug_mode)
 
     if cut_dag is not None:
-        print("SUCCES!")
-        #visualizer(cut_dag, 100)
+        #print("SUCCES!")
+        visualizer(cut_dag, 100)
     else:
         print("ERROR not cut dag for " + str(stringfile))

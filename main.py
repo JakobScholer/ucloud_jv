@@ -22,7 +22,7 @@ if __name__ == '__main__':
         elif str(sys.argv[1]) == "zstruct_gsm":
             zstruct_gsm_main()
         elif str(sys.argv[1]) == "smiles_to_reactions":
-            make_reactions(["CCCCO"])
+            make_reactions(["CC(C)C(C)C(C)N=C([O-])OC=O"])
         else:
             print("derp")
         #g = smiles("CCO")                       # molecule to test reaction on

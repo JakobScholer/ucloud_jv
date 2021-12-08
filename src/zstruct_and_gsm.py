@@ -18,35 +18,40 @@ def run_zstruct_and_gsm(xyz_strings: list, smiles_string: str, ordering=None, co
     # if smiles_string is an existing folder make it the output folder otherwise make a folder and make it the output folder
     if not path.isdir(smiles_string):
         output_folder = "blackbox/output/" + smiles_string + "_" + str(uuid4().hex[:4])  # unique identifier for output of this smiles string
-        makedirs(f"blackbox/output/{output_folder}")
+        makedirs(output_folder)
     else:
         output_folder = smiles_string
     clone_name = str(uuid4().hex)  # unique identifier for zstruct and gsm folders of this process
     offset = 0
     if reaction_folder is None:
+        print("run zstruct")
         prepare_zstruct(clone_name, xyz_strings, ordering, core)  # make zstruct clone
         offset += run_zstruct(clone_name, output_folder, offset)  # run zstruct clone
         isomers_str = None
     else:
-        makedirs(f"{output_folder}/{reaction_folder}/{cuts_folder}", exist_ok=True)
+        makedirs(f"{output_folder}/{reaction_folder}{cuts_folder}", exist_ok=True)
         for file in listdir(f"{output_folder}/{reaction_folder}"):
             if file.startswith("ISOMERS"):
                 with open(f"{output_folder}/{reaction_folder}/{file}", "r") as f:
                     isomers_str = f.read()
                 break
         isomers_str = sub(r'\d+', lambda m: ordering.get(m.group(), m.group()), isomers_str)  # replace numbers with dict mapping
-        with open(f"{output_folder}/{reaction_folder}/{cuts_folder}/ISOMERS0000", "w") as f:
+        with open(f"{output_folder}/{reaction_folder}{cuts_folder}/ISOMERS0000", "w") as f:
             f.write(isomers_str)
-        with open(f"{output_folder}/{reaction_folder}/{cuts_folder}/initial0000.xyz", "w") as f:
+        with open(f"{output_folder}/{reaction_folder}{cuts_folder}/initial0000.xyz", "w") as f:
             f.write(xyz_strings[0])
         offset += 1
-    if path.isdir(f"blackbox/zstruct_clones/{clone_name}"):
-        rmtree(f"blackbox/zstruct_clones/{clone_name}", ignore_errors=True)         # remove zstruct clone
+    #if path.isdir(f"blackbox/zstruct_clones/{clone_name}"):
+        #rmtree(f"blackbox/zstruct_clones/{clone_name}", ignore_errors=True)         # remove zstruct clone
     run_gsm(clone_name, output_folder, offset, isomers_str, reaction_folder, cuts_folder)                         # make gsm clone and run gsm clone
     if path.isdir(f"blackbox/gsm_clones/{clone_name}"):
         rmtree(f"blackbox/gsm_clones/{clone_name}", ignore_errors=True)             # remove gsm clone
-        
-    return f"blackbox/output/{output_folder}/"
+    if reaction_folder is None:
+        return output_folder
+    elif path.isfile(f"{output_folder}/{reaction_folder}{cuts_folder}stringfile.xyz0000"):
+        return f"{output_folder}/{reaction_folder}{cuts_folder}stringfile.xyz0000"
+    else:
+        return "NO REACTION"
 
 
 def run_zstruct(clone_name: str, output_folder: str, offset: int):
