@@ -2,6 +2,9 @@ import openbabel.pybel as pybel
 from openbabel import openbabel
 from src.stringfile_to_rdkit import build_bond_map
 
+from src.cut_molecule import cut_molecule_main, make_cut_molecule, find_all_cuts, make_cut
+from src.stringfile_to_rdkit import stringfile_to_rdkit
+
 def get_educt(strfile):
     with open(strfile) as f:
         content = f.readlines()
@@ -83,4 +86,13 @@ def check_educt_to_product(stringfile):
         return True
 
 def stringfile_tester_main():
-    print("Hello")
+    stringfile_original = ""
+    stringfile_modified = ""
+
+    cuts = {}
+
+    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile_original, False)
+    molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
+    xyz_file, ordering = make_cut(rdk_mol, cuts, molecule, lookup_dict)
+
+    check_product(original_strfile, modified_strfile, cuts, ordering, molecule, lookup_dict)
