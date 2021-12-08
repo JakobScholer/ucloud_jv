@@ -34,6 +34,7 @@ def get_removed_atoms(cuts, molecule, lookup_dict):
 
 def check_product(original_strfile, modified_strfile, cuts, ordering, molecule, lookup_dict):
     if modified_strfile == "NO REACTION":
+        print("            gsm FAILURE")
         return False
     # read the product of both files
     original_product = get_product(original_strfile)
@@ -46,7 +47,6 @@ def check_product(original_strfile, modified_strfile, cuts, ordering, molecule, 
 
     original_bonds = set()
     for bond in original_bmap.keys():
-        print(bond)
         if bond[0] not in banned_atoms and bond[1] not in banned_atoms:
             original_bonds.add((int(ordering.get(str(bond[0]))),int(ordering.get(str(bond[1]))),original_bmap.get(bond)))
             #original_bonds.add((int(ordering.get(str(bond[0]))),int(ordering.get(str(bond[1])))))
@@ -57,8 +57,10 @@ def check_product(original_strfile, modified_strfile, cuts, ordering, molecule, 
         #modified_bonds.add((bond[0], bond[1]))
 
     if original_bonds.difference(modified_bonds) == set() and modified_bonds.difference(original_bonds) == set():
+        print("            stringfile tester SUCCESS")
         return True
     else:
+        print("            stringfile tester FAILURE")
         return False
 
 def check_educt_to_product(stringfile):
