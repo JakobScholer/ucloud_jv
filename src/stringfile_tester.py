@@ -1,6 +1,6 @@
 import openbabel.pybel as pybel
 from openbabel import openbabel
-from src.stringfile_to_rdkit import build_bond_map
+from src.bond_map import build_bond_map
 
 from src.cut_molecule import cut_molecule_main, make_cut_molecule, find_all_cuts, make_cut
 from src.stringfile_to_rdkit import stringfile_to_rdkit
