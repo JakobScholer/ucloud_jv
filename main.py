@@ -1,7 +1,7 @@
 import sys
-from src.root_mean_square import root_mean_square
-from src.cut_molecule import cut_molecule_main, make_cut_molecule, find_all_cuts, make_cut
-from src.stringfile_to_rdkit import stringfile_to_rdkit_main, read_energy_profiles, stringfile_to_rdkit
+from src.cut_molecule import cut_molecule_main
+from src.stringfile_to_gml import stringfile_to_gml
+from src.stringfile_to_rdkit import stringfile_to_rdkit_main, stringfile_to_rdkit
 from src.cut_dag import cut_dag_main
 from src.generate_cut_dag import generate_cut_dag_main
 from src.zstruct_and_gsm import zstruct_gsm_main
@@ -26,6 +26,9 @@ if __name__ == '__main__':
             make_reactions(["CCCCO"])
         elif str(sys.argv[1]) == "stringfile_tester":
             stringfile_tester_main()
+        elif str(sys.argv[1]) == "gml":
+            gml = stringfile_to_gml("blackbox/output/CC(C)C(C)C(C)N=C([O-])OC=O_5ae5/reaction0000/stringfile.xyz0000")
+            print(gml)
         else:
             print("derp")
         #g = smiles("CCO")                       # molecule to test reaction on

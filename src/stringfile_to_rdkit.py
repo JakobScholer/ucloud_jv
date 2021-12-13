@@ -1,11 +1,9 @@
 import openbabel.pybel as pybel
 from openbabel import openbabel
 import plotly.graph_objects as go
-
-#from src.cut_molecule import make_cut_molecule, make_cut, find_all_cuts
-#from src.root_mean_square import root_mean_square
-from rdkit.Chem import RWMol, MolFromSmiles, Atom, BondType, Conformer
+from rdkit.Chem import RWMol, MolFromSmiles, Atom, Conformer
 from rdkit.Geometry import Point3D
+from src.bond_map import build_bond_map
 
 
 def fig_plot(mol, core_atoms):
@@ -124,26 +122,6 @@ def fig_plot(mol, core_atoms):
     fig.show()
 
 
-def build_bond_map(mol):
-    """Takes an rdkit mol object, returns a bond mapping for all atoms in mol"""
-    order_map = {
-        1: BondType.SINGLE,
-        2: BondType.DOUBLE,
-        3: BondType.TRIPLE,
-        1.5: BondType.AROMATIC
-    }
-    bmap = {}
-    b: openbabel.OBBond
-    #print("OPENBABEL!!!!")
-    for b in openbabel.OBMolBondIter(mol.OBMol):
-        src, tar = b.GetBeginAtomIdx(), b.GetEndAtomIdx()
-        if src > tar:
-            src, tar = tar, src
-        bmap[(src, tar)] = order_map[b.GetBondOrder()]
-        #print("src: " + str(src) + " tar: " + str(tar))
-    return bmap
-
-
 def read_energy_profiles(string_content):
     """takes the content of a stringfile, returns a list of all energy values within it."""
     energy_profiles = []
@@ -191,10 +169,8 @@ def stringfile_to_rdkit(filename, visualize=False):
     atom_core = set()
 
     # find core and iterate over bonds to add them to rdkit molecule
-    #print("FIRST!!!!")
     for (src, tar), ob_bond in bmap1.items():
         if (src, tar) in bmap2:
-            #print("src: " + str(src) + " tar: " + str(tar))
             if bmap1[(src, tar)] != bmap2[(src, tar)]:
                     atom_core.add(src - 1)
                     atom_core.add(tar - 1)
@@ -202,9 +178,7 @@ def stringfile_to_rdkit(filename, visualize=False):
             atom_core.add(src - 1)
             atom_core.add(tar - 1)
         mol.AddBond((src - 1), (tar - 1), ob_bond)
-    #print("SECOND!!!!")
     for (src, tar), ob_bond in bmap2.items():
-        #print("src: " + str(src) + " tar: " + str(tar))
         if (src, tar) not in bmap1:
             atom_core.add(src - 1)
             atom_core.add(tar - 1)
@@ -226,9 +200,5 @@ def stringfile_to_rdkit(filename, visualize=False):
 
 def stringfile_to_rdkit_main():
     mol, core, energy = stringfile_to_rdkit("xyz_test_files/GCD_test_files/stringfile.xyz0025", True)
-    molecule, lookup_dict = make_cut_molecule(mol, core)
-    cuts = find_all_cuts(molecule, set(), lookup_dict)
-    # make cuts on it
-    xyz_file, order = make_cut(mol, cuts[0], molecule, lookup_dict)
-    print(order)
-    print(xyz_file)
+    print(core)
+    print(energy)
