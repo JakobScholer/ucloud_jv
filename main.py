@@ -4,7 +4,7 @@ from src.stringfile_to_gml import stringfile_to_gml
 from src.stringfile_to_rdkit import stringfile_to_rdkit_main, stringfile_to_rdkit
 from src.cut_dag import cut_dag_main
 from src.generate_cut_dag import generate_cut_dag_main
-from src.zstruct_and_gsm import zstruct_gsm_main
+from src.blackbox import zstruct_gsm_main
 from src.smiles_to_reactions import make_reactions
 from src.stringfile_tester import stringfile_tester_main
 

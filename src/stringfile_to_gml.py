@@ -1,16 +1,12 @@
 from openbabel import pybel, openbabel
-from src.bond_map import build_bond_map
+from src.stringfile_helper_functions import build_bond_map, read_stringfile_content
 
 
 def stringfile_to_gml(filename):
-    with open(filename) as f:
-        content = f.readlines()
-    num_atoms = int(content[0])
-    xyz_str_reactant: str = "".join(content[:(num_atoms + 2)])  # string representing reactant
-    xyz_str_product: str = "".join(content[len(content) - (num_atoms + 2):])  # string representing product
-
-    reactant = pybel.readstring("xyz", xyz_str_reactant)
-    product = pybel.readstring("xyz", xyz_str_product)
+    """"Takes the name of a stringfile, returns a gml rule representing it"""
+    educt_str, product_str, num_atoms = read_stringfile_content(filename)
+    reactant = pybel.readstring("xyz", educt_str)   # reads educt as openBabel molecule object
+    product = pybel.readstring("xyz", product_str)  # reads product as openBabel molecule object
 
     left_verts, ctx_verts, right_verts = [], [], []
     for i in range(num_atoms):
@@ -56,7 +52,6 @@ def stringfile_to_gml(filename):
     left_edges_str = "\n\t    ".join(left_edges)
     ctx_edges_str = "\n\t    ".join(ctx_edges)
     right_edges_str = "\n\t    ".join(right_edges)
-    # ruleID "{mol_reactant.formula}: {float(reaction.product.energy) - float(reaction.reactant.energy)}"
     gml_str = f"""
     rule [
         ruleID "{reactant.formula}"

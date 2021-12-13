@@ -2,7 +2,7 @@ from multiprocessing import Process
 import unittest
 from rdkit.Chem import MolFromSmiles, MolToXYZBlock, rdDepictor
 from rdkit.Chem.rdDistGeom import EmbedMolecule
-from src.zstruct_and_gsm import run_zstruct_and_gsm
+from src.blackbox import run_zstruct_and_gsm
 
 
 class Test(unittest.TestCase):

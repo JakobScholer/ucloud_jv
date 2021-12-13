@@ -1,5 +1,5 @@
 import unittest
-from src.root_mean_square import root_mean_square
+from src.energy_curve_comparison import root_mean_square
 
 
 class Test(unittest.TestCase):

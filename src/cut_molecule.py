@@ -191,13 +191,24 @@ def cut_search(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: int)
 
 def make_cut(mol, cuts, molecule, lookup_dict):
     """"takes an rdkit mol, the ids of atoms to cut off, the molecule object and lookup dictionary, returns xyz string"""
-
     # based on cuts to be performed decides which atoms are removed and which are replaced
-    ban_list = []
+    ban_list = set()
+    replace_list = set()
     for c in cuts:
+        ban_list.add(c)
         for child in molecule[lookup_dict.get(c)].children:
-            ban_list.append(child)
-    replace_list = [x for x in cuts if x not in ban_list]
+            ban_list.add(child)
+    #replace_list = set(x for x in cuts if x not in ban_list)
+
+    big_ban_list = set()
+    big_ban_list.update(ban_list)
+    big_ban_list.update(cuts)
+    for cut in cuts:
+        for neighbor_atom in mol.GetAtomWithIdx(cut).GetNeighbors():
+            if neighbor_atom.GetIdx() not in big_ban_list:
+                replace_list.add(cut)
+    ban_list = [x for x in ban_list if x not in replace_list]
+
     # perform atom replacement and removal
     ordering = {}
     counter = 1
@@ -208,7 +219,7 @@ def make_cut(mol, cuts, molecule, lookup_dict):
             if atom.GetIdx() in replace_list:
                 mol.ReplaceAtom(atom.GetIdx(), Atom("H"), updateLabel=True, preserveProps=False)
                 atoms_to_compute_coordinates.append(atom)
-            ordering[str(atom.GetIdx() + 1)] = str(counter)
+            ordering[atom.GetIdx() + 1] = counter
             counter += 1
         else:
             atoms_to_remove.append(atom.GetIdx()) # adding id to the list of atoms needed to remove
@@ -219,32 +230,29 @@ def make_cut(mol, cuts, molecule, lookup_dict):
         if bond.GetBeginAtom().GetIdx() in ban_list or bond.GetEndAtom().GetIdx() in ban_list:
             bonds_to_remove.append(bond) # add to remove list
     bonds_to_remove.reverse()
-    for bond in bonds_to_remove:
-        print("bond: " + str(bond.GetBeginAtom().GetIdx()) + " " + str(bond.GetEndAtom().GetIdx()))
     for bond in bonds_to_remove: # removing bond
         mol.RemoveBond(bond.GetBeginAtom().GetIdx(), bond.GetEndAtom().GetIdx())
     # remove atoms
     atoms_to_remove.reverse()
     for atom_id in atoms_to_remove:
         mol.RemoveAtom(atom_id)
+
     # recompute coordinates of replaced atoms
-    '''
     for atom in atoms_to_compute_coordinates:
-        print("uuwuwuwuwuwuwuw")
-        print("neighbor amount: " + str(len(atom.GetNeighbors())))
-        print("atom id:" + str(atom.GetIdx()))
-        print("neighbor id: " + str(atom.GetNeighbors()[0].GetIdx()))
-        rdmolops.SetTerminalAtomCoords(mol, atom.GetIdx(), atom.GetNeighbors()[0].GetIdx())
-    '''
+        print("Cuts: ")
+        print(cuts)
+        try:
+            rdmolops.SetTerminalAtomCoords(mol, atom.GetIdx(), atom.GetNeighbors()[0].GetIdx())
+            print("ATOMCOORD WORKS")
+        except:
+            print("ATOMCOORD ERROR")
+
     #xyz_string = MolToXYZFile(mol, 'derpderp.xyz')
 
     xyz_string = str(mol.GetNumAtoms()) + "\n\n"
     coords = mol.GetConformers()[0]
     for atom in mol.GetAtoms():
         xyz_string += str(atom.GetSymbol()) + " " + str(coords.GetAtomPosition(atom.GetIdx()).x) + " " + str(coords.GetAtomPosition(atom.GetIdx()).y) + " " + str(coords.GetAtomPosition(atom.GetIdx()).z) + "\n"
-        print("MODIFIED!" + str(coords.GetAtomPosition(atom.GetIdx()).x) + " " + str(coords.GetAtomPosition(atom.GetIdx()).y) + " " + str(coords.GetAtomPosition(atom.GetIdx()).z))
-    #print(xyz_string)
-
     return xyz_string, ordering
 
 def cut_molecule_main():

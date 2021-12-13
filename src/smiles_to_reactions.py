@@ -2,7 +2,7 @@ from src.stringfile_tester import check_educt_to_product
 from rdkit.Chem import RWMol, AddHs, MolFromSmiles, MolToXYZBlock, rdDepictor
 from rdkit.Chem.AllChem import EmbedMolecule
 from os import walk, path, listdir
-from src.zstruct_and_gsm import run_zstruct_and_gsm
+from src.blackbox import run_zstruct_and_gsm
 from src.generate_cut_dag import generate_cut_dag_main
 
 # C=C(C)C(C(CC)CN(C(=O)OC(C)=O)C([O-])=NC(C)C(C=CC)C1CCCCC1)C2CCCCC2

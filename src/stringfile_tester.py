@@ -1,6 +1,6 @@
 import openbabel.pybel as pybel
 from openbabel import openbabel
-from src.bond_map import build_bond_map
+from src.stringfile_helper_functions import build_bond_map
 
 from src.cut_molecule import cut_molecule_main, make_cut_molecule, find_all_cuts, make_cut
 from src.stringfile_to_rdkit import stringfile_to_rdkit
@@ -51,7 +51,7 @@ def check_product(original_strfile, modified_strfile, cuts, ordering, molecule, 
     original_bonds = set()
     for bond in original_bmap.keys():
         if bond[0] not in banned_atoms and bond[1] not in banned_atoms:
-            original_bonds.add((int(ordering.get(str(bond[0]))),int(ordering.get(str(bond[1]))),original_bmap.get(bond)))
+            original_bonds.add((ordering.get(bond[0]), ordering.get(bond[1]),original_bmap.get(bond)))
             #original_bonds.add((int(ordering.get(str(bond[0]))),int(ordering.get(str(bond[1])))))
 
     #print("MODIFIED!")
