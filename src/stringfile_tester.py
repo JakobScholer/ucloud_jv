@@ -91,13 +91,15 @@ def check_educt_to_product(stringfile):
         return True
 
 def stringfile_tester_main():
-    original_strfile = "xyz_test_files/reaction0001/stringfile.xyz0001"
+    #original_strfile = "xyz_test_files/reaction0001/stringfile.xyz0001"
     modified_strfile = "xyz_test_files/reaction0001/2/stringfile.xyz0000"
 
-    cuts = {2}
+    derp = "xyz_test_files/reaction0001/stringfile.xyz0001"
 
-    stringfile_to_rdkit(modified_strfile, False)
-    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(original_strfile, False)
+    cuts = {6}
+
+    #stringfile_to_rdkit(modified_strfile, False)
+    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(derp, False)
     #Compute2DCoords(rdk_mol)
     #Draw.MolToFile(rdk_mol,'derp.png')
 
@@ -106,4 +108,4 @@ def stringfile_tester_main():
     xyz_file, ordering = make_cut(rdk_mol, cuts, molecule, lookup_dict)
     #print(xyz_file)
 
-    print(check_product(original_strfile, modified_strfile, cuts, ordering, molecule, lookup_dict))
+    #print(check_product(original_strfile, modified_strfile, cuts, ordering, molecule, lookup_dict))

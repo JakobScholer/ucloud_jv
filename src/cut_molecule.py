@@ -242,6 +242,7 @@ def make_cut(mol, cuts, molecule, lookup_dict):
     coords = mol.GetConformers()[0]
     for atom in mol.GetAtoms():
         xyz_string += str(atom.GetSymbol()) + " " + str(coords.GetAtomPosition(atom.GetIdx()).x) + " " + str(coords.GetAtomPosition(atom.GetIdx()).y) + " " + str(coords.GetAtomPosition(atom.GetIdx()).z) + "\n"
+        print("MODIFIED!" + str(coords.GetAtomPosition(atom.GetIdx()).x) + " " + str(coords.GetAtomPosition(atom.GetIdx()).y) + " " + str(coords.GetAtomPosition(atom.GetIdx()).z))
     #print(xyz_string)
 
     return xyz_string, ordering

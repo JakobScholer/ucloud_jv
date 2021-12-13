@@ -139,7 +139,7 @@ def stringfile_to_rdkit(filename, visualize=False):
     xyz_str_product: str = "".join(content[len(content) - (num_atoms + 2):])    # string representing product
 
     # find all atom coordinates and store in list
-    atoms = xyz_str_product.split("\n")
+    atoms = xyz_str_reactant.split("\n")
     coordinates = []
     for atom in atoms:
         coord = atom.split()
@@ -193,12 +193,16 @@ def stringfile_to_rdkit(filename, visualize=False):
         atom_id += 1
     mol.AddConformer(conf)
 
+    if True:
+        for c in coordinates:
+            print("ORIGINAL: " + str(c))
+
     if visualize:
         fig_plot(mol, atom_core)
     return mol, atom_core, energy_profiles
 
 
 def stringfile_to_rdkit_main():
-    mol, core, energy = stringfile_to_rdkit("xyz_test_files/GCD_test_files/stringfile.xyz0025", True)
-    print(core)
-    print(energy)
+    mol, core, energy = stringfile_to_rdkit("xyz_test_files/reaction0001/stringfile.xyz0001", True)
+    #print(core)
+    #print(energy)

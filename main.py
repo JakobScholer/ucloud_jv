@@ -19,7 +19,7 @@ if __name__ == '__main__':
         elif str(sys.argv[1]) == "generate_cut_dag":
             generate_cut_dag_main()
         elif str(sys.argv[1]) == "visualize_molecule":
-            stringfile_to_rdkit("xyz_test_files/GCD_test_files/stringfile.xyz0177", visualize=True)
+            stringfile_to_rdkit("xyz_test_files/reaction0001/stringfile.xyz0001", visualize=True)
         elif str(sys.argv[1]) == "zstruct_gsm":
             zstruct_gsm_main()
         elif str(sys.argv[1]) == "smiles_to_reactions":
