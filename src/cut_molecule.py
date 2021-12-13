@@ -236,10 +236,14 @@ def make_cut(mol, cuts, molecule, lookup_dict):
         print("neighbor id: " + str(atom.GetNeighbors()[0].GetIdx()))
         rdmolops.SetTerminalAtomCoords(mol, atom.GetIdx(), atom.GetNeighbors()[0].GetIdx())
     '''
-    xyz_string = MolToXYZFile(mol, 'derpderp.xyz')
-    #Draw.MolToFile(mol,'derp.png')
-    #for bond in mol.GetBonds():
-        #print(str(bond.GetBeginAtomIdx()) + " - " + str(bond.GetEndAtomIdx()) + " with type " + str(bond.GetBondType()))
+    #xyz_string = MolToXYZFile(mol, 'derpderp.xyz')
+
+    xyz_string = str(mol.GetNumAtoms()) + "\n\n"
+    coords = mol.GetConformers()[0]
+    for atom in mol.GetAtoms():
+        xyz_string += str(atom.GetSymbol()) + " " + str(coords.GetAtomPosition(atom.GetIdx()).x) + " " + str(coords.GetAtomPosition(atom.GetIdx()).y) + " " + str(coords.GetAtomPosition(atom.GetIdx()).z) + "\n"
+    #print(xyz_string)
+
     return xyz_string, ordering
 
 def cut_molecule_main():

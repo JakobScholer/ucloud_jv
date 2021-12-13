@@ -96,8 +96,8 @@ def stringfile_tester_main():
 
     cuts = {2}
 
-    stringfile_to_rdkit(modified_strfile, True)
-    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(original_strfile, True)
+    stringfile_to_rdkit(modified_strfile, False)
+    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(original_strfile, False)
     #Compute2DCoords(rdk_mol)
     #Draw.MolToFile(rdk_mol,'derp.png')
 
