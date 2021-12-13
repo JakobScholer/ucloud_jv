@@ -6,6 +6,7 @@ from src.cut_dag import cut_dag_main
 from src.generate_cut_dag import generate_cut_dag_main
 from src.zstruct_and_gsm import zstruct_gsm_main
 from src.smiles_to_reactions import make_reactions
+from src.stringfile_tester import stringfile_tester_main
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
@@ -22,7 +23,9 @@ if __name__ == '__main__':
         elif str(sys.argv[1]) == "zstruct_gsm":
             zstruct_gsm_main()
         elif str(sys.argv[1]) == "smiles_to_reactions":
-            make_reactions(["CC(C)C(C)C(C)N=C([O-])OC=O"])
+            make_reactions(["CCCCO"])
+        elif str(sys.argv[1]) == "stringfile_tester":
+            stringfile_tester_main()
         else:
             print("derp")
         #g = smiles("CCO")                       # molecule to test reaction on

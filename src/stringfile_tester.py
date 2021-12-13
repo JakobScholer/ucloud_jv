@@ -4,6 +4,8 @@ from src.stringfile_to_rdkit import build_bond_map
 
 from src.cut_molecule import cut_molecule_main, make_cut_molecule, find_all_cuts, make_cut
 from src.stringfile_to_rdkit import stringfile_to_rdkit
+from rdkit.Chem import Draw
+from rdkit.Chem.AllChem import Compute2DCoords
 
 def get_educt(strfile):
     with open(strfile) as f:
@@ -30,11 +32,11 @@ def get_removed_atoms(cuts, molecule, lookup_dict):
         for child in molecule[lookup_dict.get(c)].children:
             #ban_list.append(child)
             ban_list.append(child+1)
+        ban_list += get_removed_atoms(molecule[lookup_dict.get(c)].children, molecule, lookup_dict)
     return ban_list
 
 def check_product(original_strfile, modified_strfile, cuts, ordering, molecule, lookup_dict):
     if modified_strfile == "NO REACTION":
-        print("            gsm FAILURE")
         return False
     # read the product of both files
     original_product = get_product(original_strfile)
@@ -45,22 +47,23 @@ def check_product(original_strfile, modified_strfile, cuts, ordering, molecule, 
 
     banned_atoms = get_removed_atoms(cuts, molecule, lookup_dict)
 
+    #print("ORIGINAL!")
     original_bonds = set()
     for bond in original_bmap.keys():
         if bond[0] not in banned_atoms and bond[1] not in banned_atoms:
             original_bonds.add((int(ordering.get(str(bond[0]))),int(ordering.get(str(bond[1]))),original_bmap.get(bond)))
             #original_bonds.add((int(ordering.get(str(bond[0]))),int(ordering.get(str(bond[1])))))
 
+    #print("MODIFIED!")
     modified_bonds = set()
     for bond in modified_bmap:
+        #print(bond)
         modified_bonds.add((bond[0], bond[1], modified_bmap.get(bond)))
         #modified_bonds.add((bond[0], bond[1]))
 
     if original_bonds.difference(modified_bonds) == set() and modified_bonds.difference(original_bonds) == set():
-        print("            stringfile tester SUCCESS")
         return True
     else:
-        print("            stringfile tester FAILURE")
         return False
 
 def check_educt_to_product(stringfile):
@@ -88,13 +91,19 @@ def check_educt_to_product(stringfile):
         return True
 
 def stringfile_tester_main():
-    stringfile_original = ""
-    stringfile_modified = ""
+    original_strfile = "xyz_test_files/reaction0001/stringfile.xyz0001"
+    modified_strfile = "xyz_test_files/reaction0001/2/stringfile.xyz0000"
 
-    cuts = {}
+    cuts = {2}
 
-    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile_original, False)
+    stringfile_to_rdkit(modified_strfile, True)
+    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(original_strfile, True)
+    #Compute2DCoords(rdk_mol)
+    #Draw.MolToFile(rdk_mol,'derp.png')
+
+    #print(atom_core)
     molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
     xyz_file, ordering = make_cut(rdk_mol, cuts, molecule, lookup_dict)
+    #print(xyz_file)
 
-    check_product(original_strfile, modified_strfile, cuts, ordering, molecule, lookup_dict)
+    print(check_product(original_strfile, modified_strfile, cuts, ordering, molecule, lookup_dict))

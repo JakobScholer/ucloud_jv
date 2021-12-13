@@ -134,11 +134,13 @@ def build_bond_map(mol):
     }
     bmap = {}
     b: openbabel.OBBond
+    #print("OPENBABEL!!!!")
     for b in openbabel.OBMolBondIter(mol.OBMol):
         src, tar = b.GetBeginAtomIdx(), b.GetEndAtomIdx()
         if src > tar:
             src, tar = tar, src
         bmap[(src, tar)] = order_map[b.GetBondOrder()]
+        #print("src: " + str(src) + " tar: " + str(tar))
     return bmap
 
 
@@ -189,8 +191,10 @@ def stringfile_to_rdkit(filename, visualize=False):
     atom_core = set()
 
     # find core and iterate over bonds to add them to rdkit molecule
+    #print("FIRST!!!!")
     for (src, tar), ob_bond in bmap1.items():
         if (src, tar) in bmap2:
+            #print("src: " + str(src) + " tar: " + str(tar))
             if bmap1[(src, tar)] != bmap2[(src, tar)]:
                     atom_core.add(src - 1)
                     atom_core.add(tar - 1)
@@ -198,7 +202,9 @@ def stringfile_to_rdkit(filename, visualize=False):
             atom_core.add(src - 1)
             atom_core.add(tar - 1)
         mol.AddBond((src - 1), (tar - 1), ob_bond)
+    #print("SECOND!!!!")
     for (src, tar), ob_bond in bmap2.items():
+        #print("src: " + str(src) + " tar: " + str(tar))
         if (src, tar) not in bmap1:
             atom_core.add(src - 1)
             atom_core.add(tar - 1)

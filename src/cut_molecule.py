@@ -1,7 +1,8 @@
-from rdkit.Chem import rdmolops, GetSymmSSSR, AddHs, MolFromSmiles, MolToXYZBlock, Atom
+from rdkit.Chem import rdmolops, GetSymmSSSR, AddHs, MolFromSmiles, MolToXYZBlock, Atom, MolToXYZFile
 from rdkit.Chem.AllChem import Compute2DCoords
 from rdkit.Chem.rdDistGeom import EmbedMolecule
 from src.stringfile_to_rdkit import stringfile_to_rdkit
+from rdkit.Chem import Draw
 
 #from src.stringfile_to_rdkit import stringfile_to_rdkit, fig_plot
 
@@ -218,6 +219,8 @@ def make_cut(mol, cuts, molecule, lookup_dict):
         if bond.GetBeginAtom().GetIdx() in ban_list or bond.GetEndAtom().GetIdx() in ban_list:
             bonds_to_remove.append(bond) # add to remove list
     bonds_to_remove.reverse()
+    for bond in bonds_to_remove:
+        print("bond: " + str(bond.GetBeginAtom().GetIdx()) + " " + str(bond.GetEndAtom().GetIdx()))
     for bond in bonds_to_remove: # removing bond
         mol.RemoveBond(bond.GetBeginAtom().GetIdx(), bond.GetEndAtom().GetIdx())
     # remove atoms
@@ -233,7 +236,10 @@ def make_cut(mol, cuts, molecule, lookup_dict):
         print("neighbor id: " + str(atom.GetNeighbors()[0].GetIdx()))
         rdmolops.SetTerminalAtomCoords(mol, atom.GetIdx(), atom.GetNeighbors()[0].GetIdx())
     '''
-    xyz_string = MolToXYZBlock(mol)
+    xyz_string = MolToXYZFile(mol, 'derpderp.xyz')
+    #Draw.MolToFile(mol,'derp.png')
+    #for bond in mol.GetBonds():
+        #print(str(bond.GetBeginAtomIdx()) + " - " + str(bond.GetEndAtomIdx()) + " with type " + str(bond.GetBondType()))
     return xyz_string, ordering
 
 def cut_molecule_main():
