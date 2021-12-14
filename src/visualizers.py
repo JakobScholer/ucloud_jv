@@ -79,7 +79,7 @@ def visualize_rdkit_mol(mol, core_atoms: set = None):
                              y=bond_middle_y,
                              mode='text',
                              name='bondIDs',
-                             text=list(range(1, num_bonds+1)),
+                             text=list(range(0, num_bonds)),
                              hoverinfo='text',
                              textfont_size=1
                              ))

@@ -1,9 +1,4 @@
-import pathlib
-from os import listdir
-
-#from mod import *
-from src.energy_curve_comparison import root_mean_square
-from src.cut_molecule import cut_molecule_main, make_cut_molecule, find_all_cuts, make_cut
+from src.cut_molecule import make_cut_molecule, find_all_cuts, make_cut
 from src.stringfile_to_rdkit import stringfile_to_rdkit, read_energy_profiles
 from src.blackbox import run_zstruct_and_gsm
 from src.stringfile_tester import check_product
@@ -11,7 +6,7 @@ from src.stringfile_tester import check_product
 class CutDagNode:
     def __init__(self, cuts):
         self.energy = []  # List for energy leves at different notes for the reaction
-        self.RMS = 0  # the root mean square base on the original molecule reaction
+        self.RMS = 1  # the root mean square base on the original molecule reaction
         self.stringfile = ""  # The string file with the reaction, used for GML rule
         self.cuts = cuts  # which cuts on the molecule was made
         self.childs = []  # Childs made from the molecule
