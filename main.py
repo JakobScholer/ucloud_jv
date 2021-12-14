@@ -7,6 +7,7 @@ from src.generate_cut_dag import generate_cut_dag_main
 from src.blackbox import zstruct_gsm_main
 from src.smiles_to_reactions import make_reactions
 from src.stringfile_tester import stringfile_tester_main
+from src.visualizers import visualize_energy_curves
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
@@ -29,6 +30,8 @@ if __name__ == '__main__':
         elif str(sys.argv[1]) == "gml":
             gml = stringfile_to_gml("blackbox/output/CC(C)C(C)C(C)N=C([O-])OC=O_5ae5/reaction0000/stringfile.xyz0000")
             print(gml)
+        elif str(sys.argv[1]) == "ec":
+            visualize_energy_curves("blackbox/output/CC(C)C(C)C(C)N=C([O-])OC=O_5ae5/reaction0001")
         else:
             print("derp")
         #g = smiles("CCO")                       # molecule to test reaction on

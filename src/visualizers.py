@@ -1,4 +1,7 @@
+from os import listdir
+from os.path import isdir, isfile
 import plotly.graph_objects as go
+from src.stringfile_helper_functions import read_energy_profiles
 
 
 def visualize_rdkit_mol(mol, core_atoms: set = None):
@@ -120,6 +123,7 @@ def visualize_rdkit_mol(mol, core_atoms: set = None):
 
 
 def visualize_cut_dag(cut_dag):
+    """Takes a cut dag object, displays a visual representation of the cut dag"""
     cut_option_y_green = []
     cut_option_x_green = []
     cut_option_y_red = []
@@ -223,3 +227,30 @@ def visualize_cut_dag(cut_dag):
                              ))
 
     fig.show()
+
+
+def visualize_energy_curves(folder: str):
+    """Takes a reaction folder as input, displays a visual representation of the energy curves for the stringfiles with different cuts"""
+    energy_profiles = []
+    energy_profiles_cuts = []
+    original_energy_profile = []
+    for file in listdir(folder):
+        if isdir(f"{folder}/{file}"):
+            if isfile(f"{folder}/{file}/stringfile.xyz0000"):
+                energy_profile = read_energy_profiles(f"{folder}/{file}/stringfile.xyz0000")
+                energy_profiles.append(energy_profile)
+                energy_profiles_cuts.append(file)
+        elif file.startswith("stringfile"):
+            original_energy_profile = read_energy_profiles(f"{folder}/{file}")
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=list(range(0, len(original_energy_profile))), y=original_energy_profile,
+                             mode='lines',
+                             name='original'))
+    for ep, epc in zip(energy_profiles, energy_profiles_cuts):
+        fig.add_trace(go.Scatter(x=list(range(0, len(ep))), y=ep,
+                                 mode='lines',
+                                 name=epc))
+    fig.show()
+
+
+
