@@ -259,6 +259,9 @@ def generate_dag_data_mp(cd, tasks_counter, stringfile, overall_folder, reaction
 
 
 def read_dag_data(cut_dag, reaction_folder):
+    # check if any data exist
+    if len(listdir(reaction_folder)) < 3
+        return "NO DATA"
     # gennem gå hele daggen
     for k in cut_dag.layers.keys():
         if k > 0:
@@ -279,6 +282,7 @@ def read_dag_data(cut_dag, reaction_folder):
                         no_stringfile = False
                 if no_stringfile:
                     node.stringfile = "NO REACTION"
+    return "done"
 
 def visualise_stringfiles(overall_folder, DEBUG_MODE: bool=False):
     # go over each cut folder
@@ -314,9 +318,9 @@ def make_cut_dag_2(mode: int, stringfile, overall_path, reaction_folder, visual_
     elif mode == 1: # read data drom folder
         if DEBUG_MODE:
             print("read dag data: start")
-        read_dag_data(cd, overall_path + "/" + reaction_folder)
+        status = read_dag_data(cd, overall_path + "/" + reaction_folder)
         if DEBUG_MODE:
-            print("read dag data: done")
+            print("read dag data: " + status)
     # visualise every stringfile in cut dag data
     if visual_stringfiles:
         if DEBUG_MODE:
