@@ -3,7 +3,7 @@ from src.cut_molecule import cut_molecule_main
 from src.stringfile_to_gml import stringfile_to_gml
 from src.stringfile_to_rdkit import stringfile_to_rdkit_main, stringfile_to_rdkit
 from src.cut_dag import cut_dag_main
-from src.generate_cut_dag import generate_cut_dag_main
+from src.generate_cut_dag import generate_cut_dag_main, make_cut_dag_2
 from src.blackbox import zstruct_gsm_main
 from src.smiles_to_reactions import make_reactions
 from src.stringfile_tester import stringfile_tester_main
@@ -24,7 +24,7 @@ if __name__ == '__main__':
         elif str(sys.argv[1]) == "zstruct_gsm":
             zstruct_gsm_main()
         elif str(sys.argv[1]) == "smiles_to_reactions":
-            make_reactions(["CCCCO"])
+            make_reactions(["CC(C)C(C)C(C)N=C([O-])OC=O"])
         elif str(sys.argv[1]) == "stringfile_tester":
             stringfile_tester_main()
         elif str(sys.argv[1]) == "gml":
@@ -32,6 +32,8 @@ if __name__ == '__main__':
             print(gml)
         elif str(sys.argv[1]) == "ec":
             visualize_energy_curves("blackbox/output/CC(C)C(C)C(C)N=C([O-])OC=O_5ae5/reaction0001")
+        elif str(sys.argv[1]) == "generate_cut_dag_2":
+            make_cut_dag_2(1, "xyz_test_files/derp/stringfile.xyz0001", "xyz_test_files", "derp", False, True)
         else:
             print("derp")
         #g = smiles("CCO")                       # molecule to test reaction on

@@ -74,19 +74,24 @@ def find_core(ob_educt, ob_product): # from to openbabel mols, get the core atom
     return atom_core, bond_core
 
 def make_mol_png(mol, core_atoms, core_bond_pairs, hydrogens: bool, png_name, titel, size: int=500):
+
     # prep mol with hydrofens and coords acoordingly
     if hydrogens:
         mol = RemoveHs(mol)
+    else:
+        # find all bonds in core that is stil relevant for the molecule
+        core_bonds = [mol.GetBondBetweenAtoms(pair[0],pair[1]).GetIdx() for pair in core_bond_pairs if not mol.GetBondBetweenAtoms(pair[0],pair[1]) == None]
     Compute2DCoords(mol)
-    # find all bonds in core that is stil relevant for the molecule
-    core_bonds = [mol.GetBondBetweenAtoms(pair[0],pair[1]).GetIdx() for pair in core_bond_pairs if not mol.GetBondBetweenAtoms(pair[0],pair[1]) == None]
 
     # set size and id for atoms
     d = rdMolDraw2D.MolDraw2DCairo(size, size) # or MolDraw2DCairo to get PNGs
     d.drawOptions().addAtomIndices = True
 
     # draw and safe image of molecule
-    rdMolDraw2D.PrepareAndDrawMolecule(d, mol, highlightAtoms=core_atoms, highlightBonds=core_bonds, legend=titel)#, highlightBonds=hit_bonds)
+    if hydrogens:
+        rdMolDraw2D.PrepareAndDrawMolecule(d, mol, legend=titel)
+    else:
+        rdMolDraw2D.PrepareAndDrawMolecule(d, mol, highlightAtoms=core_atoms, highlightBonds=core_bonds, legend=titel)
     d.WriteDrawingText(png_name)
 
     return png_name
@@ -108,16 +113,12 @@ def combine_images(right_images, left_images, image_name):
     # for a vertical stacking it is simple: use vstack
     final_imgs_comb = np.vstack( [ PIL.Image.open(i) for i in ['top.png','bot.png']] )
     final_imgs_comb = PIL.Image.fromarray( final_imgs_comb)
-    print(image_name)
     final_imgs_comb.save(image_name)
 
     # clean up after wards
     remove('bot.png')
     remove('top.png')
 
-def clean_files(file_name_list):
-
-    return None
 
 def visualize_2D(Stringfile_path, image_path, image_name: str = "Reacktion_scheme.jpg"):
     stringfile_data = read_stringfile(Stringfile_path) # get list of energi levels and openbabel mols   ####### GetBondBetweenAtoms(0,1) ######
@@ -132,18 +133,18 @@ def visualize_2D(Stringfile_path, image_path, image_name: str = "Reacktion_schem
     # make left and right side image for each mol in the reaction
     for pair in stringfile_data:
         mol = openbabel_to_rdkit(pair[1]) # transform openbabel mol to rdkit mol
-        left_image_list.append(make_mol_png(mol, core_atoms, core_bond_pairs, False, image_path + left_image, "Energy level: " + pair[0])) # without hydrogens
-        right_image_list.append(make_mol_png(mol, core_atoms, core_bond_pairs, True, image_path + right_image, "Reaction step: " + str(reaction_step))) # with hydrogens
+        left_image_list.append(make_mol_png(mol, core_atoms, core_bond_pairs, False, image_path + "/" + left_image, "Energy level: " + pair[0])) # without hydrogens
+        right_image_list.append(make_mol_png(mol, core_atoms, core_bond_pairs, True, image_path + "/" + right_image, "Reaction step: " + str(reaction_step))) # with hydrogens
         left_image = "l" + left_image
         right_image = "r" + right_image
         reaction_step += 1
 
     # combine all images
-    combine_images(right_image_list, left_image_list, image_path+image_name)
+    combine_images(right_image_list, left_image_list, image_path + "/" + image_name)
 
     # clean all images
     for file in (left_image_list + right_image_list):
         remove(file)
 
 if __name__ == '__main__':
-    visualize_2D("../xyz_test_files/reaction0001/stringfile.xyz0001", "../xyz_test_files/reaction0001/")
+    visualize_2D("../xyz_test_files/reaction0001/0/stringfile.xyz0000", "../xyz_test_files/reaction0001/0/")
