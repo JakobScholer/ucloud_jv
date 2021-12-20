@@ -1,7 +1,7 @@
 from math import sqrt
 
 
-def root_mean_square(energy_curve_original, energy_curve_new, visualize=False):
+def root_mean_square(energy_curve_original, energy_curve_new):
     deviation = 1.05
     c1 = [max(energy_curve_original), energy_curve_original[-1]]
     c2 = [max(energy_curve_new), energy_curve_new[-1]]

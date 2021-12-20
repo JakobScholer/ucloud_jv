@@ -1,4 +1,5 @@
-from src.cut_molecule import make_cut_molecule, find_all_cuts, make_cut
+from src.cut_molecule import make_cut_molecule, find_all_cuts, make_cut, recompute_coordinates_of_mol
+from src.stringfile_helper_functions import mol_to_xyz
 from src.stringfile_to_rdkit import stringfile_to_rdkit, read_energy_profiles
 from src.blackbox import run_zstruct_and_gsm
 from src.stringfile_tester import check_product
@@ -115,9 +116,12 @@ def run_blackbox(stringfile, overall_folder, cuts, placement, reaction_folder):
     rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile, False)
     molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
     # make cuts on it
-    xyz_file, order = make_cut(rdk_mol, cuts, molecule, lookup_dict)
+    modified_mol, order = make_cut(rdk_mol, cuts, molecule, lookup_dict)
+    modified_mol = recompute_coordinates_of_mol(modified_mol)
+    xyz_file = mol_to_xyz(modified_mol)
 
-    cut_folder = "/" # make cut folder name
+    cut_folder = "/"    # make cut folder name
+    cuts.sort()         # sort cuts to make cuts_folder naming consistent
     for cut in cuts:
         cut_folder = cut_folder + str(cut) + "_"
     cut_folder = cut_folder[0:-1] + "/"

@@ -38,3 +38,11 @@ def build_bond_map(mol):
             src, tar = tar, src
         bmap[(src, tar)] = order_map[b.GetBondOrder()]
     return bmap
+
+def mol_to_xyz(mol):
+    """Takes an rdkit mol object, returns a xyz string"""
+    xyz_string = str(mol.GetNumAtoms()) + "\n\n"
+    coords = mol.GetConformers()[0]
+    for atom in mol.GetAtoms():
+        xyz_string += str(atom.GetSymbol()) + " " + str(coords.GetAtomPosition(atom.GetIdx()).x) + " " + str(coords.GetAtomPosition(atom.GetIdx()).y) + " " + str(coords.GetAtomPosition(atom.GetIdx()).z) + "\n"
+    return xyz_string

@@ -206,7 +206,7 @@ def generate_empty_dag_mp(stringfile, DEBUG_MODE: bool=False):
 
     return cd, tasks_sent
 
-def generate_dag_data_mp(cd, tasks_counter, stringfile, overall_path, reaction_folder, DEBUG_MODE: bool=False):
+def generate_dag_data_mp(cd, tasks_counter, stringfile, overall_folder, reaction_folder, DEBUG_MODE: bool=False):
 
     freeze_support()
     NUMBER_OF_PROCESSES = 1

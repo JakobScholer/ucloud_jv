@@ -23,8 +23,10 @@ if __name__ == '__main__':
             stringfile_to_rdkit("xyz_test_files/reaction0001/stringfile.xyz0001", visualize=True)
         elif str(sys.argv[1]) == "zstruct_gsm":
             zstruct_gsm_main()
-        elif str(sys.argv[1]) == "smiles_to_reactions":
-            make_reactions(["CC(C)C(C)C(C)N=C([O-])OC=O"])
+        elif str(sys.argv[1]) == "smiles_to_reactions_bb":
+            make_reactions(0, ["CC(C)C(C)C(C)N=C([O-])OC=O"])
+        elif str(sys.argv[1]) == "smiles_to_reactions_nb":
+            make_reactions(1, "blackbox/output/CC(C)C(C)C(C)N=C([O-])OC=O_6d1e", True, True)
         elif str(sys.argv[1]) == "stringfile_tester":
             stringfile_tester_main()
         elif str(sys.argv[1]) == "gml":

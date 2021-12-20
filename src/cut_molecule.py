@@ -1,8 +1,7 @@
-from rdkit.Chem import rdmolops, GetSymmSSSR, AddHs, MolFromSmiles, MolToXYZBlock, Atom, MolToXYZFile
-from rdkit.Chem.AllChem import Compute2DCoords
+from rdkit.Chem import rdmolops, GetSymmSSSR, AddHs, MolFromSmiles, Atom
 from rdkit.Chem.rdDistGeom import EmbedMolecule
+from rdkit.Chem.rdDepictor import Compute2DCoords
 from src.stringfile_to_rdkit import stringfile_to_rdkit
-from rdkit.Chem import Draw
 
 #from src.stringfile_to_rdkit import stringfile_to_rdkit, fig_plot
 
@@ -80,7 +79,7 @@ def make_cut_molecule(rdk_mol, core):
         end_atom = int(bond.GetEndAtomIdx())
         if not big_nodes_look_up.get(start_atom) == big_nodes_look_up.get(end_atom) or (big_nodes_look_up.get(end_atom) == None and big_nodes_look_up.get(start_atom) == None): # Not in the same big node or both not in any bignodes
             if not str(bond.GetBondType()) == "SINGLE": # make a big node if not a single bond
-                big_node_update(big_nodes, big_nodes_look_up, atoms_in_big_nodes, set((start_atom , end_atom)))
+                big_node_update(big_nodes, big_nodes_look_up, atoms_in_big_nodes, {start_atom, end_atom})
             else:
                 bonds.append(bond) # get the bonds that are not internal in a big node, to reduce later iteration over bonds
 
@@ -190,7 +189,7 @@ def cut_search(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: int)
 
 
 def make_cut(mol, cuts, molecule, lookup_dict):
-    """"takes an rdkit mol, the ids of atoms to cut off, the molecule object and lookup dictionary, returns xyz string"""
+    """"takes an rdkit mol, the ids of atoms to cut off, the molecule object and lookup dictionary, returns modified mol and ordering"""
     # based on cuts to be performed decides which atoms are removed and which are replaced
     ban_list = set()
     replace_list = set()
@@ -198,7 +197,6 @@ def make_cut(mol, cuts, molecule, lookup_dict):
         ban_list.add(c)
         for child in molecule[lookup_dict.get(c)].children:
             ban_list.add(child)
-    #replace_list = set(x for x in cuts if x not in ban_list)
 
     big_ban_list = set()
     big_ban_list.update(ban_list)
@@ -239,21 +237,28 @@ def make_cut(mol, cuts, molecule, lookup_dict):
 
     # recompute coordinates of replaced atoms
     for atom in atoms_to_compute_coordinates:
-        print("Cuts: ")
-        print(cuts)
         try:
             rdmolops.SetTerminalAtomCoords(mol, atom.GetIdx(), atom.GetNeighbors()[0].GetIdx())
-            print("ATOMCOORD WORKS")
         except:
-            print("ATOMCOORD ERROR")
+            pass
+    return mol, ordering
 
-    #xyz_string = MolToXYZFile(mol, 'derpderp.xyz')
 
-    xyz_string = str(mol.GetNumAtoms()) + "\n\n"
-    coords = mol.GetConformers()[0]
-    for atom in mol.GetAtoms():
-        xyz_string += str(atom.GetSymbol()) + " " + str(coords.GetAtomPosition(atom.GetIdx()).x) + " " + str(coords.GetAtomPosition(atom.GetIdx()).y) + " " + str(coords.GetAtomPosition(atom.GetIdx()).z) + "\n"
-    return xyz_string, ordering
+def recompute_coordinates_of_mol(mol):
+    mol.RemoveAllConformers()
+    atoms = mol.GetAtoms()
+    bonds = mol.GetBonds()
+
+    new_mol = MolFromSmiles("")
+    for atom in atoms:
+        new_mol.AddAtom(atom)
+    for bond in bonds:
+        new_mol.Addbond(bond.GetBeginAtomIdx, bond.GetEndAtomIdx)
+
+    Compute2DCoords(new_mol)  # add coordinates with a comformer
+    EmbedMolecule(new_mol)
+    return new_mol
+
 
 def cut_molecule_main():
     mol, atom_core, energy_profiles = stringfile_to_rdkit('xyz_test_files/GCD_test_files/stringfile.xyz0009', visualize=False)

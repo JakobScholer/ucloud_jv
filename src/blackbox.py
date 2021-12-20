@@ -69,8 +69,8 @@ def run_zstruct(clone_name: str, output_folder: str, offset: int, logfile: bool)
     for i in range(isomer_count):                                                                                            # move all ISOMER and initial files to output folder
         strid = str(i).zfill(4)
         makedirs(f"{output_folder}/reaction{strid}")
-        move(f"blackbox/zstruct_clones/{clone_name}/scratch/ISOMERS{strid}", f"{output_folder}/reaction{strid}/ISOMERS{str(i+offset).zfill(4)}")
-        move(f"blackbox/zstruct_clones/{clone_name}/scratch/initial{strid}.xyz", f"{output_folder}/reaction{strid}/initial{str(i+offset).zfill(4)}.xyz")
+        move(f"blackbox/zstruct_clones/{clone_name}/scratch/ISOMERS{strid}", f"{output_folder}/reaction{strid}/ISOMERS0000")
+        move(f"blackbox/zstruct_clones/{clone_name}/scratch/initial{strid}.xyz", f"{output_folder}/reaction{strid}/initial0000.xyz")
     return isomer_count
 
 
@@ -92,9 +92,7 @@ def run_gsm_round(clone_name: str, output_folder: str, i: int, isomers_str: str,
     else:
         ID = reaction_folder[-4:]
         reaction_and_cut = reaction_folder + cuts_folder[0:-1]
-    init_fn = f"initial{ID}.xyz"
-    iso_fn = f"ISOMERS{ID}"
-    with open(f"{output_folder}/{reaction_folder}/{iso_fn}", "r") as f:
+    with open(f"{output_folder}/{reaction_folder}/ISOMERS0000", "r") as f:
         new_isomers_str = f.read()
     if isomers_str is None or new_isomers_str == isomers_str:               # only run gsm on reaction matching pattern
         copyfile(f"{output_folder}/{reaction_and_cut}/initial0000.xyz", f"blackbox/gsm_clones/{clone_name}/scratch/initial0000.xyz")
