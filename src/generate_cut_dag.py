@@ -200,8 +200,11 @@ def visualise_stringfiles(overall_folder, DEBUG_MODE: bool=False):
 def make_cut_dag_2(mode: int, stringfile, visual_cut_dag: bool=False, visual_stringfiles: bool=False, DEBUG_MODE: bool = False):
     # from stringfile path, get overall path and reaction_folder
     split_path = stringfile.rsplit("/")
+    overall_path = ""
+    for i in range(len(split_path)-2): # make the complete overall path down to the folder before the reaction folder
+        overall_path += split_path[i] + "/"
+    overall_path = overall_path[:-1]
     split_path.reverse() # reverse the list to get the folders easy
-    overall_path = split_path[2]
     reaction_folder = split_path[1]
 
     # generate empty dag and check if its done
