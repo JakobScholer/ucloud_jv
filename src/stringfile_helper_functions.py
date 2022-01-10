@@ -23,7 +23,7 @@ def read_energy_profiles(filename: str):
 
 
 def build_bond_map(mol):
-    """Takes an rdkit mol object, returns a bond mapping for all atoms in mol object"""
+    """Takes an Openbabel mol object, returns a bond mapping for all atoms in mol object"""
     order_map = {
         1: BondType.SINGLE,
         2: BondType.DOUBLE,

@@ -7,6 +7,8 @@ from src.generate_cut_dag import make_cut_dag_2
 
 # C=C(C)C(C(CC)CN(C(=O)OC(C)=O)C([O-])=NC(C)C(C=CC)C1CCCCC1)C2CCCCC2
 
+
+
 # takes a mode and a string or list of strings as input
     # mode 0 runs blackbox and the list of strings must be the smiles for reactions
     # mode 1 reads data from a folder. string_data must be the path to the already compiled cut dag data
@@ -44,6 +46,6 @@ def make_reactions(mode: int, string_data, visual_cut_dag: bool=False, visual_st
             #print("    ISOMER: " + str(isomer_file))
             if check_educt_to_product(stringfile): # if there is a reaction in the stringfile. make a cut dag!
                 print("        Generate cut dag")
-                make_cut_dag_2(mode, stringfile, smiles_path, folder.rsplit("/")[-1], visual_cut_dag, visual_stringfiles)
+                make_cut_dag_2(mode, stringfile, visual_cut_dag, visual_stringfiles)
             else:
                 print("        Not generating cut dag")

@@ -125,9 +125,10 @@ def run_blackbox(stringfile, overall_folder, cuts, placement, reaction_folder):
     for cut in cuts:
         cut_folder = cut_folder + str(cut) + "_"
     cut_folder = cut_folder[0:-1] + "/"
+
     # call true black box
     stringfile_path = run_zstruct_and_gsm([xyz_file], overall_folder, order, atom_core, reaction_folder, cut_folder, logfile=True)
-    if stringfile_path is not "NO REACTION" and check_product(stringfile, stringfile_path, cuts, order, molecule, lookup_dict): # check if reaction is the same
+    if stringfile_path != "NO REACTION" and check_product(stringfile, stringfile_path, cuts, order, molecule, lookup_dict): # check if reaction is the same
         return [stringfile_path, placement]
     else: # return data
         return ["NO REACTION", placement]

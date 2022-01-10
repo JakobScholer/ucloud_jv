@@ -2,6 +2,7 @@ from os import listdir
 from os.path import isdir, isfile
 import plotly.graph_objects as go
 from src.stringfile_helper_functions import read_energy_profiles
+#from stringfile_helper_functions import read_energy_profiles
 
 
 def visualize_rdkit_mol(mol, core_atoms: set = None):
@@ -104,7 +105,7 @@ def visualize_rdkit_mol(mol, core_atoms: set = None):
                              y=atom_y,
                              mode='text',
                              name='atomIDs',
-                             text=list(range(1, num_atoms+1)),
+                             text=list(range(0, num_atoms)),
                              hoverinfo='text',
                              textfont_size=15
                              ))
@@ -251,6 +252,3 @@ def visualize_energy_curves(folder: str):
                                  mode='lines',
                                  name=epc))
     fig.show()
-
-
-

@@ -147,4 +147,4 @@ def visualize_2D(Stringfile_path, image_path, image_name: str = "Reacktion_schem
         remove(file)
 
 if __name__ == '__main__':
-    visualize_2D("../xyz_test_files/reaction0001/0/stringfile.xyz0000", "../xyz_test_files/reaction0001/0/")
+    visualize_2D("../xyz_test_files/reaction0182/stringfile.xyz0182", "../xyz_test_files/reaction0182")

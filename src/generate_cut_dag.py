@@ -142,7 +142,7 @@ def make_cut_dag(stringfile, overall_folder, reaction_folder, DEBUG_MODE: bool =
 def generate_empty_dag_mp(stringfile, DEBUG_MODE: bool=False):
     cd = make_root(stringfile, DEBUG_MODE)
     if cd is None:
-        return None
+        return None, 0
 
     freeze_support()
     NUMBER_OF_PROCESSES = 1
@@ -260,7 +260,7 @@ def generate_dag_data_mp(cd, tasks_counter, stringfile, overall_folder, reaction
 
 def read_dag_data(cut_dag, reaction_folder):
     # check if any data exist
-    if len(listdir(reaction_folder)) < 3
+    if len(listdir(reaction_folder)) < 4:
         return "NO DATA"
     # gennem gå hele daggen
     for k in cut_dag.layers.keys():
@@ -295,17 +295,27 @@ def visualise_stringfiles(overall_folder, DEBUG_MODE: bool=False):
                         print("    stringfile path: " + folder_name + "/" + str(file))
                         print("    image path: " + folder_name)
                     visualize_2D(folder_name + "/" + str(file), folder_name)
+        elif "stringfile" in folder: # Make a visual version of the original stringfile
+            if DEBUG_MODE:
+                print("    stringfile path: " + folder_name + "/" + str(file))
+                print("    image path: " + folder_name)
+            visualize_2D(overall_folder + "/" + str(folder), overall_folder)
 
 
-def make_cut_dag_2(mode: int, stringfile, overall_path, reaction_folder, visual_cut_dag: bool=False, visual_stringfiles: bool=False, DEBUG_MODE: bool = False):
+def make_cut_dag_2(mode: int, stringfile, visual_cut_dag: bool=False, visual_stringfiles: bool=False, DEBUG_MODE: bool = False):
     # from stringfile path, get overall path and reaction_folder
+    split_path = stringfile.rsplit("/")
+    split_path.reverse() # reverse the list to get the folders easy
+    overall_path = split_path[2]
+    reaction_folder = split_path[1]
 
     # generate empty dag and check if its done
     if DEBUG_MODE:
         print("generate empty dag: Start")
     cd, tasks_counter = generate_empty_dag_mp(stringfile, DEBUG_MODE)
-    if cd == None:
-        print("ERROR not cut dag for " + str(stringfile))
+    if cd is None:
+        print("ERROR no cut dag for " + str(stringfile))
+        return None
     if DEBUG_MODE:
         print("generate empty dag: done")
 
