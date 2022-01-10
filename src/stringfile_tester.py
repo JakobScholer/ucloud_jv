@@ -1,11 +1,5 @@
 import openbabel.pybel as pybel
-from openbabel import openbabel
 from src.stringfile_helper_functions import build_bond_map
-
-from src.cut_molecule import cut_molecule_main, make_cut_molecule, find_all_cuts, make_cut
-from src.stringfile_to_rdkit import stringfile_to_rdkit
-from rdkit.Chem import Draw
-from rdkit.Chem.AllChem import Compute2DCoords
 
 def get_educt(strfile):
     with open(strfile) as f:
@@ -89,23 +83,3 @@ def check_educt_to_product(stringfile):
         return False
     else:
         return True
-
-def stringfile_tester_main():
-    #original_strfile = "xyz_test_files/reaction0001/stringfile.xyz0001"
-    modified_strfile = "xyz_test_files/reaction0001/2/stringfile.xyz0000"
-
-    derp = "xyz_test_files/reaction0001/stringfile.xyz0001"
-
-    cuts = {6}
-
-    #stringfile_to_rdkit(modified_strfile, False)
-    rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(derp, False)
-    #Compute2DCoords(rdk_mol)
-    #Draw.MolToFile(rdk_mol,'derp.png')
-
-    #print(atom_core)
-    molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
-    xyz_file, ordering = make_cut(rdk_mol, cuts, molecule, lookup_dict)
-    #print(xyz_file)
-
-    #print(check_product(original_strfile, modified_strfile, cuts, ordering, molecule, lookup_dict))

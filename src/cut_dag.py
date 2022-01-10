@@ -154,28 +154,3 @@ def make_root(stringfile: str, visuals: bool):
     ct.layers[0] = [root]
 
     return ct
-
-def cut_dag_main():
-    # for testing
-    test = 'test/testfiles/stringfile_ring.xyz0000'
-    graph = False
-    tree = make_root(test, graph)
-
-    # find root og check op på den
-    print("first test")
-    print(tree.layers[0][0].stringfile)
-    print(tree.layers[0][0].energy)
-    print(tree.layers[0][0].cuts)
-    # Lav børn på root og chek op på dem
-    print("Second test")
-    make_childs(tree.layers[0][0],tree)
-    for node in tree.layers[1]:
-        print(node.cuts)
-        make_childs(node,tree)
-    print("Second test")
-    for node in tree.layers[2]:
-        print(node.cuts)
-    # lav børn på børnene :D det skal nok blive magisk
-
-if __name__ == "__main__":
-    cut_dag_main()

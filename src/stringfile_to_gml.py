@@ -2,7 +2,7 @@ from openbabel import pybel, openbabel
 from src.stringfile_helper_functions import build_bond_map, read_stringfile_content
 
 
-def stringfile_to_gml(filename):
+def stringfile_to_gml(filename: str):
     """"Takes the name of a stringfile, returns a gml rule representing it"""
     educt_str, product_str, num_atoms = read_stringfile_content(filename)
     reactant = pybel.readstring("xyz", educt_str)   # reads educt as openBabel molecule object
