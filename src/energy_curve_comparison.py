@@ -1,6 +1,5 @@
 from math import sqrt
 
-
 def root_mean_square(energy_curve_original, energy_curve_new):
     deviation = 1.05
     c1 = [max(energy_curve_original), energy_curve_original[-1]]
@@ -23,5 +22,3 @@ def root_mean_square(energy_curve_original, energy_curve_new):
 
 if __name__ == '__main__':
     root_mean_square([100, 200, 300, 400, 100], [150, 250, 350, 450, 150], True)
-
-

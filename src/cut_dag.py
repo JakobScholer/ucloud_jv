@@ -138,6 +138,7 @@ def run_blackbox(stringfile, overall_folder, cuts, placement, reaction_folder):
 def make_root(stringfile: str, visuals: bool):
     # make cut molecule and energy_curve
     rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile, visualize=visuals)
+
     if len(atom_core) == 0:
         return None
     molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)

@@ -46,3 +46,10 @@ def mol_to_xyz(mol):
     for atom in mol.GetAtoms():
         xyz_string += str(atom.GetSymbol()) + " " + str(coords.GetAtomPosition(atom.GetIdx()).x) + " " + str(coords.GetAtomPosition(atom.GetIdx()).y) + " " + str(coords.GetAtomPosition(atom.GetIdx()).z) + "\n"
     return xyz_string
+
+def max_energy_curve(stringfile, max_energy):
+    energy_curve = read_energy_profiles(stringfile) # read energy curve
+    if max(energy_curve) > max_energy:
+        return False # the curve is unrealistic to happen based on max energy
+    else:
+        return True # the curve is accepted for suitable reaction based on max energy
