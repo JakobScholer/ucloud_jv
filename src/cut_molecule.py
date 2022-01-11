@@ -2,6 +2,7 @@ from rdkit.Chem import rdmolops, GetSymmSSSR, AddHs, MolFromSmiles, Atom
 from rdkit.Chem.rdDistGeom import EmbedMolecule
 from rdkit.Chem.rdDepictor import Compute2DCoords
 from src.stringfile_to_rdkit import stringfile_to_rdkit
+#from stringfile_to_rdkit import stringfile_to_rdkit
 
 #from src.stringfile_to_rdkit import stringfile_to_rdkit, fig_plot
 
@@ -47,10 +48,19 @@ def make_cut_molecule(rdk_mol, core):
 
     def core_ring(cut_molecule, look_up): # check for a ring, where core connects duo to the chemical reaction. Using recursive depth first search
         # use a dict to keep track on parents
+        parent_dict = {}
         # Make a list of all atoms already visited
+        visited_nodes = []
+        current_nodes = [0] # starting with root
         # Go over each atom starting from the core with breath first search
-        # Check if any new atom is already found. use those two to track the parents and make a ring from the core
-        # do it until all have been found
+        while len(current_nodes) > 0:
+            node_id = current_nodes[0]
+            children = cut_molecule[node_id].children # get the kids of the molecule
+            for child in children: # for each child, tjek if they have already been visted
+                if child in visited_nodes: # WE HAVE FUND A RING!
+                else: # no ring add to visted and parent dict
+                    parent_dict[] = node_id
+
         return []
 
     lookup = {} # look up dict
