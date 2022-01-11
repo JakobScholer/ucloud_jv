@@ -1,61 +1,31 @@
-import sys
-from src.cut_molecule import cut_molecule_main
+from sys import argv
 from src.stringfile_to_gml import stringfile_to_gml
-from src.stringfile_to_rdkit import stringfile_to_rdkit_main, stringfile_to_rdkit
-from src.cut_dag import cut_dag_main
-from src.generate_cut_dag import generate_cut_dag_main, make_cut_dag_2
-from src.blackbox import zstruct_gsm_main
+from src.generate_cut_dag import make_cut_dag, visualise_stringfiles
 from src.smiles_to_reactions import make_reactions
-from src.stringfile_tester import stringfile_tester_main
+from src.visualize_stringfile import visualize_2D
 from src.visualizers import visualize_energy_curves
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        if str(sys.argv[1]) == "cut_molecule":
-            cut_molecule_main()
-        elif str(sys.argv[1]) == "generate_tree":
-            stringfile_to_rdkit_main()
-        elif str(sys.argv[1]) == "cut_dag":
-            cut_dag_main()
-        elif str(sys.argv[1]) == "generate_cut_dag":
-            generate_cut_dag_main()
-        elif str(sys.argv[1]) == "visualize_molecule":
-            stringfile_to_rdkit("xyz_test_files/reaction0001/stringfile.xyz0001", visualize=True)
-        elif str(sys.argv[1]) == "zstruct_gsm":
-            zstruct_gsm_main()
-        elif str(sys.argv[1]) == "smiles_to_reactions_bb":
-            make_reactions(0, ["CC(C)C(C)C(C)N=C([O-])OC=O"])
-        elif str(sys.argv[1]) == "smiles_to_reactions_nb":
-            make_reactions(1, "blackbox/output/CC(C)C(C)C(C)N=C([O-])OC=O_6d1e", True, True)
-        elif str(sys.argv[1]) == "stringfile_tester":
-            stringfile_tester_main()
-        elif str(sys.argv[1]) == "gml":
-            gml = stringfile_to_gml("blackbox/output/CC(C)C(C)C(C)N=C([O-])OC=O_5ae5/reaction0000/stringfile.xyz0000")
+    if len(argv) == 2:
+        # ---------------visualizers---------------visualizers---------------visualizers---------------visualizers---------------
+        if str(argv[1]) == "ec":                        # show energy curves for stringfiles of reaction
+            visualize_energy_curves(folder="blackbox/output/CCCCC(=O)CC_1902/reaction0182")
+        elif str(argv[1]) == "img_all_stringfiles":     # create image for all stringfiles in folder
+            visualise_stringfiles(folder="blackbox/output/CCCCC(=O)CC_1902")
+        elif str(argv[1]) == "img_stringfile":          # create image for specific stringfile
+            visualize_2D(stringfile_path="blackbox/output/CC(C)C(C)C(C)N=C([O-])OC=O_6d1e/reaction0004/stringfile.xyz0004", image_path="blackbox/output/CC(C)C(C)C(C)N=C([O-])OC=O_6d1e/reaction0004")
+        elif str(argv[1]) == "make_cut_dag":  # create cut dag for specific stringfile
+            make_cut_dag(blackbox=False, stringfile="blackbox/output/CCCCC(=O)CC_fc18/reaction0182/stringfile.xyz0182",visual_cut_dag=True , visual_stringfiles=False, DEBUG_MODE=False)
+
+        # ---------------Calc---------------Calc---------------Calc---------------Calc---------------Calc---------------
+        elif str(argv[1]) == "smiles_to_reactions_bb":  # Compute all reactions as stringfiles from smiles
+            make_reactions(blackbox=True, string_data=["CCCCC(=O)CC"])
+        elif str(argv[1]) == "smiles_to_reactions_nb":  # Read all reactions from stringfiles
+            make_reactions(blackbox=False, string_data="blackbox/output/CCCCC(=O)CC_1902", max_energy=100, visual_cut_dag=True, visual_stringfiles=True)
+        elif str(argv[1]) == "gml":                     # create gml rule
+            gml = stringfile_to_gml(filename="blackbox/output/CC(C)C(C)C(C)N=C([O-])OC=O_5ae5/reaction0000/stringfile.xyz0000")
             print(gml)
-        elif str(sys.argv[1]) == "ec":
-            visualize_energy_curves("blackbox/output/CC(C)C(C)C(C)N=C([O-])OC=O_5ae5/reaction0001")
-        elif str(sys.argv[1]) == "generate_cut_dag_2":
-            make_cut_dag_2(1, "xyz_test_files/derp/stringfile.xyz0001", "xyz_test_files", "derp", False, True)
         else:
-            print("derp")
-        #g = smiles("CCO")                       # molecule to test reaction on
-        #xyz_string = mod_to_xyz(g, to_file=False)             # convert molecule for zstruct to understand it
-        #run_zstruct_and_gsm(xyz_string)
-
-        #gml_string, atom_core, energy_curve = stringfile_to_rdkit('blackbox/output/5af9b18e744943acab7bffa4d3845c4d/stringfiles/stringfile.xyz0003', visualize=True)
-        '''
-        g = graphGMLString(gml_string)
-        molecule, lookup_dict = make_cut_molecule(g, atom_core)
-        cuts = set()
-        find_all_cuts(molecule, cuts, lookup_dict, 0)
-
-        # iterate over all cuts and do:
-        new_gml_string = make_cut(g, cuts, molecule)
-        new_g = graphGMLString(gml_string)
-        mod_to_xyz(new_g, to_file=True)
-        # run zstruct with new molecule.xyz (molecule.frozen now contains all atoms that are not in the core)
-        with open('blackbox/scratch/stringfiles/stringfile.xyz0000') as fi:
-            ct = fi.readlines()
-        curve = read_energy_profiles(ct)
-        x = root_mean_square(energy_curve, curve)   # based on value decide if curve is the same
-        '''
+            print("input argument is unknown")
+    else:
+        print("input argument required")

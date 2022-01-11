@@ -1,5 +1,3 @@
-from pickle import dump
-
 from src.cut_dag import make_childs_mp, insert_childs_mp, make_root, run_blackbox
 from multiprocessing import Process, Queue, freeze_support
 from src.energy_curve_comparison import root_mean_square
@@ -179,10 +177,10 @@ def read_dag_data(cut_dag, reaction_folder):
                     node.stringfile = "NO REACTION"
     return "done"
 
-def visualise_stringfiles(overall_folder, DEBUG_MODE: bool=False):
+def visualise_stringfiles(folder, DEBUG_MODE: bool=False):
     # go over each cut folder
-    for folder in listdir(overall_folder):
-        folder_name = overall_folder + "/" + str(folder)
+    for folder in listdir(folder):
+        folder_name = folder + "/" + str(folder)
         if isdir(folder_name): # its a folder
             for file in listdir(folder_name): # find stringfile
                 if "stringfile" in file:
@@ -194,10 +192,10 @@ def visualise_stringfiles(overall_folder, DEBUG_MODE: bool=False):
             if DEBUG_MODE:
                 print("    stringfile path: " + folder_name + "/" + str(file))
                 print("    image path: " + folder_name)
-            visualize_2D(overall_folder + "/" + str(folder), overall_folder)
+            visualize_2D(folder + "/" + str(folder), folder)
 
 
-def make_cut_dag_2(mode: int, stringfile, visual_cut_dag: bool=False, visual_stringfiles: bool=False, DEBUG_MODE: bool = False):
+def make_cut_dag(blackbox: bool, stringfile, visual_cut_dag: bool=False, visual_stringfiles: bool=False, DEBUG_MODE: bool = False):
     # from stringfile path, get overall path and reaction_folder
     split_path = stringfile.rsplit("/")
     overall_path = ""
@@ -217,13 +215,13 @@ def make_cut_dag_2(mode: int, stringfile, visual_cut_dag: bool=False, visual_str
     if DEBUG_MODE:
         print("generate empty dag: done")
 
-    if mode == 0: # Run black box
+    if blackbox: # Run black box
         if DEBUG_MODE:
             print("Blackbox run: start")
         generate_dag_data_mp(cd, tasks_counter, stringfile, overall_path, reaction_folder, DEBUG_MODE)
         if DEBUG_MODE:
             print("Blackbox run: done")
-    elif mode == 1: # read data drom folder
+    else: # read data drom folder
         if DEBUG_MODE:
             print("read dag data: start")
         status = read_dag_data(cd, overall_path + "/" + reaction_folder)
@@ -243,28 +241,4 @@ def make_cut_dag_2(mode: int, stringfile, visual_cut_dag: bool=False, visual_str
         visualize_cut_dag(cd)
         if DEBUG_MODE:
             print("visualise cut dag: Done")
-    print("Generate cut dag comeplete.")
-
-
-
-def generate_cut_dag_main(stringfile, overall_path, reaction_folder, debug_mode: bool = False):
-    freeze_support()
-    cut_dag = make_cut_dag(stringfile, overall_path, reaction_folder, debug_mode)
-
-    if cut_dag is not None:
-        #print("SUCCES!")
-        visualize_cut_dag(cut_dag)
-    else:
-        print("ERROR not cut dag for " + str(stringfile))
-
-
-# byg daggen via gamle metode, da den er hurtigere
-# tjek for input. brug blackbox eller mappe DATA
-    # kør black box
-    # indsæt data i daggen
-# tjek hvis den skal laves visuelt
-    # kør visualiser
-
-# byg module til at bygge daggen
-# byg modul til at kør run_blackbox
-# byg modul til at udfylde data i cut dag
+    print("Generate cut dag complete.")

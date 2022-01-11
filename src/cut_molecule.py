@@ -1,11 +1,7 @@
-from rdkit.Chem import rdmolops, GetSymmSSSR, AddHs, MolFromSmiles, Atom
+from rdkit.Chem.rdchem import AtomValenceException
+from rdkit.Chem import rdmolops, GetSymmSSSR, Atom
 from rdkit.Chem.rdDistGeom import EmbedMolecule
 from rdkit.Chem.rdDepictor import Compute2DCoords
-from src.stringfile_to_rdkit import stringfile_to_rdkit
-#from stringfile_to_rdkit import stringfile_to_rdkit
-
-#from src.stringfile_to_rdkit import stringfile_to_rdkit, fig_plot
-
 
 class MoleculeNode:
     def __init__(self, molecule_id, node_type):
@@ -49,8 +45,8 @@ def make_cut_molecule(rdk_mol, core):
     def core_ring(cut_molecule, look_up): # check for a ring, where core connects duo to the chemical reaction. Using recursive depth first search
         # use a dict to keep track on parents
         parent_dict = {}
-        # Make a list of all atoms already visited
-        visited_nodes = []
+        # Make a list of all atoms already visited and to look at
+        visited_nodes = [0] # root has already been visited
         current_nodes = [0] # starting with root
         # Go over each atom starting from the core with breath first search
         while len(current_nodes) > 0:
@@ -58,10 +54,23 @@ def make_cut_molecule(rdk_mol, core):
             children = cut_molecule[node_id].children # get the kids of the molecule
             for child in children: # for each child, tjek if they have already been visted
                 if child in visited_nodes: # WE HAVE FUND A RING!
+                    ring_list = [0] # add all placements of the ring, core already added
+                    # child and current node is the last edge in the ring. follow them up through the parent dict to the core
+                    ring_id = node_id # for the first connecter in the ring
+                    while ring_id != 0:
+                        ring_list.append(ring_id) # add to ring list
+                        ring_id = parent_dict.get(ring_id)
+                    ring_id = child # for the second connecter in the ring
+                    while ring_id != 0:
+                        ring_list.append(ring_id) # add to ring list
+                        ring_id = parent_dict.get(ring_id)
+                    return ring_list
                 else: # no ring add to visted and parent dict
-                    parent_dict[] = node_id
-
-        return []
+                    parent_dict[child] = node_id
+                    visited_nodes.append(child)
+                    current_nodes.append(child) # add the child to the current node list
+            current_nodes.pop(0)
+        return None
 
     lookup = {} # look up dict
     cut_molecule = [] # The "atom" list for the cut molecule
@@ -255,83 +264,12 @@ def make_cut(mol, cuts, molecule, lookup_dict):
 
 
 def recompute_coordinates_of_mol(mol):
-    mol.RemoveAllConformers()
-    atoms = mol.GetAtoms()
-    bonds = mol.GetBonds()
-
-    new_mol = MolFromSmiles("")
-    for atom in atoms:
-        new_mol.AddAtom(atom)
-    for bond in bonds:
-        new_mol.Addbond(bond.GetBeginAtomIdx, bond.GetEndAtomIdx)
-
-    Compute2DCoords(new_mol)  # add coordinates with a comformer
-    EmbedMolecule(new_mol)
-    return new_mol
-
-
-def cut_molecule_main():
-    mol, atom_core, energy_profiles = stringfile_to_rdkit('xyz_test_files/GCD_test_files/stringfile.xyz0009', visualize=False)
-    cut_molecule, lookup = make_cut_molecule(mol, atom_core)
-    cuts = find_all_cuts(cut_molecule, set(), lookup)
-    print(cuts)
-    print(atom_core)
-    xyz_string, ordering = make_cut(mol, cuts[0], cut_molecule, lookup)
-    print(xyz_string)
-    print("hello")
-
-
-if __name__ == '__main__':
-    #mol = MolFromSmiles('C1=CC=CN=C1')
-    mol = MolFromSmiles('O=N/C(=N\O)[S+](Oc1nnc(O)nn1)Oc2nnnc(O)n2')
-    #mol = MolFromSmiles('C#CC=CC')
-    print("ATOM NUMBERS før h:")
-    print(mol.GetNumAtoms())
-
-    mol = AddHs(mol)
-    print("ATOM NUMBERS efter h:")
-    print(mol.GetNumAtoms())
-
-    rdmolops.Kekulize(mol) # removes the whole aromatic ring thing?
-
-    print("ATOM NUMBER AND LETTERs")
-    for atom in mol.GetAtoms():
-        print("ID " + str(atom.GetIdx()))
-        print(str(atom.GetAtomicNum()) + " " + str(atom.GetSymbol()))
-
-    #print("BONDS")
-    for bond in mol.GetBonds():
-        print(str(bond.GetBeginAtomIdx()) + " - " + str(bond.GetEndAtomIdx()) + " with type " + str(bond.GetBondType()))
-
-    #print("GET RINGS!")
-    ssr = GetSymmSSSR(mol)
-
-    atoms_in_big_nodes = set()
-
-    for r in ssr:
-        derp = set(r)
-        #print(derp)
-
-    cut_molecule, lookup = make_cut_molecule(mol, {5})
-    #for m in cut_molecule:
-        #print("THE ATOMS " + str(m.id))
-        #print("         bonds to: " + str(m.children))
-
-    #print("find cuts!")
-    cuts = find_all_cuts(cut_molecule, {0,1}, lookup)
-    #print("cuts: " + str({0,1}) + " new cuts " + str(cuts))
-    cuts = find_all_cuts(cut_molecule, {4}, lookup)
-    #print("cuts: " + str({4}) + " new cuts " + str(cuts))
-    cuts = find_all_cuts(cut_molecule, {11}, lookup)
-    #print("cuts: " + str({11}) + " new cuts " + str(cuts))
-    cuts = find_all_cuts(cut_molecule, {20}, lookup)
-    #print("cuts: " + str({20}) + " new cuts " + str(cuts))
-    cuts = find_all_cuts(cut_molecule, set((0,1,4,11,20)), lookup)
-    #print("cuts: " + str(set((0,1,4,11,20))) + " new cuts " + str(cuts))
-
-    Compute2DCoords(mol)  # generate 2d coordinates
-    EmbedMolecule(mol, randomSeed=0xf00d)  # generate 3d coordinates
-    i, j = make_cut(mol, [0, 1, 4, 11, 20], cut_molecule, lookup)
-    print(i)
-    print(j)
-    #Draw.MolToFile(mol,'derp.png')
+    try:
+        mol.UpdatePropertyCache()
+        mol.RemoveAllConformers()
+        Compute2DCoords(mol)  # add coordinates with a comformer
+        EmbedMolecule(mol)
+    except AtomValenceException:
+        print("atomvalencexception")
+        pass
+    return mol

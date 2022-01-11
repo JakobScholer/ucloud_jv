@@ -2,8 +2,6 @@ from os import listdir
 from os.path import isdir, isfile
 import plotly.graph_objects as go
 from src.stringfile_helper_functions import read_energy_profiles
-#from stringfile_helper_functions import read_energy_profiles
-
 
 def visualize_rdkit_mol(mol, core_atoms: set = None):
     """Takes an rdkit mol object and the core atoms of the molecule, displays a visual representation of the molecule"""

@@ -19,6 +19,3 @@ def root_mean_square(energy_curve_original, energy_curve_new):
         return 1
     else:
         return 0
-
-if __name__ == '__main__':
-    root_mean_square([100, 200, 300, 400, 100], [150, 250, 350, 450, 150], True)

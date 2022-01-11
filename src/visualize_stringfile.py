@@ -1,9 +1,7 @@
 import openbabel.pybel as pybel
 from openbabel import openbabel
 from src.stringfile_helper_functions import build_bond_map
-from rdkit.Chem import RWMol, MolFromSmiles, Atom, Conformer
-from rdkit.Geometry import Point3D
-from rdkit.Chem import Draw
+from rdkit.Chem import RWMol, MolFromSmiles, Atom
 from rdkit.Chem.AllChem import Compute2DCoords
 from rdkit.Chem.Draw import rdMolDraw2D
 from rdkit.Chem.rdmolops import RemoveHs
@@ -120,8 +118,8 @@ def combine_images(right_images, left_images, image_name):
     remove('top.png')
 
 
-def visualize_2D(Stringfile_path, image_path, image_name: str = "Reacktion_scheme.jpg"):
-    stringfile_data = read_stringfile(Stringfile_path) # get list of energi levels and openbabel mols   ####### GetBondBetweenAtoms(0,1) ######
+def visualize_2D(stringfile_path: str, image_path: str, image_name: str = "Reaction_scheme.jpg"):
+    stringfile_data = read_stringfile(stringfile_path) # get list of energi levels and openbabel mols   ####### GetBondBetweenAtoms(0,1) ######
 
     core_atoms, core_bond_pairs = find_core(stringfile_data[0][1], stringfile_data[len(stringfile_data)-1][1]) # find core info
 
@@ -145,6 +143,3 @@ def visualize_2D(Stringfile_path, image_path, image_name: str = "Reacktion_schem
     # clean all images
     for file in (left_image_list + right_image_list):
         remove(file)
-
-if __name__ == '__main__':
-    visualize_2D("../xyz_test_files/reaction0182/stringfile.xyz0182", "../xyz_test_files/reaction0182")

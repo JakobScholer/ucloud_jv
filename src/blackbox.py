@@ -1,11 +1,8 @@
 from os import makedirs, path, listdir
 from shutil import move, copyfile, copytree, rmtree
-from subprocess import check_call, DEVNULL, STDOUT, CalledProcessError
+from subprocess import check_call, DEVNULL, STDOUT, CalledProcessError, TimeoutExpired
 from uuid import uuid4
 from re import sub
-from rdkit.Chem import MolFromSmiles, MolToXYZBlock, AddHs
-from rdkit.Chem.rdDepictor import Compute2DCoords
-from rdkit.Chem.rdDistGeom import EmbedMolecule
 
 
 def run_zstruct_and_gsm(xyz_strings: list, smiles_string: str, ordering=None, core=None, reaction_folder: str = None, cuts_folder: str = "", logfile=False):
@@ -105,10 +102,13 @@ def run_gsm_round(clone_name: str, output_folder: str, i: int, isomers_str: str,
             else:
                 f_out = DEVNULL
                 f_err = STDOUT
-            check_call(["./gsm.orca"], stdout=f_out, stderr=f_err, cwd=f"blackbox/gsm_clones/{clone_name}")   # run gsm.orca in silent mode
+            check_call(["./gsm.orca"], stdout=f_out, stderr=f_err, timeout=600, cwd=f"blackbox/gsm_clones/{clone_name}")   # run gsm.orca in silent mode
         except CalledProcessError as e:
             #print(e.output)
             pass
+        except TimeoutExpired as e:
+            print("Timeout error!")
+            print(e)
         # find stringfile if one was made and move to output
         if path.exists(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000"):
             move(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000",
@@ -125,17 +125,3 @@ def run_gsm(clone_name: str, output_folder: str, isomer_count: int, isomers_str:
     copytree("blackbox/gsm_clones/original", f"blackbox/gsm_clones/{clone_name}")   # create clone of gsm
     for isomer_id in range(isomer_count):                                           # iterate over all isomers/initial pairs
         run_gsm_round(clone_name, output_folder, isomer_id, isomers_str, reaction_folder, cuts_folder, logfile)   # compute stringfile for pair
-
-
-def zstruct_gsm_main():
-    #smiles_string = 'CN=C([O-])N(C)C(=O)OC(C)=O'
-    smiles_string = "CCO"
-    mol = MolFromSmiles(smiles_string)
-    mol = AddHs(mol)
-    Compute2DCoords(mol)  # generate 2d coordinates
-    EmbedMolecule(mol, randomSeed=0xf00d)  # generate 3d coordinates
-    xyz_str_1 = MolToXYZBlock(mol)
-    folders = run_zstruct_and_gsm([xyz_str_1], smiles_string)
-    #run_zstruct_and_gsm(xyz_strings=[xyz_str_1], smiles_string="CCO_518e", ordering={}, core=[], reaction_folder="reaction0001", cuts_folder="/1_2_3/")
-    #print(folders)
-    #folders = ["blackbox/output/ade0008ff58c47a59cc34cc464041810\stringfiles/stringfile.xyz0009"]

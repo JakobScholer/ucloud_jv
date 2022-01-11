@@ -3,19 +3,15 @@ from rdkit.Chem import RWMol, AddHs, MolFromSmiles, MolToXYZBlock, rdDepictor
 from rdkit.Chem.AllChem import EmbedMolecule
 from os import listdir
 from src.blackbox import run_zstruct_and_gsm
-from src.generate_cut_dag import make_cut_dag_2
+from src.generate_cut_dag import make_cut_dag
 from src.stringfile_helper_functions import max_energy_curve
 
 # C=C(C)C(C(CC)CN(C(=O)OC(C)=O)C([O-])=NC(C)C(C=CC)C1CCCCC1)C2CCCCC2
-
-
-
 # takes a mode and a string or list of strings as input
-    # mode 0 runs blackbox and the list of strings must be the smiles for reactions
-    # mode 1 reads data from a folder. string_data must be the path to the already compiled cut dag data
-def make_reactions(mode: int, string_data, max_energy: int=50, visual_cut_dag: bool=False, visual_stringfiles: bool=False):
-# GØR HELE BLACK BOX DELEN!
-    if mode == 0:
+    # blackbox True runs blackbox and the list of strings must be the smiles for reactions
+    # blackbox False reads data from a folder. string_data must be the path to the already compiled cut dag data
+def make_reactions(blackbox: bool, string_data, max_energy: int=50, visual_cut_dag: bool=False, visual_stringfiles: bool=False):
+    if blackbox:
         xyz_list = []
         for string in string_data:
             mol = RWMol(MolFromSmiles(string)) # lav rdkitmol fra smiles string
@@ -26,10 +22,10 @@ def make_reactions(mode: int, string_data, max_energy: int=50, visual_cut_dag: b
         #print(xyz_list[0])
         reaction_name = string_data[0]
         for i in range(1,len(string_data)):
-            reaction_name = reaction_name + "_+_" + string
+            reaction_name = reaction_name + "_+_" + string_data[i]
         # kør blackbox
         smiles_path = run_zstruct_and_gsm(xyz_list, reaction_name)
-    elif mode == 1:
+    else:
         smiles_path = string_data
 
     stringfile_path = listdir(smiles_path)#
@@ -39,14 +35,16 @@ def make_reactions(mode: int, string_data, max_energy: int=50, visual_cut_dag: b
         containment = listdir(folder)
         if len(containment) > 2: # must be 2 files. if no stringfile was generated
             for file in containment:
-                if "ISOMER" in file:
-                    isomer_file = folder + "/" + str(file)
-                elif "stringfile" in file:
+                if "stringfile" in file:
                     stringfile = folder + "/" + str(file)
-            print("    stringfile: " + str(stringfile))
-            #print("    ISOMER: " + str(isomer_file))
-            if check_educt_to_product(stringfile) and max_energy_curve(stringfile, max_energy): # if there is a reaction in the stringfile. make a cut dag!
-                print("        Generate cut dag")
-                make_cut_dag_2(mode, stringfile, visual_cut_dag, visual_stringfiles)
-            else:
-                print("        Not generating cut dag")
+                    print("    stringfile: " + str(stringfile))
+                    check = check_educt_to_product(stringfile)
+                    max = max_energy_curve(stringfile, max_energy)
+                    if check_educt_to_product(stringfile) and max_energy_curve(stringfile, max_energy): # if there is a reaction in the stringfile. make a cut dag!
+                        print("        Generate cut dag")
+                        make_cut_dag(blackbox, stringfile, visual_cut_dag, visual_stringfiles)
+                    else:
+                        print("        Not generating cut dag")
+                        print(f"        Check educt to product: {check}")
+                        print(f"        Max energy curve: {max}")
+

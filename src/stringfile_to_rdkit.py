@@ -27,7 +27,6 @@ def stringfile_to_rdkit(filename: str, visualize: bool = False):
     reactant = pybel.readstring("xyz", xyz_str_reactant)
     product = pybel.readstring("xyz", xyz_str_product)
 
-    num_atoms: int = len(reactant.atoms)
     mol = RWMol(MolFromSmiles(''))
 
     # create rdkit atoms based on openbabel reading of stringfile
@@ -69,9 +68,3 @@ def stringfile_to_rdkit(filename: str, visualize: bool = False):
     if visualize:
         visualize_rdkit_mol(mol, atom_core)
     return mol, atom_core, energy_profiles
-
-
-def stringfile_to_rdkit_main():
-    mol, core, energy = stringfile_to_rdkit("xyz_test_files/reaction0001/stringfile.xyz0001", True)
-    #print(core)
-    #print(energy)
