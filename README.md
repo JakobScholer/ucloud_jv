@@ -1,8 +1,14 @@
 # Running program
 Individual functions can be called through main.py with arguments, fx:
 ```
-  python3 main.py runner
-  python3 main.py generate_tree
+  python3 main.py ec
+  python3 main.py img_all_stringfiles
+  python3 main.py img_stringfile
+  python3 main.py make_cut_dag
+  
+  python3 main.py smiles_to_reactions_bb
+  python3 main.py smiles_to_reactions_nb
+  python3 main.py gml
 ```
 
 # Running tests:
