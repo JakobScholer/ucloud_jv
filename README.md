@@ -29,5 +29,5 @@ All tests can be run with the command
 ```
 Or a single test with the command
 ```
-  python3 -m unittest test/[filename.py]
+  python3 -m unittest test/filename.py
 ```
