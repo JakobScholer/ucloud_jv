@@ -22,7 +22,7 @@ def removeDuplicates(arr): # midlertidig methode. lav core_ring_check i cut mole
 def worker(input, output):
     for func, args in iter(input.get, 'STOP'):
         result = func(*args)
-        output.put(result)s
+        output.put(result)
 
 # generate the empty dag using multiprocessing.
 def generate_empty_dag_mp(stringfile, DEBUG_MODE: bool=False):
@@ -132,8 +132,9 @@ def generate_dag_data_mp(cd, tasks_counter, stringfile, overall_folder, reaction
                     for c in sorted(node.cuts):
                         cut_reaction += str(c) + "_"
                     cut_reaction = cut_reaction[:-1]
+                    print(f"making folder at {overall_folder}/{reaction_folder}/no_reaction.txt")
                     with open(f"{overall_folder}/{reaction_folder}/no_reaction.txt", 'a') as f:
-                        f.write(cut_reaction)
+                        f.write(f"{cut_reaction}\n")
                 else: # teh data is usefull!
                     node.energy = read_energy_profiles(data[0])
                     node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
@@ -185,10 +186,10 @@ def read_dag_data(cut_dag, reaction_folder):
                     node.stringfile = "NO REACTION"
     return "done"
 
-def visualise_stringfiles(folder, DEBUG_MODE: bool=False):
+def visualise_stringfiles(overall_folder, DEBUG_MODE: bool=False):
     # go over each cut folder
-    for folder in listdir(folder):
-        folder_name = folder + "/" + str(folder)
+    for folder in listdir(overall_folder):
+        folder_name = overall_folder + "/" + str(folder)
         if isdir(folder_name): # its a folder
             for file in listdir(folder_name): # find stringfile
                 if "stringfile" in file:
@@ -200,7 +201,8 @@ def visualise_stringfiles(folder, DEBUG_MODE: bool=False):
             if DEBUG_MODE:
                 print("    stringfile path: " + folder_name + "/" + str(file))
                 print("    image path: " + folder_name)
-            visualize_2D(folder + "/" + str(folder), folder)
+            visualize_2D(overall_folder + "/" + str(folder), overall_folder)
+            visualize_2D(overall_folder + "/" + str(folder), overall_folder)
 
 
 def make_cut_dag(blackbox: bool, stringfile, visual_cut_dag: bool=False, visual_stringfiles: bool=False, DEBUG_MODE: bool = False):
