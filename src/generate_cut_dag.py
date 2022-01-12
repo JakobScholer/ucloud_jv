@@ -22,7 +22,7 @@ def removeDuplicates(arr): # midlertidig methode. lav core_ring_check i cut mole
 def worker(input, output):
     for func, args in iter(input.get, 'STOP'):
         result = func(*args)
-        output.put(result)
+        output.put(result)s
 
 # generate the empty dag using multiprocessing.
 def generate_empty_dag_mp(stringfile, DEBUG_MODE: bool=False):
@@ -60,13 +60,13 @@ def generate_empty_dag_mp(stringfile, DEBUG_MODE: bool=False):
             print("        TASK STATE INFO!")
             print("            tasks_sent: " + str(tasks_sent))
             print("            tasks_completed: " + str(tasks_completed))
-        if tasks_sent == tasks_completed:
+        if tasks_sent == tasks_completed: # completed all tasks, end while loop
             wait_for_end = False
-        elif done_queue.empty() == True:
+        elif done_queue.empty() == True: # no new data to insert into the cut dag, sleep for a while
             if DEBUG_MODE:
                 print("        No new data recived")
             time.sleep(0.2)
-        else:
+        else: # read in the data and insert into the cut dag and make new tasks if possible
             if DEBUG_MODE:
                 print("        DATA REACIVED! start")
             while done_queue.empty() == False:
@@ -127,9 +127,17 @@ def generate_dag_data_mp(cd, tasks_counter, stringfile, overall_folder, reaction
                 data = done_queue.get()
                 node = cd.layers[data[1][0]][data[1][1]]
                 node.stringfile = data[0]
-                if not data[0] == "NO REACTION":
+                if data[0] == "NO REACTION": # the data is not usefull insert in no reaction list file
+                    cut_reaction = ""
+                    for c in sorted(node.cuts):
+                        cut_reaction += str(c) + "_"
+                    cut_reaction = cut_reaction[:-1]
+                    with open(f"{overall_folder}/{reaction_folder}/no_reaction.txt", 'a') as f:
+                        f.write(cut_reaction)
+                else: # teh data is usefull!
                     node.energy = read_energy_profiles(data[0])
                     node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
+
                 tasks_completed += 1 # increment the number of tasks needed to be done
         else: # else wait a litle and check again
             if DEBUG_MODE:
