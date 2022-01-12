@@ -153,38 +153,34 @@ def generate_dag_data_mp(cd, tasks_counter, stringfile, overall_folder, reaction
         print("    done!")
 
 
-def read_dag_data(cut_dag, reaction_folder):
+def read_dag_data(cut_dag, reaction_folder_path):
     # check if any data exist
-    if len(listdir(reaction_folder)) < 4:
+    if len(listdir(reaction_folder_path)) < 4:
         return "NO DATA"
+
+    if isfile(f"{reaction_folder_path}/no_reaction.txt"): # get no reaction cuts from the cut dag file no_reactions.txt
+        with open(f"{reaction_folder_path}/no_reaction.txt", 'r') as f:
+            no_reaction_list = f.readlines() # get the entire file as a list
+
     # gennem gå hele daggen
     for k in cut_dag.layers.keys():
         if k > 0:
             for i in range(len(cut_dag.layers[k])):
                 node = cut_dag.layers[k][i] # node
                 # make folder Name
-                folder = ""
+                cut_folder = ""
                 for c in sorted(node.cuts):
-                    folder += str(c) + "_"
-                folder = folder[:-1]
+                    cut_folder += str(c) + "_"
+                cut_folder = cut_folder[:-1]
                 # go to folder and find stringfile
                 no_stringfile = True
-                for file in listdir(reaction_folder + "/" + folder):
-                    if "stringfile" in file: # if stringfile insert alle data
-                        # make cut molecules
-                        stringfile_path = reaction_folder + "/" + folder + "/" + str(file)
-                        rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile_path, False)
-                        molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
-                        modified_mol, order = make_cut(rdk_mol, node.cuts, molecule, lookup_dict)
-
-                        if check_product(cut_dag.layers[0][0].stringfile, stringfile_path, node.cuts, order, molecule, lookup_dict):
-                            node.stringfile = stringfile_path
-                            node.energy = read_energy_profiles(node.stringfile)
-                            node.RMS = root_mean_square(cut_dag.layers[0][0].energy, node.energy)
-                            no_stringfile = False
+                if isfile(f"{reaction_folder_path}/{cut_folder}/stringfile.xyz0000") and cut_folder not in no_reaction_list:
+                    node.stringfile = stringfile_path
+                    node.energy = read_energy_profiles(node.stringfile)
+                    node.RMS = root_mean_square(cut_dag.layers[0][0].energy, node.energy)
+                    no_stringfile = False
                 if no_stringfile:
                     node.stringfile = "NO REACTION"
-    return "done"
 
 def visualise_stringfiles(overall_folder, DEBUG_MODE: bool=False):
     # go over each cut folder
@@ -234,14 +230,14 @@ def make_cut_dag(blackbox: bool, stringfile, visual_cut_dag: bool=False, visual_
     else: # read data drom folder
         if DEBUG_MODE:
             print("read dag data: start")
-        status = read_dag_data(cd, overall_path + "/" + reaction_folder)
+        read_dag_data(cd, f"{overall_path}/{reaction_folder}")
         if DEBUG_MODE:
-            print("read dag data: " + status)
+            print("read dag data: done")
     # visualise every stringfile in cut dag data
     if visual_stringfiles:
         if DEBUG_MODE:
             print("visualise stringfiles: start")
-        visualise_stringfiles(overall_path + "/" + reaction_folder)
+        visualise_stringfiles(f"{overall_path}/{reaction_folder}")
         if DEBUG_MODE:
             print("visualise stringfiles: done")
     # visualize the cut dag
