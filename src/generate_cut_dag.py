@@ -9,7 +9,8 @@ from src.visualize_stringfile import visualize_2D
 from src.stringfile_tester import check_product
 import time
 from os import listdir
-from os.path import isdir
+from os.path import isdir, isfile
+
 
 def removeDuplicates(arr): # midlertidig methode. lav core_ring_check i cut molecule for at fikse det.
     temp = []
@@ -113,6 +114,8 @@ def generate_dag_data_mp(cd, tasks_counter, stringfile, overall_folder, reaction
     if DEBUG_MODE:
         print("    que size: " + str(task_queue.qsize()) + " and needed tasks: " + str(tasks_counter))
 
+    open(f"{overall_folder}/{reaction_folder}/no_reaction.txt", 'w').close() # makes no_reaction file empty
+
     tasks_completed = 1 # root is already done as a task
     # make all tasks for the blackbox
     while tasks_completed != tasks_counter: #there is still tasks to perform
@@ -160,7 +163,9 @@ def read_dag_data(cut_dag, reaction_folder_path):
 
     if isfile(f"{reaction_folder_path}/no_reaction.txt"): # get no reaction cuts from the cut dag file no_reactions.txt
         with open(f"{reaction_folder_path}/no_reaction.txt", 'r') as f:
-            no_reaction_list = f.readlines() # get the entire file as a list
+            no_reaction_list = f.read().splitlines() # get the entire file as a list
+    else:
+        no_reaction_list = []
 
     # gennem gå hele daggen
     for k in cut_dag.layers.keys():
@@ -173,13 +178,13 @@ def read_dag_data(cut_dag, reaction_folder_path):
                     cut_folder += str(c) + "_"
                 cut_folder = cut_folder[:-1]
                 # go to folder and find stringfile
-                no_stringfile = True
+                print(no_reaction_list)
+                print(cut_folder)
                 if isfile(f"{reaction_folder_path}/{cut_folder}/stringfile.xyz0000") and cut_folder not in no_reaction_list:
-                    node.stringfile = stringfile_path
+                    node.stringfile = f"{reaction_folder_path}/{cut_folder}/stringfile.xyz0000"
                     node.energy = read_energy_profiles(node.stringfile)
                     node.RMS = root_mean_square(cut_dag.layers[0][0].energy, node.energy)
-                    no_stringfile = False
-                if no_stringfile:
+                else:
                     node.stringfile = "NO REACTION"
 
 def visualise_stringfiles(overall_folder, DEBUG_MODE: bool=False):
