@@ -124,11 +124,11 @@ def run_blackbox(stringfile, overall_folder, cuts, placement, reaction_folder):
     molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
     # make cuts on it
     modified_mol, order = make_cut(rdk_mol, cuts, molecule, lookup_dict)
-    modified_mol = recompute_coordinates_of_mol(modified_mol)
+    #modified_mol = recompute_coordinates_of_mol(modified_mol)
     xyz_file = mol_to_xyz(modified_mol)
 
     cut_folder = "/"    # make cut folder name
-    cuts.sort()         # sort cuts to make cuts_folder naming consistent
+    cuts = sorted(cuts)           # sort cuts to make cuts_folder naming consistent
     for cut in cuts:
         cut_folder = cut_folder + str(cut) + "_"
     cut_folder = cut_folder[0:-1] + "/"

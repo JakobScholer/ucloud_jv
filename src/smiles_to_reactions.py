@@ -10,7 +10,7 @@ from src.stringfile_helper_functions import max_energy_curve
 # takes a mode and a string or list of strings as input
     # blackbox True runs blackbox and the list of strings must be the smiles for reactions
     # blackbox False reads data from a folder. string_data must be the path to the already compiled cut dag data
-def make_reactions(blackbox: bool, string_data, max_energy: int=50, visual_cut_dag: bool=False, visual_stringfiles: bool=False):
+def make_reactions(blackbox: bool, string_data, max_energy: int=50, visual_cut_dag: bool=False, visual_stringfiles: bool=False, debug: bool=False):
     if blackbox:
         xyz_list = []
         for string in string_data:
@@ -24,7 +24,8 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=50, visual_cut_d
         for i in range(1,len(string_data)):
             reaction_name = reaction_name + "_+_" + string_data[i]
         # kør blackbox
-        smiles_path = run_zstruct_and_gsm(xyz_list, reaction_name)
+        #smiles_path = run_zstruct_and_gsm(xyz_list, reaction_name)
+        smiles_path = "blackbox/output/CC=CC=CC=CC_5873"
     else:
         smiles_path = string_data
 
@@ -42,7 +43,7 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=50, visual_cut_d
                     max = max_energy_curve(stringfile, max_energy)
                     if check_educt_to_product(stringfile) and max_energy_curve(stringfile, max_energy): # if there is a reaction in the stringfile. make a cut dag!
                         print("        Generate cut dag")
-                        make_cut_dag(blackbox, stringfile, visual_cut_dag, visual_stringfiles)
+                        make_cut_dag(blackbox, stringfile, visual_cut_dag, visual_stringfiles, debug)
                     else:
                         print("        Not generating cut dag")
                         print(f"        Check educt to product: {check}")

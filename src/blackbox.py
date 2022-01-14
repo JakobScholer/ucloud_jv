@@ -21,7 +21,7 @@ def run_zstruct_and_gsm(xyz_strings: list, smiles_string: str, ordering=None, co
     offset = 0
     if reaction_folder is None:
         prepare_zstruct(clone_name, xyz_strings, ordering, core)  # make zstruct clone
-        offset += run_zstruct(clone_name, output_folder, offset, logfile)  # run zstruct clone
+        offset += run_zstruct(clone_name, output_folder, logfile)  # run zstruct clone
         isomers_str = None
     else:
         makedirs(f"{output_folder}/{reaction_folder}{cuts_folder}", exist_ok=True)
@@ -49,7 +49,7 @@ def run_zstruct_and_gsm(xyz_strings: list, smiles_string: str, ordering=None, co
         return "NO REACTION"
 
 
-def run_zstruct(clone_name: str, output_folder: str, offset: int, logfile: bool):
+def run_zstruct(clone_name: str, output_folder: str, logfile: bool):
     try:
         # write to logfile or discard output
         if logfile:

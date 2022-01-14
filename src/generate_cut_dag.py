@@ -1,13 +1,8 @@
 from src.cut_dag import make_childs, make_root, run_blackbox
-from multiprocessing import Process, Queue, freeze_support
 from src.energy_curve_comparison import root_mean_square
 from src.stringfile_helper_functions import read_energy_profiles
-from src.stringfile_to_rdkit import stringfile_to_rdkit
-from src.cut_molecule import make_cut_molecule, find_all_cuts, make_cut
 from src.visualizers import visualize_cut_dag
 from src.visualize_stringfile import visualize_2D
-from src.stringfile_tester import check_product
-import time
 from os import listdir
 from os.path import isdir, isfile
 
@@ -49,7 +44,7 @@ def generate_dag_data(cd, stringfile, overall_folder, reaction_folder, DEBUG_MOD
     for k in cd.layers.keys():
         if k > 0:
             for i in range(len(cd.layers[k])):
-                data = run_blackbox, (stringfile, overall_folder, cd.layers[k][i].cuts, (k,i), reaction_folder) # call black box
+                data = run_blackbox(stringfile, overall_folder, cd.layers[k][i].cuts, (k,i), reaction_folder) # call black box
                 node = cd.layers[k][i]
                 node.stringfile = data[0]
 

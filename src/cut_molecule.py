@@ -258,6 +258,10 @@ def make_cut(mol, cuts, molecule, lookup_dict):
 
     # recompute coordinates of replaced atoms
     for atom in atoms_to_compute_coordinates:
+        print("#######################")
+        print(atom.GetIdx())
+        print(atom.GetNeighbors()[0].GetIdx())
+        print("#########################")
         try:
             rdmolops.SetTerminalAtomCoords(mol, atom.GetIdx(), atom.GetNeighbors()[0].GetIdx())
         except:
