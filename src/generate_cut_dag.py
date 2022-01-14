@@ -43,7 +43,7 @@ def generate_empty_dag(stringfile, DEBUG_MODE: bool=False):
             layer += 1
     return cd
 
-def generate_dag_data(cd, tasks_counter, stringfile, overall_folder, reaction_folder, DEBUG_MODE: bool=False):
+def generate_dag_data(cd, stringfile, overall_folder, reaction_folder, DEBUG_MODE: bool=False):
     # make all tasks for blackbox
     tasks_bx = []
     for k in cd.layers.keys():
@@ -136,7 +136,7 @@ def make_cut_dag(blackbox: bool, stringfile, visual_cut_dag: bool=False, visual_
     if blackbox: # Run black box
         if DEBUG_MODE:
             print("Blackbox run: start")
-        generate_dag_data(cd, tasks_counter, stringfile, overall_path, reaction_folder, DEBUG_MODE)
+        generate_dag_data(cd, stringfile, overall_path, reaction_folder, DEBUG_MODE)
         if DEBUG_MODE:
             print("Blackbox run: done")
     else: # read data drom folder
