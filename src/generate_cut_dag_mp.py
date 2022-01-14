@@ -1,4 +1,4 @@
-from src.cut_dag import make_childs, make_root, run_blackbox
+from src.cut_dag import make_childs_mp, insert_childs_mp, make_root, run_blackbox
 from multiprocessing import Process, Queue, freeze_support
 from src.energy_curve_comparison import root_mean_square
 from src.stringfile_helper_functions import read_energy_profiles
@@ -24,35 +24,111 @@ def worker(input, output):
         result = func(*args)
         output.put(result)
 
-# generate the empty dag
-def generate_empty_dag(stringfile, DEBUG_MODE: bool=False):
+# generate the empty dag using multiprocessing.
+def generate_empty_dag_mp(stringfile, DEBUG_MODE: bool=False):
     cd = make_root(stringfile, DEBUG_MODE)
     if cd is None:
         return None, 0
 
-    # loop as while there is new nodes in the cut dag
-    current_layer = [cd.layers[0][0]] # insert first the root
-    next_layer = []
-    layer = 0
-    while len(current_layer) > 0 or len(next_layer) > 0:
-        next_layer = next_layer + make_childs(cd, current_layer[0], layer) # add new nodes to next layer iteration
-        current_layer.pop(0) # remove already visited node
-        if len(current_layer) == 0: # go to next layer if no more nodes to work with
-            current_layer = next_layer.copy()
-            next_layer = []
-            layer += 1
-    return cd
+    freeze_support()
+    NUMBER_OF_PROCESSES = 1
 
-def generate_dag_data(cd, tasks_counter, stringfile, overall_folder, reaction_folder, DEBUG_MODE: bool=False):
+    # Create queues
+    task_queue = Queue()
+    done_queue = Queue()
+    if DEBUG_MODE:
+        print("    MAKE ROOT! start")
+    # add first task
+    root = cd.layers[0][0]
+    root_task = (make_childs_mp, (stringfile, set(), (0,0)))
+    task_queue.put(root_task)
+    if DEBUG_MODE:
+        print("    MAKE ROOT! stop")
+
+    # Start worker processes
+    for i in range(NUMBER_OF_PROCESSES):
+        Process(target=worker, args=(task_queue, done_queue)).start()
+
+    # wait for porcesses to end
+    wait_for_end = True
+    tasks_sent = 1
+    tasks_completed = 0
+    if DEBUG_MODE:
+        print("    GENERATE CUT DAG! start")
+    while wait_for_end:
+        if DEBUG_MODE:
+            print("        TASK STATE INFO!")
+            print("            tasks_sent: " + str(tasks_sent))
+            print("            tasks_completed: " + str(tasks_completed))
+        if tasks_sent == tasks_completed: # completed all tasks, end while loop
+            wait_for_end = False
+        elif done_queue.empty() == True: # no new data to insert into the cut dag, sleep for a while
+            if DEBUG_MODE:
+                print("        No new data recived")
+            time.sleep(0.2)
+        else: # read in the data and insert into the cut dag and make new tasks if possible
+            if DEBUG_MODE:
+                print("        DATA REACIVED! start")
+            while done_queue.empty() == False:
+                child_infos = done_queue.get() # get info
+                tasks_completed += 1
+                if DEBUG_MODE:
+                    print("            got info: " + str(removeDuplicates(child_infos[0])))
+                tasks = insert_childs_mp(stringfile, cd, removeDuplicates(child_infos[0]), child_infos[1]) # insert child
+                if len(tasks) > 0:
+                    for t in tasks: # add new tasks to the queue
+                        if DEBUG_MODE:
+                            print("            sending info: " + str(t[1][1]))
+                        task_queue.put(t)
+                    tasks_sent += len(tasks)
+                if DEBUG_MODE:
+                    print("        DATA REACIVED! stop")
+    if DEBUG_MODE:
+        print("    GENERATE CUT DAG! stop")
+
+    # Tell child processes to stop
+    for i in range(NUMBER_OF_PROCESSES):
+        task_queue.put('STOP')
+
+    return cd, tasks_sent
+
+def generate_dag_data_mp(cd, tasks_counter, stringfile, overall_folder, reaction_folder, DEBUG_MODE: bool=False):
+
+    freeze_support()
+    NUMBER_OF_PROCESSES = 1
+    # Create queues
+    task_queue = Queue()
+    done_queue = Queue()
+    # Start worker processes
+    for i in range(NUMBER_OF_PROCESSES):
+        Process(target=worker, args=(task_queue, done_queue)).start()
+
     # make all tasks for blackbox
     tasks_bx = []
     for k in cd.layers.keys():
         if k > 0:
             for i in range(len(cd.layers[k])):
-                data = run_blackbox, (stringfile, overall_folder, cd.layers[k][i].cuts, (k,i), reaction_folder) # call black box
-                node = cd.layers[k][i]
-                node.stringfile = data[0]
+                task_queue.put((run_blackbox, (stringfile, overall_folder, cd.layers[k][i].cuts, (k,i), reaction_folder))) # insert new tasks
 
+    if DEBUG_MODE:
+        print("    que size: " + str(task_queue.qsize()) + " and needed tasks: " + str(tasks_counter))
+
+    open(f"{overall_folder}/{reaction_folder}/no_reaction.txt", 'w').close() # makes no_reaction file empty
+
+    tasks_completed = 1 # root is already done as a task
+    # make all tasks for the blackbox
+    while tasks_completed != tasks_counter: #there is still tasks to perform
+        if DEBUG_MODE:
+            print("    tasks completed: " + str(tasks_completed))
+            print("    tasks sent: " + str(tasks_counter))
+            print("    tasks in queue: " + str(task_queue.qsize()))
+        if not done_queue.empty(): # insert return data in format (stringfile, Energy, placement)
+            while not done_queue.empty(): # empty the gueue
+                if DEBUG_MODE:
+                    print("    whuue got some BX data")
+                data = done_queue.get()
+                node = cd.layers[data[1][0]][data[1][1]]
+                node.stringfile = data[0]
                 if data[0] == "NO REACTION": # the data is not usefull insert in no reaction list file
                     cut_reaction = ""
                     for c in sorted(node.cuts):
@@ -64,6 +140,20 @@ def generate_dag_data(cd, tasks_counter, stringfile, overall_folder, reaction_fo
                 else: # teh data is usefull!
                     node.energy = read_energy_profiles(data[0])
                     node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
+
+                tasks_completed += 1 # increment the number of tasks needed to be done
+        else: # else wait a litle and check again
+            if DEBUG_MODE:
+                print("    sleep sleep")
+            time.sleep(2)
+            if DEBUG_MODE:
+                print("    waky waky")
+    # Tell child processes to stop
+    for i in range(NUMBER_OF_PROCESSES):
+        task_queue.put('STOP')
+    if DEBUG_MODE:
+        print("    done!")
+
 
 def read_dag_data(cut_dag, reaction_folder_path):
     # check if any data exist
@@ -113,7 +203,7 @@ def visualise_stringfiles(overall_folder, DEBUG_MODE: bool=False):
             visualize_2D(overall_folder + "/" + str(folder), overall_folder)
 
 
-def make_cut_dag(blackbox: bool, stringfile, visual_cut_dag: bool=False, visual_stringfiles: bool=False, DEBUG_MODE: bool = False):
+def make_cut_dag_mp(blackbox: bool, stringfile, visual_cut_dag: bool=False, visual_stringfiles: bool=False, DEBUG_MODE: bool = False):
     # from stringfile path, get overall path and reaction_folder
     split_path = stringfile.rsplit("/")
     overall_path = ""
@@ -126,7 +216,7 @@ def make_cut_dag(blackbox: bool, stringfile, visual_cut_dag: bool=False, visual_
     # generate empty dag and check if its done
     if DEBUG_MODE:
         print("generate empty dag: Start")
-    cd = generate_empty_dag(stringfile, DEBUG_MODE)
+    cd, tasks_counter = generate_empty_dag_mp(stringfile, DEBUG_MODE)
     if cd is None:
         print("ERROR no cut dag for " + str(stringfile))
         return None
@@ -136,7 +226,7 @@ def make_cut_dag(blackbox: bool, stringfile, visual_cut_dag: bool=False, visual_
     if blackbox: # Run black box
         if DEBUG_MODE:
             print("Blackbox run: start")
-        #generate_dag_data_mp(cd, tasks_counter, stringfile, overall_path, reaction_folder, DEBUG_MODE)
+        generate_dag_data_mp(cd, tasks_counter, stringfile, overall_path, reaction_folder, DEBUG_MODE)
         if DEBUG_MODE:
             print("Blackbox run: done")
     else: # read data drom folder

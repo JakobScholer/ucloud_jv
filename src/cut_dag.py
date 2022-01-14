@@ -18,25 +18,32 @@ class CutDag:
         self.cut_molecule = cut_molecule # the molecule to perfom cuts on
         self.cut_molecule_lookup_dict = lookup_dict # dict for cut_molecule
 
+def removeDuplicates(arr): # midlertidig methode. lav core_ring_check i cut molecule for at fikse det.
+    temp = []
+    for e in arr:
+        if e not in temp:
+            temp.append(e)
+    return temp
+
 # generate childs of a node
-def make_childs(node: CutDagNode, tree: CutDag):
-    # find alle cuts på moleculet
-    child_cuts = find_all_cuts(tree.cut_molecule, node.cuts, tree.cut_molecule_lookup_dict, 0)
+def make_childs(tree: CutDag, node: CutDagNode, layer: int):
+    # find all cuts på moleculet
+    child_cuts = removeDuplicates(find_all_cuts(tree.cut_molecule, node.cuts, tree.cut_molecule_lookup_dict)) ################# fjern duplicate function når core ring er done #######################
     # generate all childs
     child_sets = []
     for cut in child_cuts:
-        child_sets.append(node.cuts.union({cut}))
+        child_sets.append(node.cuts.union(cut))
     # return childs List
     child_nodes = []
-    # chek if new layer exist. MUTEX
-    if not len(node.cuts)+1 in tree.layers.keys():
+    # chek if new layer exist
+    if not layer+1 in tree.layers.keys():
         # add all nodes to the list and as childs in parent node
         for c in child_sets:
             node.childs.append(len(child_nodes)) # no -1 is needed, since we do it before adding he child
             child_nodes.append(CutDagNode(c))
-        tree.layers[len(node.cuts)+1] = child_nodes
+        tree.layers[layer+1] = child_nodes
     else: # generate all childs and check if the exist before adding
-        layer_list = tree.layers[len(node.cuts)+1]
+        layer_list = tree.layers[layer+1]
         for c in child_sets:
             child_not_done = True
             # run over the layer in the tree

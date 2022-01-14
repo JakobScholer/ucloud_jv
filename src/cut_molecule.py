@@ -53,22 +53,24 @@ def make_cut_molecule(rdk_mol, core):
             node_id = current_nodes[0]
             children = cut_molecule[node_id].children # get the kids of the molecule
             for child in children: # for each child, tjek if they have already been visted
-                if child in visited_nodes: # WE HAVE FUND A RING!
-                    ring_list = [0] # add all placements of the ring, core already added
+                if look_up.get(child) in visited_nodes: # WE HAVE FUND A RING!
+                    ring_list = cut_molecule[0].id.copy() # add all placements of the ring, core already added
                     # child and current node is the last edge in the ring. follow them up through the parent dict to the core
                     ring_id = node_id # for the first connecter in the ring
                     while ring_id != 0:
-                        ring_list.append(ring_id) # add to ring list
+                        for atom in cut_molecule[ring_id].id:
+                            ring_list.add(atom) # add to ring list
                         ring_id = parent_dict.get(ring_id)
-                    ring_id = child # for the second connecter in the ring
+                    ring_id = look_up.get(child) # for the second connecter in the ring
                     while ring_id != 0:
-                        ring_list.append(ring_id) # add to ring list
+                        for atom in cut_molecule[ring_id].id:
+                            ring_list.add(atom) # add to ring list
                         ring_id = parent_dict.get(ring_id)
                     return ring_list
                 else: # no ring add to visted and parent dict
-                    parent_dict[child] = node_id
-                    visited_nodes.append(child)
-                    current_nodes.append(child) # add the child to the current node list
+                    parent_dict[look_up.get(child)] = node_id
+                    visited_nodes.append(look_up.get(child))
+                    current_nodes.append(look_up.get(child)) # add the child to the current node list
             current_nodes.pop(0)
         return None
 
@@ -90,7 +92,6 @@ def make_cut_molecule(rdk_mol, core):
         for atom in r:
             data.add(int(atom))
         big_node_update(big_nodes, big_nodes_look_up, atoms_in_big_nodes, data)
-
     # for each bond that is not a single bond. make a big node or add to already existing node
     bonds = []
     for bond in rdk_mol.GetBonds(): # find all bonds that are not single, and make a big node update
@@ -155,15 +156,16 @@ def make_cut_molecule(rdk_mol, core):
         parent_list = new_parent
         bonds = new_bonds
 
-    #print("CORE RING: ")
-    #print(core_ring(cut_molecule, lookup, [core], 0))
+    # add the ore ring if it exist
+    #core_ring = core_ring(cut_molecule, lookup)
+    #big_node_update(big_nodes, big_nodes_look_up, atoms_in_big_nodes, core_ring)
+    #print(cut_molecule[0].id)
 
     return cut_molecule, lookup
 
 # cut_molecule is the mocule to find cuts on
 # Cuts is a set for all cuts already performed, this must include all atom ids even if part of a big node, hence flatten the list
 # Lookup is a dict, for lookup placement with ids in the cut_molecule
-# node is always 0, since its the placement of the root. This is due to the recursive nature of the function
 def find_all_cuts(cut_molecule: [MoleculeNode], cuts: set, lookup: dict):
     # if node has no children return empty cuts list. This case should only happen if all atoms is the core
     all_childs_are_cut = True
