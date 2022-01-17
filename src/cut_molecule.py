@@ -11,7 +11,7 @@ class MoleculeNode:
 
 # core = set(atom ID's) a set of ints
 # rdk_mol is the molecule object from RDKit
-def make_cut_molecule(rdk_mol, core):
+def make_cut_molecule(rdk_mol, core, DEBUG: bool = False):
     # for handling of bignodes
     def big_node_update(b_nodes, look_up, atom_list, data):
         intersection = data.intersection(atom_list) # all atoms that are already in a big node
@@ -24,9 +24,9 @@ def make_cut_molecule(rdk_mol, core):
             new_big_node = data
             for p in big_nodes_placement:
                 new_big_node = new_big_node.union(b_nodes[p])
-                b_nodes.pop(p)    # remove all big nodes, pointed to by the intersect
+                b_nodes[p] = set()   # empty the big node, but leave it be so the lookup dict for big nodes need no update
             # for each atom, update and add the lookup dict for big nodes
-            pos = len(b_nodes)
+            pos = len(b_nodes) # the poss is correct since we first add the big node afterwards
             for atom in new_big_node:
                 look_up[atom] = pos
             # add the new big node
@@ -92,6 +92,7 @@ def make_cut_molecule(rdk_mol, core):
         for atom in r:
             data.add(int(atom))
         big_node_update(big_nodes, big_nodes_look_up, atoms_in_big_nodes, data)
+
     # for each bond that is not a single bond. make a big node or add to already existing node
     bonds = []
     for bond in rdk_mol.GetBonds(): # find all bonds that are not single, and make a big node update
@@ -103,9 +104,22 @@ def make_cut_molecule(rdk_mol, core):
             else:
                 bonds.append(bond) # get the bonds that are not internal in a big node, to reduce later iteration over bonds
 
-    # add all nodes to the cut molecule, based on big nodes and not big nodes
+    # add core ring!
+
+
+    if DEBUG: # debug mode for big nodes
+        print(f"All the atoms currently in big nodes: {atoms_in_big_nodes}")
+        print(f"The dict for big nodes {big_nodes_look_up}")
+        derp = 0
+        for m in big_nodes:
+            print(f"Big node {derp} contains: {m}")
+            derp += 1
+
+    # add all nodes to the cut molecule, based on big nodes
     node_holder = []
     for node in big_nodes:
+        if node == set(): # empty big node, skip it
+            continue
         if not node.intersection(core) == set(): # its the core
             # add the core to the molecule and insert it on place zero
             for atom in node:
@@ -132,19 +146,30 @@ def make_cut_molecule(rdk_mol, core):
         new_parent = set()
         new_bonds = bonds.copy()
         # loop over every edge and parent to find matches
+        if DEBUG:
+            print(f"new parent: {new_parent}")
+            print(f"Matching with: {parent_list}")
         for b in bonds:
+            if DEBUG:
+                print(f"    Working on bond: {b.GetBeginAtomIdx()} {b.GetEndAtomIdx()}")
             for p in parent_list:
                 # check if a edge belongs to a parent
                 if b.GetBeginAtomIdx() == p:
-                    cut_molecule[lookup.get(p)].children.add(int(b.GetEndAtomIdx()))
-                    if not big_nodes_look_up.get(int(b.GetEndAtomIdx())) == None:
+                    if DEBUG:
+                        print(f"        Matched: {p}")
+                    cut_molecule[lookup.get(p)].children.add(int(b.GetEndAtomIdx())) # add id to the children of p
+                    if not big_nodes_look_up.get(int(b.GetEndAtomIdx())) == None: # check if the matched id is a part of a big node
                         for atom in big_nodes[big_nodes_look_up.get(int(b.GetEndAtomIdx()))]:
-                            new_parent.add(atom)
+                            new_parent.add(atom) # add all ids to the next iteration of parent nodes
                     else:
-                        new_parent.add(int(b.GetEndAtomIdx()))
-                    new_bonds.remove(b)
+                        new_parent.add(int(b.GetEndAtomIdx())) # add only the matched id, since its not a part of a big node
+                    new_bonds.remove(b) # remove the already visited edge
+                    if DEBUG:
+                        print(f"            parents at next iteration: {new_parent}")
                     break
-                elif b.GetEndAtomIdx() == p:
+                elif b.GetEndAtomIdx() == p: # check the same for the over part of the bond/edge
+                    if DEBUG:
+                        print(f"        Matched: {p}")
                     cut_molecule[lookup.get(p)].children.add(int(b.GetBeginAtomIdx()))
                     if not big_nodes_look_up.get(int(b.GetBeginAtomIdx())) == None:
                         for atom in big_nodes[big_nodes_look_up.get(int(b.GetBeginAtomIdx()))]:
@@ -152,9 +177,15 @@ def make_cut_molecule(rdk_mol, core):
                     else:
                         new_parent.add(int(b.GetBeginAtomIdx()))
                     new_bonds.remove(b)
+                    if DEBUG:
+                        print(f"             parents at next iteration: {new_parent}")
                     break
         parent_list = new_parent
         bonds = new_bonds
+
+    if DEBUG:
+        for node in cut_molecule:
+            print(f"Node: {node.id}\n    children: {node.children}")
 
     # add the ore ring if it exist
     #core_ring = core_ring(cut_molecule, lookup)
