@@ -1,5 +1,5 @@
 from rdkit.Chem.rdchem import AtomValenceException
-from rdkit.Chem import rdmolops, GetSymmSSSR, Atom
+from rdkit.Chem import rdmolops, GetSymmSSSR, Atom, BondType, RWMol, MolFromSmiles
 from rdkit.Chem.rdDistGeom import EmbedMolecule
 from rdkit.Chem.rdDepictor import Compute2DCoords
 
@@ -85,12 +85,30 @@ def make_cut_molecule(rdk_mol, core, DEBUG: bool = False):
     for atom in core:
         big_nodes_look_up[atom] = 0
 
+    rdk_mol = RWMol(rdk_mol) # transform the rdkit mol into a workable mol
+    # add and atom with connection to all the core atoms
+    new_atom = Atom("C") # use a carbon
+    rdk_mol.AddAtom(new_atom) # add atom
+    new_atom_id = len(rdk_mol.GetAtoms())-1 # get id for the new atom
+    for id in core: # for each core atom add edge
+        rdk_mol.AddBond(new_atom_id, id, BondType.SINGLE)
+
+    new_rings = []
+    rings = GetSymmSSSR(rdk_mol) # get rings with new core ring
+    for r in rings: # go over each ring and finish them up
+        list = { atom for atom in r} # make the ring a list
+        if new_atom_id in list: # remove the new atom if its a part of it
+            list.remove(new_atom_id)
+        if len(list) >= 3: # skip all rings only based on the new atom
+            new_rings.append(list) # the rings we want
+
+    for id in core: # remove all edges again
+        rdk_mol.RemoveBond(new_atom_id, id)
+    rdk_mol.RemoveAtom(new_atom_id) # remove the new atom
+
     # find alle rings first, and add them as big nodes.
     rings = GetSymmSSSR(rdk_mol)
-    for r in rings:
-        data = set()
-        for atom in r:
-            data.add(int(atom))
+    for data in new_rings:
         big_node_update(big_nodes, big_nodes_look_up, atoms_in_big_nodes, data)
 
     # for each bond that is not a single bond. make a big node or add to already existing node
@@ -187,10 +205,7 @@ def make_cut_molecule(rdk_mol, core, DEBUG: bool = False):
         for node in cut_molecule:
             print(f"Node: {node.id}\n    children: {node.children}")
 
-    # add the ore ring if it exist
-    #core_ring = core_ring(cut_molecule, lookup)
-    #big_node_update(big_nodes, big_nodes_look_up, atoms_in_big_nodes, core_ring)
-    #print(cut_molecule[0].id)
+    print(cut_molecule[0].id)
 
     return cut_molecule, lookup
 
