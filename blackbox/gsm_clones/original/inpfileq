@@ -22,7 +22,7 @@ INITIAL_OPT             150    # opt steps first node
 FINAL_OPT               50    # opt steps last SSM node
 PRODUCT_LIMIT           100.0 #100.0  # kcal/mol
 TS_FINAL_TYPE  	       	1      # any/delta bond: 0/1
-NNODES			11     # including endpoints
+NNODES			15     # including endpoints
 ---------------------------------------------------------
 
 
