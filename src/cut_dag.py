@@ -1,3 +1,4 @@
+from src.blackbox2 import run_gsm_cuts
 from src.cut_molecule import make_cut_molecule, find_all_cuts, make_cut, recompute_coordinates_of_mol
 from src.stringfile_helper_functions import mol_to_xyz
 from src.stringfile_to_rdkit import stringfile_to_rdkit, read_energy_profiles
@@ -134,7 +135,8 @@ def run_blackbox(stringfile, overall_folder, cuts, placement, reaction_folder):
     cut_folder = cut_folder[0:-1] + "/"
 
     # call true black box
-    stringfile_path = run_zstruct_and_gsm([xyz_file], overall_folder, order, atom_core, reaction_folder, cut_folder, logfile=True)
+    stringfile_path = run_gsm_cuts([xyz_file], overall_folder, reaction_folder, cut_folder, order)
+    #stringfile_path = run_zstruct_and_gsm([xyz_file], overall_folder, order, atom_core, reaction_folder, cut_folder, logfile=True)
     if stringfile_path != "NO REACTION" and check_product(stringfile, stringfile_path, cuts, order, molecule, lookup_dict): # check if reaction is the same
         return [stringfile_path, placement]
     else: # return data
