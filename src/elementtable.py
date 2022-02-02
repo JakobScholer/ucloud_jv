@@ -120,3 +120,21 @@ element_table = {
     117: 1.60, # Tennessine
     118: 1.60, # Oganesson
 }
+
+'''
+table generated from https://github.com/openbabel/openbabel/blob/master/src/elementtable.h using the code below to extract data.
+'''
+def readopenbabeltable():
+    with open('text.txt') as f:
+        lines = f.readlines()
+
+    new_text = ""
+    for line in lines:
+        linev = line.split(",")
+        id = linev[0][10:]
+        covalent_radius = linev[3][1:]
+        name = linev[-2][1:-1]
+
+        new_line = f"    {id}: {covalent_radius},    #{name}\n"
+        new_text += new_line
+print(new_text)
