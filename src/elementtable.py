@@ -137,4 +137,4 @@ def readopenbabeltable():
 
         new_line = f"    {id}: {covalent_radius},    #{name}\n"
         new_text += new_line
-print(new_text)
+    print(new_text)
