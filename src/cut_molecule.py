@@ -205,8 +205,6 @@ def make_cut_molecule(rdk_mol, core, DEBUG: bool = False):
         for node in cut_molecule:
             print(f"Node: {node.id}\n    children: {node.children}")
 
-    print(cut_molecule[0].id)
-
     return cut_molecule, lookup
 
 # cut_molecule is the mocule to find cuts on

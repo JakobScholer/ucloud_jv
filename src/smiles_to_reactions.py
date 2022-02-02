@@ -59,4 +59,3 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=50, generate_ini
                         print("        Not generating cut dag")
                         print(f"        Check educt to product: {check}")
                         print(f"        Max energy curve: {max}")
-

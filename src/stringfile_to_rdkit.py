@@ -1,6 +1,6 @@
 import openbabel.pybel as pybel
 from openbabel import openbabel
-from rdkit.Chem import RWMol, MolFromSmiles, Atom, Conformer
+from rdkit.Chem import RWMol, MolFromSmiles, Atom, Conformer, MolToSmiles
 from rdkit.Geometry import Point3D
 from src.stringfile_helper_functions import build_bond_map, read_stringfile_content, read_energy_profiles
 from src.visualizers import visualize_rdkit_mol
@@ -21,8 +21,11 @@ def stringfile_to_rdkit(filename: str, visualize: bool = False):
     # read all energy profiles
     energy_profiles = read_energy_profiles(filename)
 
-    reactant = pybel.readstring("xyz", xyz_str_reactant)
+    reactant = pybel.readstring("xyz", xyz_str_reactant) # use openbabel to read in the xyz data
     product = pybel.readstring("xyz", xyz_str_product)
+
+    print(reactant.write("smi"))
+    print(product.write("smi"))
 
     mol = RWMol(MolFromSmiles(''))
 
@@ -61,6 +64,8 @@ def stringfile_to_rdkit(filename: str, visualize: bool = False):
         conf.SetAtomPosition(atom_id, atom_position)
         atom_id += 1
     mol.AddConformer(conf)
+
+    print(MolToSmiles(mol))
 
     if visualize:
         visualize_rdkit_mol(mol, atom_core)
