@@ -1,7 +1,9 @@
 from rdkit.Chem.rdchem import AtomValenceException
 from rdkit.Chem import rdmolops, GetSymmSSSR, Atom, BondType, RWMol, MolFromSmiles
+from src.elementtable import element_table
 from rdkit.Chem.rdDistGeom import EmbedMolecule
 from rdkit.Chem.rdDepictor import Compute2DCoords
+from math import pow, sqrt
 
 class MoleculeNode:
     def __init__(self, molecule_id, node_type):
@@ -281,7 +283,7 @@ def make_cut(mol, cuts, molecule, lookup_dict):
         if atom.GetIdx() not in ban_list:
             if atom.GetIdx() in replace_list:
                 mol.ReplaceAtom(atom.GetIdx(), Atom("H"), updateLabel=True, preserveProps=False)
-                atoms_to_compute_coordinates.append(atom)
+                atoms_to_compute_coordinates.append(atom.GetIdx())
             ordering[atom.GetIdx() + 1] = counter
             counter += 1
         else:
@@ -295,27 +297,51 @@ def make_cut(mol, cuts, molecule, lookup_dict):
     bonds_to_remove.reverse()
     for bond in bonds_to_remove: # removing bond
         mol.RemoveBond(bond.GetBeginAtom().GetIdx(), bond.GetEndAtom().GetIdx())
+
+    #print("length of list: " + str(atoms_to_compute_coordinates))
+
+    conformer_3D = mol.GetConformer() # get conformer for the 3D coordinates
+    # recompute coordinates of replaced atoms
+    for atom_id in atoms_to_compute_coordinates:
+        print(atom_id)
+        # Get 3D coordinates
+        anker_atom_position = conformer_3D.GetAtomPosition(atom_id) # the atom to update coords
+        replaced_atom_position = conformer_3D.GetAtomPosition(mol.GetAtomWithIdx(atom_id).GetNeighbors()[0].GetIdx()) # the connected atoms coord
+        new_position = [0.0,0.0,0.0]
+
+        # Compute new vector
+        new_position[0] = replaced_atom_position.x - anker_atom_position.x
+        new_position[1] = replaced_atom_position.y - anker_atom_position.y
+        new_position[2] = replaced_atom_position.z - anker_atom_position.z
+
+        # compute the new langth based on something something magic
+        new_length = element_table.get(mol.GetAtomWithIdx(atom_id).GetAtomicNum()) + element_table.get(mol.GetAtomWithIdx(atom_id).GetNeighbors()[0].GetAtomicNum())
+        #print(mol.GetAtomWithIdx(atom_id).GetNeighbors()[0].GetAtomicNum())
+        #print(new_length)
+        length_scalar = new_length / sqrt(pow(new_position[0],2) + pow(new_position[1],2) + pow(new_position[2],2))
+        #print(length_scalar)
+
+        # insert new coordinates
+        replaced_atom.x = (new_position[0] * length_scalar) + anker_atom_position.x
+        replaced_atom.y = (new_position[1] * length_scalar) + anker_atom_position.y
+        replaced_atom.z = (new_position[2] * length_scalar) + anker_atom_position.z
+
+        # update conformer with new coordinates
+        new_atom_position = Point3D(replaced_atom.x, replaced_atom.y, replaced_atom.z)
+        conformer_3D.SetAtomPosition(atom_id, new_atom_position)
+
     # remove atoms
-    atoms_to_remove.reverse()
+    atoms_to_remove.reverse() # take larges id first since ids are updated after removal
     for atom_id in atoms_to_remove:
         mol.RemoveAtom(atom_id)
 
+    '''
     # recompute coordinates of replaced atoms
     for atom in atoms_to_compute_coordinates:
+
         try:
             rdmolops.SetTerminalAtomCoords(mol, atom.GetIdx(), atom.GetNeighbors()[0].GetIdx())
         except:
             pass
+    '''
     return mol, ordering
-
-
-def recompute_coordinates_of_mol(mol):
-    try:
-        mol.UpdatePropertyCache()
-        mol.RemoveAllConformers()
-        Compute2DCoords(mol)  # add coordinates with a comformer
-        EmbedMolecule(mol)
-    except AtomValenceException:
-        print("atomvalencexception")
-        pass
-    return mol
