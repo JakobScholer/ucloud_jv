@@ -1,5 +1,5 @@
 from src.blackbox2 import run_gsm_cuts
-from src.cut_molecule import make_cut_molecule, find_all_cuts, make_cut, recompute_coordinates_of_mol
+from src.cut_molecule import make_cut_molecule, find_all_cuts, make_cut
 from src.stringfile_helper_functions import mol_to_xyz
 from src.stringfile_to_rdkit import stringfile_to_rdkit, read_energy_profiles
 from src.blackbox import run_zstruct_and_gsm

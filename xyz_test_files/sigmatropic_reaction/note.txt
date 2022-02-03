@@ -1,0 +1,5 @@
+example of sigmatropic reaction 1,3 https://en.wikipedia.org/wiki/Sigmatropic_reaction
+where all double bonds have been removed except for the bond involved in the reaction
+
+rdkit version ran using setterminalcoords
+jv version ran using mapping of covalent radii

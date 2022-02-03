@@ -1,8 +1,8 @@
 from rdkit.Chem.rdchem import AtomValenceException
 from rdkit.Chem import rdmolops, GetSymmSSSR, Atom, BondType, RWMol, MolFromSmiles
+from rdkit.Geometry import Point3D
+
 from src.elementtable import element_table
-from rdkit.Chem.rdDistGeom import EmbedMolecule
-from rdkit.Chem.rdDepictor import Compute2DCoords
 from math import pow, sqrt
 
 class MoleculeNode:
@@ -322,12 +322,12 @@ def make_cut(mol, cuts, molecule, lookup_dict):
         #print(length_scalar)
 
         # insert new coordinates
-        replaced_atom.x = (new_position[0] * length_scalar) + anker_atom_position.x
-        replaced_atom.y = (new_position[1] * length_scalar) + anker_atom_position.y
-        replaced_atom.z = (new_position[2] * length_scalar) + anker_atom_position.z
+        replaced_atom_x = (new_position[0] * length_scalar) + anker_atom_position.x
+        replaced_atom_y = (new_position[1] * length_scalar) + anker_atom_position.y
+        replaced_atom_z = (new_position[2] * length_scalar) + anker_atom_position.z
 
         # update conformer with new coordinates
-        new_atom_position = Point3D(replaced_atom.x, replaced_atom.y, replaced_atom.z)
+        new_atom_position = Point3D(replaced_atom_x, replaced_atom_y, replaced_atom_z)
         conformer_3D.SetAtomPosition(atom_id, new_atom_position)
 
     # remove atoms

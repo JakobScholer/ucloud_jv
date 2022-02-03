@@ -3,9 +3,9 @@ from src.stringfile_tester import check_educt_to_product
 from rdkit.Chem import RWMol, AddHs, MolFromSmiles, MolToXYZBlock, rdDepictor
 from rdkit.Chem.AllChem import EmbedMolecule
 from os import listdir
-from src.blackbox import run_zstruct_and_gsm
 from src.generate_cut_dag import make_cut_dag
-from src.stringfile_helper_functions import max_energy_curve
+from src.stringfile_helper_functions import max_energy_curve, read_stringfile_content
+
 
 # C=C(C)C(C(CC)CN(C(=O)OC(C)=O)C([O-])=NC(C)C(C=CC)C1CCCCC1)C2CCCCC2
 # takes a mode and a string or list of strings as input
@@ -18,7 +18,7 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=50, generate_ini
 
             for string in string_data:
                 mol = RWMol(MolFromSmiles(string)) # lav rdkitmol fra smiles string
-                mol = AddHs(mol) # add hydrogen for good measure.
+                mol = AddHs(mol, explicitOnly=False) # add hydrogen for good measure.
                 rdDepictor.Compute2DCoords(mol) # add coordinates with a comformer
                 EmbedMolecule(mol, randomSeed=0xf00d)
                 xyz_list.append(MolToXYZBlock(mol)) # convert til xyz fil
@@ -27,10 +27,9 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=50, generate_ini
             for i in range(1,len(string_data)):
                 reaction_name = reaction_name + "_+_" + string_data[i]
             # kør blackbox
-            #with open("blackbox/output/test.xyz") as f:
-                #xyz = f.read()
-            #xyz_list.append(xyz)
-            smiles_path, isomer_count = run_zstruct(reaction_name, xyz_list)
+            #educt, _, _ = read_stringfile_content("blackbox/output/string_radicalO2_recombination.xyz")
+            #xyz_list.append(educt)
+            smiles_path, isomer_count = run_zstruct(reaction_name, xyz_list, debug=False)
             run_gsm_initial(smiles_path, isomer_count)
         else:
             smiles_path = f"blackbox/output/{string_data}"
@@ -59,3 +58,4 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=50, generate_ini
                         print("        Not generating cut dag")
                         print(f"        Check educt to product: {check}")
                         print(f"        Max energy curve: {max}")
+

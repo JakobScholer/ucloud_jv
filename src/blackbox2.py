@@ -30,7 +30,7 @@ def prepare_zstruct(clone_name: str, xyz_strs: list, ordering: dict, core: list)
             f.write(xyz_str)
         with open(f"blackbox/zstruct_clones/{clone_name}/frozen{1}.xyz", "a") as f:             # create frozen file
             for element in core:
-                f.write(str(ordering.get(element)) + "\n")
+                f.write(str(ordering.get(element, element)) + "\n")
 
 
 def run_zstruct_computation(clone_name: str, output_folder: str, logfile: bool):
