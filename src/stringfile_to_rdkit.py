@@ -5,6 +5,8 @@ from rdkit.Geometry import Point3D
 from src.stringfile_helper_functions import build_bond_map, read_stringfile_content, read_energy_profiles
 from src.visualizers import visualize_rdkit_mol
 
+from rdkit.Chem.rdmolops import RemoveHs
+
 def stringfile_to_rdkit(filename: str, visualize: bool = False):
     """takes a stringfile, returns a rdkit mol object, the core of the atom and the energy profile."""
     xyz_str_reactant, xyz_str_product, num_atoms = read_stringfile_content(filename)
@@ -24,8 +26,9 @@ def stringfile_to_rdkit(filename: str, visualize: bool = False):
     reactant = pybel.readstring("xyz", xyz_str_reactant) # use openbabel to read in the xyz data
     product = pybel.readstring("xyz", xyz_str_product)
 
-    print(reactant.write("smi"))
-    print(product.write("smi"))
+    #print("Babel educt and prduct: ")
+    #print(reactant.write("smi"))
+    #print(product.write("smi"))
 
     mol = RWMol(MolFromSmiles(''))
 
@@ -65,7 +68,10 @@ def stringfile_to_rdkit(filename: str, visualize: bool = False):
         atom_id += 1
     mol.AddConformer(conf)
 
-    print(MolToSmiles(mol))
+    mol.UpdatePropertyCache()
+    mol = RemoveHs(mol, True)
+    print(f"mol educt to smiles: {MolToSmiles(mol)}")
+    print(f"atom numb: {mol.GetNumAtoms()}")
 
     if visualize:
         visualize_rdkit_mol(mol, atom_core)

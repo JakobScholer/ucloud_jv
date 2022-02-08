@@ -77,6 +77,8 @@ def make_mol_png(mol, core_atoms, core_bond_pairs, hydrogens: bool, png_name, ti
     if hydrogens:
         mol = RemoveHs(mol)
     else:
+        mol.UpdatePropertyCache()
+        mol = RemoveHs(mol, True)
         # find all bonds in core that is stil relevant for the molecule
         core_bonds = [mol.GetBondBetweenAtoms(pair[0],pair[1]).GetIdx() for pair in core_bond_pairs if not mol.GetBondBetweenAtoms(pair[0],pair[1]) == None]
     Compute2DCoords(mol)
