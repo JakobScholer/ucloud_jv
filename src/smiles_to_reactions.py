@@ -44,6 +44,7 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=50, generate_ini
 
     for folder in reaction_folders: # gå over hver eneste stringfile+isomer og lav en cut dag
         containment = listdir(folder)
+        containment.sort()          # sort list of reaction folders to follow order of computation
         if len(containment) > 2: # must be 2 files. if no stringfile was generated
             for file in containment:
                 if "stringfile" in file:

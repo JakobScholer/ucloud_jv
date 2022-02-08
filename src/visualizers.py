@@ -250,3 +250,20 @@ def visualize_energy_curves(folder: str):
                                  mode='lines',
                                  name=epc))
     fig.show()
+
+
+def energy_curves(folder: str):
+    name = "reaction0001"
+    energy_profiles = []
+    energy_profiles_cuts = []
+    for i in range(100):
+        energy_profile = read_energy_profiles(f"{folder}/{i}/{name}/stringfile.xyz0001")
+        energy_profiles.append(energy_profile)
+
+        energy_profiles_cuts.append(i)
+    fig = go.Figure()
+    for ep, epc in zip(energy_profiles, energy_profiles_cuts):
+        fig.add_trace(go.Scatter(x=list(range(0, len(ep))), y=ep,
+                                 mode='lines',
+                                 name=epc))
+    fig.show()

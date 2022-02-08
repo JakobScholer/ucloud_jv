@@ -39,6 +39,7 @@ def build_bond_map(mol):
         bmap[(src, tar)] = order_map[b.GetBondOrder()]
     return bmap
 
+
 def mol_to_xyz(mol):
     """Takes an rdkit mol object, returns a xyz string"""
     xyz_string = str(mol.GetNumAtoms()) + "\n\n"
@@ -47,7 +48,9 @@ def mol_to_xyz(mol):
         xyz_string += str(atom.GetSymbol()) + " " + str(coords.GetAtomPosition(atom.GetIdx()).x) + " " + str(coords.GetAtomPosition(atom.GetIdx()).y) + " " + str(coords.GetAtomPosition(atom.GetIdx()).z) + "\n"
     return xyz_string
 
+
 def max_energy_curve(stringfile, max_energy):
+    """Takes the name of a stringfile and the maximum energy of it, returns bool for curve acceptance"""
     energy_curve = read_energy_profiles(stringfile) # read energy curve
     if max(energy_curve) > max_energy:
         return False # the curve is unrealistic to happen based on max energy
