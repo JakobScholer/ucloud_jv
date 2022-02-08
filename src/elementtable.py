@@ -1,4 +1,6 @@
 
+# for atoms not on this list a covalent radius of 1.5 should be used
+# all measurements in Ångstrøm
 element_table = {
     0: 0.00,  # Dummy
     1: 0.31,  # Hydrogen

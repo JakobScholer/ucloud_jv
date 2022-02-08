@@ -8,7 +8,7 @@ from src.visualizers import visualize_rdkit_mol
 from rdkit.Chem.rdmolops import RemoveHs
 
 def stringfile_to_rdkit(filename: str, visualize: bool = False):
-    """takes a stringfile, returns a rdkit mol object, the core of the atom and the energy profile."""
+    """Takes a stringfile, returns a rdkit mol object, the core of the atom and the energy profile."""
     xyz_str_reactant, xyz_str_product, num_atoms = read_stringfile_content(filename)
 
     # find all atom coordinates and store in list
