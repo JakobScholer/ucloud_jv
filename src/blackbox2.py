@@ -1,4 +1,5 @@
-from os import makedirs, path, listdir
+from os import makedirs, listdir
+from os.path import isdir, isfile, exists
 from shutil import move, copyfile, copytree, rmtree
 from subprocess import check_call, DEVNULL, STDOUT, CalledProcessError, TimeoutExpired
 from uuid import uuid4
@@ -18,7 +19,7 @@ def run_zstruct(smiles_string: str, xyz_strings: list, core=None, ordering=None,
     clone_name = str(uuid4().hex)
     prepare_zstruct(clone_name, xyz_strings, ordering, core)  # make zstruct clone
     isomer_count += run_zstruct_computation(clone_name, output_folder, debug)  # run zstruct clone
-    if path.isdir(f"blackbox/zstruct_clones/{clone_name}") and not debug:
+    if isdir(f"blackbox/zstruct_clones/{clone_name}") and not debug:
         rmtree(f"blackbox/zstruct_clones/{clone_name}", ignore_errors=True)  # remove zstruct clone
     return output_folder, isomer_count
 
@@ -56,7 +57,7 @@ def run_zstruct_computation(clone_name: str, output_folder: str, logfile: bool):
 
 
 def run_gsm_initial(output_folder: str, isomer_count: int, logfile: bool = False):
-    if not path.isdir(output_folder):
+    if not isdir(output_folder):
         print(f"{output_folder} not made yet")
         return "ERROR"
 
@@ -64,13 +65,13 @@ def run_gsm_initial(output_folder: str, isomer_count: int, logfile: bool = False
         clone_name = str(uuid4().hex)
         copytree("blackbox/gsm_clones/original", f"blackbox/gsm_clones/{clone_name}")  # create clone of gsm
         run_gsm_round_initial(clone_name, output_folder, isomer_id, logfile)   # compute stringfile for pair
-        if path.isdir(f"blackbox/gsm_clones/{clone_name}") and not logfile:
+        if isdir(f"blackbox/gsm_clones/{clone_name}") and not logfile:
             rmtree(f"blackbox/gsm_clones/{clone_name}", ignore_errors=True)  # remove gsm clone
 
 
 def run_gsm_round_initial(clone_name: str, output_folder: str, isomer_count: int, logfile: bool = False):
     reaction_folder = f"reaction{str(isomer_count).zfill(4)}"
-    if path.isfile(f"{output_folder}/{reaction_folder}/stringfile.xyz{str(isomer_count).zfill(4)}"):
+    if isfile(f"{output_folder}/{reaction_folder}/stringfile.xyz{str(isomer_count).zfill(4)}"):
         print(f"skipping {output_folder}/{reaction_folder}/stringfile.xyz{str(isomer_count).zfill(4)}")
         return
     print(f"working on {output_folder}/{reaction_folder}/stringfile.xyz{str(isomer_count).zfill(4)}")
@@ -93,13 +94,13 @@ def run_gsm_round_initial(clone_name: str, output_folder: str, isomer_count: int
         print("Timeout error!")
         print(e)
     # find stringfile if one was made and move to output
-    if path.exists(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000"):
+    if exists(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000"):
         move(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000",
              f"{output_folder}/{reaction_folder}/stringfile.xyz{str(isomer_count).zfill(4)}")
-    elif path.exists(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g"):
+    elif exists(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g"):
         move(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g",
              f"{output_folder}/{reaction_folder}/stringfile.xyz{str(isomer_count).zfill(4)}")
-    elif path.exists(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g1"):
+    elif exists(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g1"):
         move(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g1",
              f"{output_folder}/{reaction_folder}/stringfile.xyz{str(isomer_count).zfill(4)}")
     else:
@@ -129,19 +130,19 @@ def run_gsm_round_cuts(clone_name: str, output_folder: str, reaction_folder: str
             print("Timeout error!")
             print(e)
         # find stringfile if one was made and move to output
-        if path.exists(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000"):
+        if exists(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000"):
             move(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000",
                  f"{output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz0000")
-        elif path.exists(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g"):
+        elif exists(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g"):
             move(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g",
                  f"{output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz0000")
-        elif path.exists(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g1"):
+        elif exists(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g1"):
             move(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g1",
                  f"{output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz0000")
 
 
 def run_gsm_cuts(xyz_strings: list, output_folder: str, reaction_folder: str, cuts_folder: str = "", ordering=None, logfile: bool = False):
-    if not path.isdir(output_folder):
+    if not isdir(output_folder):
         print(f"{output_folder} not made yet")
         return "ERROR"
     isomer_count = 1
@@ -163,9 +164,9 @@ def run_gsm_cuts(xyz_strings: list, output_folder: str, reaction_folder: str, cu
         clone_name = str(uuid4().hex)
         copytree("blackbox/gsm_clones/original", f"blackbox/gsm_clones/{clone_name}")  # create clone of gsm
         run_gsm_round_cuts(clone_name, output_folder, reaction_folder, cuts_folder, isomers_str)   # compute stringfile for pair
-        if path.isdir(f"blackbox/gsm_clones/{clone_name}") and not logfile:
+        if isdir(f"blackbox/gsm_clones/{clone_name}") and not logfile:
             rmtree(f"blackbox/gsm_clones/{clone_name}", ignore_errors=True)  # remove gsm clone
-    if path.isfile(f"{output_folder}/{reaction_folder}{cuts_folder}stringfile.xyz0000"):
+    if isfile(f"{output_folder}/{reaction_folder}{cuts_folder}stringfile.xyz0000"):
         return f"{output_folder}/{reaction_folder}{cuts_folder}stringfile.xyz0000"
     else:
         return "NO REACTION"

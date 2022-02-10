@@ -70,8 +70,8 @@ def stringfile_to_rdkit(filename: str, visualize: bool = False):
 
     mol.UpdatePropertyCache()
     mol = RemoveHs(mol, True)
-    print(f"mol educt to smiles: {MolToSmiles(mol)}")
-    print(f"atom numb: {mol.GetNumAtoms()}")
+    #print(f"mol educt to smiles: {MolToSmiles(mol)}")
+    #print(f"atom numb: {mol.GetNumAtoms()}")
 
     if visualize:
         visualize_rdkit_mol(mol, atom_core)

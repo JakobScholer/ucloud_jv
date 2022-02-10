@@ -303,7 +303,6 @@ def make_cut(mol, cuts, molecule, lookup_dict):
     conformer_3D = mol.GetConformer() # get conformer for the 3D coordinates
     # recompute coordinates of replaced atoms
     for atom_id in atoms_to_compute_coordinates:
-        print(atom_id)
         # Get 3D coordinates
         anker_atom_position = conformer_3D.GetAtomPosition(atom_id) # the atom to update coords
         replaced_atom_position = conformer_3D.GetAtomPosition(mol.GetAtomWithIdx(atom_id).GetNeighbors()[0].GetIdx()) # the connected atoms coord
