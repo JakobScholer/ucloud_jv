@@ -258,6 +258,7 @@ def cut_search(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: int)
 def make_cut(mol, cuts, molecule, lookup_dict):
     """"takes an rdkit mol, the ids of atoms to cut off, the molecule object and lookup dictionary, returns modified mol and ordering"""
     # based on cuts to be performed decides which atoms are removed and which are replaced
+    mol = RWMol(mol)    # typecast mol as mol object
     ban_list = set()
     replace_list = set()
     for c in cuts:
