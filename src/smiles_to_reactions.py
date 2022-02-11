@@ -29,7 +29,7 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=50, generate_ini
             # kør blackbox
             #educt, _, _ = read_stringfile_content("blackbox/output/string_radicalO2_recombination.xyz")
             #xyz_list.append(educt)
-            smiles_path, isomer_count = run_zstruct(reaction_name, xyz_list, debug=False)
+            smiles_path, isomer_count = run_zstruct(reaction_name, xyz_list, core = [], debug=False) # Coren indohlder alt vi gerne vil ahev i frozen
             run_gsm_initial(smiles_path, isomer_count)
         else:
             smiles_path = f"blackbox/output/{string_data}"
@@ -59,4 +59,3 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=50, generate_ini
                         print("        Not generating cut dag")
                         print(f"        Check educt to product: {check}")
                         print(f"        Max energy curve: {max}")
-
