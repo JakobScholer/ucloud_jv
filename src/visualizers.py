@@ -252,17 +252,21 @@ def visualize_energy_curves(folder: str):
     fig.show()
 
 
-def energy_curves(folder: str):
-    name = "reaction0001"
+def energy_curve_all_reactions(folder: str):
     energy_profiles = []
-    energy_profiles_cuts = []
-    for i in range(100):
-        energy_profile = read_energy_profiles(f"{folder}/{i}/{name}/stringfile.xyz0001")
+    energy_profiles_names = []
+
+    reaction_folders = listdir(folder)
+    reaction_folders.sort()
+    for react_folder in reaction_folders:
+        from glob import glob
+        stringfiles = glob(f"{folder}/{react_folder}/stringfile*")
+        energy_profile = read_energy_profiles(stringfiles[0])
         energy_profiles.append(energy_profile)
 
-        energy_profiles_cuts.append(i)
+        energy_profiles_names.append(react_folder)
     fig = go.Figure()
-    for ep, epc in zip(energy_profiles, energy_profiles_cuts):
+    for ep, epc in zip(energy_profiles, energy_profiles_names):
         fig.add_trace(go.Scatter(x=list(range(0, len(ep))), y=ep,
                                  mode='lines',
                                  name=epc))
