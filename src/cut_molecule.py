@@ -258,6 +258,7 @@ def cut_search(cut_molecule: [MoleculeNode], cuts: set, lookup: dict, node: int)
 def make_cut(mol, cuts, molecule, lookup_dict):
     """"takes an rdkit mol, the ids of atoms to cut off, the molecule object and lookup dictionary, returns modified mol and ordering"""
     # based on cuts to be performed decides which atoms are removed and which are replaced
+    mol = RWMol(mol)    # typecast mol as mol object
     ban_list = set()
     replace_list = set()
     for c in cuts:
@@ -303,7 +304,6 @@ def make_cut(mol, cuts, molecule, lookup_dict):
     conformer_3D = mol.GetConformer() # get conformer for the 3D coordinates
     # recompute coordinates of replaced atoms
     for atom_id in atoms_to_compute_coordinates:
-        print(atom_id)
         # Get 3D coordinates
         anker_atom_position = conformer_3D.GetAtomPosition(atom_id) # the atom to update coords
         replaced_atom_position = conformer_3D.GetAtomPosition(mol.GetAtomWithIdx(atom_id).GetNeighbors()[0].GetIdx()) # the connected atoms coord

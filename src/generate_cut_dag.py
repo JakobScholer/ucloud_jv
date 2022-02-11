@@ -39,26 +39,27 @@ def generate_empty_dag(stringfile, DEBUG_MODE: bool=False):
     return cd
 
 def generate_dag_data(cd, stringfile, overall_folder, reaction_folder, DEBUG_MODE: bool=False):
-    # make all tasks for blackbox
-    tasks_bx = []
-    for k in cd.layers.keys():
-        if k > 0:
-            for i in range(len(cd.layers[k])):
-                data = run_blackbox(stringfile, overall_folder, cd.layers[k][i].cuts, (k,i), reaction_folder) # call black box
-                node = cd.layers[k][i]
-                node.stringfile = data[0]
+    if isfile(f"{overall_folder}/{reaction_folder}/done.txt"):
+        print(f"    skipping {overall_folder}/{reaction_folder}")
+    else:
+        for k in cd.layers.keys():
+            if k > 0:
+                for i in range(len(cd.layers[k])):
+                    data = run_blackbox(stringfile, overall_folder, cd.layers[k][i].cuts, (k,i), reaction_folder) # call black box
+                    node = cd.layers[k][i]
+                    node.stringfile = data[0]
 
-                if data[0] == "NO REACTION": # the data is not usefull insert in no reaction list file
-                    cut_reaction = ""
-                    for c in sorted(node.cuts):
-                        cut_reaction += str(c) + "_"
-                    cut_reaction = cut_reaction[:-1]
-                    print(f"making folder at {overall_folder}/{reaction_folder}/no_reaction.txt")
-                    with open(f"{overall_folder}/{reaction_folder}/no_reaction.txt", 'a') as f:
-                        f.write(f"{cut_reaction}\n")
-                else: # teh data is usefull!
-                    node.energy = read_energy_profiles(data[0])
-                    node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
+                    if data[0] == "NO REACTION": # the data is not usefull insert in no reaction list file
+                        cut_reaction = ""
+                        for c in sorted(node.cuts):
+                            cut_reaction += str(c) + "_"
+                        cut_reaction = cut_reaction[:-1]
+                        #print(f"making folder at {overall_folder}/{reaction_folder}/no_reaction.txt")
+                        with open(f"{overall_folder}/{reaction_folder}/no_reaction.txt", 'a') as f:
+                            f.write(f"{cut_reaction}\n")
+                    else: # teh data is usefull!
+                        node.energy = read_energy_profiles(data[0])
+                        node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
 
 def read_dag_data(cut_dag, reaction_folder_path):
     # check if any data exist
@@ -154,4 +155,4 @@ def make_cut_dag(blackbox: bool, stringfile, visual_cut_dag: bool=False, visual_
         visualize_cut_dag(cd)
         if DEBUG_MODE:
             print("visualise cut dag: Done")
-    print("Generate cut dag complete.")
+    #print("Generate cut dag complete.")
