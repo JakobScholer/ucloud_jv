@@ -5,20 +5,19 @@ from subprocess import check_call, DEVNULL, STDOUT, CalledProcessError, TimeoutE
 from uuid import uuid4
 from re import sub
 
-def run_zstruct(smiles_string: str, xyz_strings: list, core=None, ordering=None, debug=False):
+def run_zstruct(name: str, xyz_strings: list, core=None, ordering=None, debug=False):
     if core is None:
         core = []
     if ordering is None:
         ordering = {}
     isomer_count = 0
 
-    output_folder = "blackbox/output/" + smiles_string + "_" + str(
-        uuid4().hex[:4])  # unique identifier for output of this smiles string
+    output_folder = f"blackbox/output/{name}_{str(uuid4().hex[:4])}"  # unique identifier for output of this smiles string
     makedirs(output_folder)
 
     clone_name = str(uuid4().hex)
     prepare_zstruct(clone_name, xyz_strings, ordering, core)  # make zstruct clone
-    isomer_count += run_zstruct_computation(clone_name, output_folder, debug)  # run zstruct clone
+    isomer_count += run_zstruct_computation(clone_name, output_folder, multiple_molecules=len(xyz_strings)-1, logfile=debug)  # run zstruct clone
     if isdir(f"blackbox/zstruct_clones/{clone_name}") and not debug:
         rmtree(f"blackbox/zstruct_clones/{clone_name}", ignore_errors=True)  # remove zstruct clone
     return output_folder, isomer_count
@@ -29,12 +28,12 @@ def prepare_zstruct(clone_name: str, xyz_strs: list, ordering: dict, core: list)
     for i, xyz_str in enumerate(xyz_strs):
         with open(f"blackbox/zstruct_clones/{clone_name}/react{1+i}.xyz", "w") as f:              # create react file
             f.write(xyz_str)
-        with open(f"blackbox/zstruct_clones/{clone_name}/frozen{1}.xyz", "a") as f:             # create frozen file
+        with open(f"blackbox/zstruct_clones/{clone_name}/frozen{1+i}.xyz", "a") as f:             # create frozen file
             for element in core:
                 f.write(str(ordering.get(element, element)) + "\n")
 
 
-def run_zstruct_computation(clone_name: str, output_folder: str, logfile: bool):
+def run_zstruct_computation(clone_name: str, output_folder: str, multiple_molecules: int, logfile: bool):
     try:
         # write to logfile or discard output
         if logfile:
@@ -43,7 +42,7 @@ def run_zstruct_computation(clone_name: str, output_folder: str, logfile: bool):
         else:
             f_out = DEVNULL
             f_err = STDOUT
-        check_call(["./zstruct.exe"], stdout=f_out, stderr=f_err, cwd=f"blackbox/zstruct_clones/{clone_name}")  # run zstruct.exe in silent mode
+        check_call([f"./zstruct.exe -250 1000 1 {multiple_molecules}"], stdout=f_out, stderr=f_err, shell=True, cwd=f"blackbox/zstruct_clones/{clone_name}")  # run zstruct.exe in silent mode
     except CalledProcessError as e:
         # print(e.output)
         pass

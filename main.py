@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
         # ---------------Calc---------------Calc---------------Calc---------------Calc---------------Calc---------------
         elif str(argv[1]) == "smiles_to_reactions_bb":  # Compute all reactions as stringfiles from smiles
-            make_reactions(blackbox=True, string_data=["CC=CC"], max_energy=200, debug=True)
+            make_reactions(blackbox=True, string_data=["C", "CC"], max_energy=200, debug=True)
         elif str(argv[1]) == "smiles_to_reactions_bb_multirun":  # Compute all reactions as stringfiles from smiles
             #energy_curves("blackbox/output/CC=CCCCC_sigmatropicForced_multirun")
             for i in range(20):
