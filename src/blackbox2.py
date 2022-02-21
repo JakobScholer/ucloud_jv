@@ -152,10 +152,11 @@ def run_gsm_cuts(xyz_strings: list, output_folder: str, reaction_folder: str, cu
             with open(f"{output_folder}/{reaction_folder}/{file}", "r") as f:
                 isomers_str = f.read()
             break
-    isomers_str = sub(r'\d+', lambda m: ordering.get(m.group(), m.group()),
-                      isomers_str)  # replace numbers with dict mapping
+    def replacement(m):
+        return str(ordering.get(int(m.group(0)), int(m.group(0))))
+    modified_isomers_str = sub(r'\d+', replacement, isomers_str)  # replace numbers with dict mapping
     with open(f"{output_folder}/{reaction_folder}{cuts_folder}/ISOMERS0000", "w") as f:
-        f.write(isomers_str)
+        f.write(modified_isomers_str)
     with open(f"{output_folder}/{reaction_folder}{cuts_folder}/initial0000.xyz", "w") as f:
         f.write(xyz_strings[0])
 
