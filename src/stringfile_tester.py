@@ -45,7 +45,7 @@ def check_product(original_strfile, modified_strfile, cuts, ordering, molecule, 
     original_bonds = set()
     for bond in original_bmap.keys():
         if bond[0] not in banned_atoms and bond[1] not in banned_atoms:
-            original_bonds.add((ordering.get(bond[0]), ordering.get(bond[1]), original_bmap.get(bond)))
+            original_bonds.add((ordering.get(bond[0],bond[0]), ordering.get(bond[1],bond[1]), original_bmap.get(bond)))
             #original_bonds.add((int(ordering.get(str(bond[0]))),int(ordering.get(str(bond[1])))))
 
     #print("MODIFIED!")

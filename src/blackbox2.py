@@ -170,6 +170,3 @@ def run_gsm_cuts(xyz_strings: list, output_folder: str, reaction_folder: str, cu
         return f"{output_folder}/{reaction_folder}{cuts_folder}stringfile.xyz0000"
     else:
         return "NO REACTION"
-
-
-

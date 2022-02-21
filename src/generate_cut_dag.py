@@ -68,7 +68,8 @@ def read_dag_data(cut_dag, reaction_folder_path):
 
     if isfile(f"{reaction_folder_path}/no_reaction.txt"): # get no reaction cuts from the cut dag file no_reactions.txt
         with open(f"{reaction_folder_path}/no_reaction.txt", 'r') as f:
-            no_reaction_list = f.readlines() # get the entire file as a list
+            #no_reaction_list = f.readlines(). # get the entire file as a list
+            no_reaction_list = f.read().splitlines()
     else:
         no_reaction_list = []
 

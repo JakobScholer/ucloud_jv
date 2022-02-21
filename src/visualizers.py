@@ -2,6 +2,7 @@ from os import listdir
 from os.path import isdir, isfile
 import plotly.graph_objects as go
 from src.stringfile_helper_functions import read_energy_profiles
+from src.stringfile_tester import check_educt_to_product
 
 def visualize_rdkit_mol(mol, core_atoms: set = None):
     """Takes an rdkit mol object and the core atoms of the molecule, displays a visual representation of the molecule"""
@@ -252,19 +253,20 @@ def visualize_energy_curves(folder: str):
     fig.show()
 
 
-def energy_curve_all_reactions(folder: str):
+def energy_curve_all_reactions(folder: str, max_energy: int = 100):
     energy_profiles = []
     energy_profiles_names = []
 
     reaction_folders = listdir(folder)
     reaction_folders.sort()
     for react_folder in reaction_folders:
-        from glob import glob
-        stringfiles = glob(f"{folder}/{react_folder}/stringfile*")
-        energy_profile = read_energy_profiles(stringfiles[0])
-        energy_profiles.append(energy_profile)
-
-        energy_profiles_names.append(react_folder)
+        if isdir(f"{folder}/{react_folder}"): # take only folders
+            from glob import glob
+            stringfiles = glob(f"{folder}/{react_folder}/stringfile*")
+            energy_profile = read_energy_profiles(stringfiles[0])
+            if check_educt_to_product(stringfiles[0]) and max(energy_profile) < max_energy: # test the stringfile if a reaction happens
+                energy_profiles.append(energy_profile)
+                energy_profiles_names.append(react_folder)
     fig = go.Figure()
     for ep, epc in zip(energy_profiles, energy_profiles_names):
         fig.add_trace(go.Scatter(x=list(range(0, len(ep))), y=ep,
