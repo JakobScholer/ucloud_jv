@@ -2,7 +2,8 @@ from src.blackbox2 import run_gsm_cuts
 from src.cut_molecule import make_cut_molecule, find_all_cuts, make_cut
 from src.stringfile_helper_functions import mol_to_xyz
 from src.stringfile_to_rdkit import stringfile_to_rdkit
-from src.stringfile_tester import check_product
+from src.stringfile_tester import check_product, check_educt_to_product
+
 
 class CutDagNode:
     def __init__(self, cuts):
@@ -136,7 +137,7 @@ def run_blackbox(stringfile, overall_folder, cuts, placement, reaction_folder):
     # call true black box
     stringfile_path = run_gsm_cuts([xyz_file], overall_folder, reaction_folder, cut_folder, order)
     #stringfile_path = run_zstruct_and_gsm([xyz_file], overall_folder, order, atom_core, reaction_folder, cut_folder, logfile=True)
-    if stringfile_path != "NO REACTION" and check_product(stringfile, stringfile_path, cuts, order, molecule, lookup_dict): # check if reaction is the same
+    if stringfile_path != "NO REACTION" and check_product(stringfile, stringfile_path, cuts, order, molecule, lookup_dict) and check_educt_to_product(stringfile_path): # check if reaction is the same
         return [stringfile_path, placement]
     else: # return data
         return ["NO REACTION", placement]
