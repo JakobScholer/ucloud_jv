@@ -23,15 +23,34 @@ def get_product(strfile):
 def get_removed_atoms(cuts, molecule, lookup_dict):
     ban_list = []
     for c in cuts:
-        for child in molecule[lookup_dict.get(c)].children:
+        if len(molecule[lookup_dict.get(c)].id) > 1: # if the node is a big node
+            for id in molecule[lookup_dict.get(c)].id:
+                if id != c:
+                    print(id)
+                    print(c)
+                    ban_list.append(id+1)
+        for child in molecule[lookup_dict.get(c)].children: # for all childs add the to ban list
             #ban_list.append(child)
             ban_list.append(child+1)
-        ban_list += get_removed_atoms(molecule[lookup_dict.get(c)].children, molecule, lookup_dict)
+        ban_list += get_removed_atoms(molecule[lookup_dict.get(c)].children, molecule, lookup_dict) # reapeat until leaf nodes are reached
     return ban_list
 
-def check_product(original_strfile, modified_strfile, cuts, ordering, molecule, lookup_dict):
-    if modified_strfile == "NO REACTION":
-        return False
+def get_removed_atoms(cuts, molecule, lookup_dict, rdk_mol):
+    #rdk_mol = RWMol(rdk_mol) # typecast mol as mol object
+    ban_list = set()
+    keep_list = set()
+    for c in cuts: # for each cut add them to ban list and their childs
+        ban_list.add(c)
+        for child in molecule[lookup_dict.get(c)].children:
+            ban_list.add(child)
+    for cut in cuts: # for each cut , find if it has neighbors which is not banned. Hence they are not banned
+        for neighbor_atom in rdk_mol.GetAtomWithIdx(cut).GetNeighbors():
+            if neighbor_atom.GetIdx() not in ban_list:
+                keep_list.add(cut)
+    return [x+1 for x in ban_list if x not in keep_list]
+
+
+def check_product(original_strfile, modified_strfile, cuts, ordering, molecule, lookup_dict, rdk_mol):
     # read the product of both files
     original_product = get_product(original_strfile)
     modified_product = get_product(modified_strfile)
@@ -39,16 +58,13 @@ def check_product(original_strfile, modified_strfile, cuts, ordering, molecule, 
     original_bmap = build_bond_map(original_product)
     modified_bmap = build_bond_map(modified_product)
 
-    banned_atoms = get_removed_atoms(cuts, molecule, lookup_dict)
+    banned_atoms = get_removed_atoms(cuts, molecule, lookup_dict, rdk_mol)
 
-    #print("ORIGINAL!")
     original_bonds = set()
     for bond in original_bmap.keys():
         if bond[0] not in banned_atoms and bond[1] not in banned_atoms:
-            original_bonds.add((ordering.get(bond[0],bond[0]), ordering.get(bond[1],bond[1]), original_bmap.get(bond)))
-            #original_bonds.add((int(ordering.get(str(bond[0]))),int(ordering.get(str(bond[1])))))
+            original_bonds.add((ordering.get(int(bond[0]),int(bond[0])), ordering.get(int(bond[1]),int(bond[1])), original_bmap.get(bond)))
 
-    #print("MODIFIED!")
     modified_bonds = set()
     for bond in modified_bmap:
         #print(bond)

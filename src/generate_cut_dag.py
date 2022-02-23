@@ -45,33 +45,39 @@ def generate_dag_data(cd, stringfile, overall_folder, reaction_folder, DEBUG_MOD
         for k in cd.layers.keys():
             if k > 0:
                 for i in range(len(cd.layers[k])):
-                    data = run_blackbox(stringfile, overall_folder, cd.layers[k][i].cuts, (k,i), reaction_folder) # call black box
+                    stringfile_path, error_code, error_message = run_blackbox(stringfile, overall_folder, cd.layers[k][i].cuts, reaction_folder) # call black box
                     node = cd.layers[k][i]
-                    node.stringfile = data[0]
+                    node.stringfile = stringfile_path
 
-                    if data[0] == "NO REACTION": # the data is not usefull insert in no reaction list file
+                    if error_code: # the data is not usefull insert in no reaction list file
                         cut_reaction = ""
                         for c in sorted(node.cuts):
                             cut_reaction += str(c) + "_"
                         cut_reaction = cut_reaction[:-1]
-                        #print(f"making folder at {overall_folder}/{reaction_folder}/no_reaction.txt")
                         with open(f"{overall_folder}/{reaction_folder}/no_reaction.txt", 'a') as f:
-                            f.write(f"{cut_reaction}\n")
+                            f.write(f"{cut_reaction},{error_message}\n")
                     else: # teh data is usefull!
-                        node.energy = read_energy_profiles(data[0])
+                        node.energy = read_energy_profiles(stringfile_path)
                         node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
 
 def read_dag_data(cut_dag, reaction_folder_path):
     # check if any data exist
     if len(listdir(reaction_folder_path)) < 4:
-        return "NO DATA"
+        return
 
     if isfile(f"{reaction_folder_path}/no_reaction.txt"): # get no reaction cuts from the cut dag file no_reactions.txt
         with open(f"{reaction_folder_path}/no_reaction.txt", 'r') as f:
-            #no_reaction_list = f.readlines(). # get the entire file as a list
-            no_reaction_list = f.read().splitlines()
+            no_reaction_list = f.read().splitlines() # get the entire file as a list
+        # split up the cut folder names and the error error_message
+        no_reaction_folders = []
+        no_reaction_errors = {}
+        for element in no_reaction_list:
+            data = element.split(",")
+            no_reaction_folders.append(data[0])
+            no_reaction_errors[data[0]] = data[1]
     else:
-        no_reaction_list = []
+        no_reaction_folders = []
+        no_reaction_errors = {}
 
     # gennem gå hele daggen
     for k in cut_dag.layers.keys():
@@ -84,12 +90,12 @@ def read_dag_data(cut_dag, reaction_folder_path):
                     cut_folder += str(c) + "_"
                 cut_folder = cut_folder[:-1]
                 # go to folder and find stringfile
-                if isfile(f"{reaction_folder_path}/{cut_folder}/stringfile.xyz0000") and cut_folder not in no_reaction_list:
+                if isfile(f"{reaction_folder_path}/{cut_folder}/stringfile.xyz0000") and cut_folder not in no_reaction_folders:
                     node.stringfile = f"{reaction_folder_path}/{cut_folder}/stringfile.xyz0000"
                     node.energy = read_energy_profiles(node.stringfile)
                     node.RMS = root_mean_square(cut_dag.layers[0][0].energy, node.energy)
                 else:
-                    node.stringfile = "NO REACTION"
+                    node.stringfile = no_reaction_errors.get(cut_folder)
 
 def visualise_stringfiles(overall_folder, DEBUG_MODE: bool=False):
     # go over each cut folder

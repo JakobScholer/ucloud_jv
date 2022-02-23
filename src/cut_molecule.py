@@ -261,7 +261,7 @@ def make_cut(mol, cuts, molecule, lookup_dict):
     mol = RWMol(mol)    # typecast mol as mol object
     ban_list = set()
     replace_list = set()
-    for c in cuts:
+    for c in cuts: # for each cut add them to ban list and their childs
         ban_list.add(c)
         for child in molecule[lookup_dict.get(c)].children:
             ban_list.add(child)

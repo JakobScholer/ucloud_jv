@@ -139,7 +139,7 @@ def visualize_cut_dag(cut_dag):
     for layer in cut_dag.layers.keys():
         layer_length = len(cut_dag.layers.get(layer))
         for position in range(layer_length):
-            if cut_dag.layers.get(layer)[position].stringfile == "NO REACTION":
+            if not "blackbox"  in cut_dag.layers.get(layer)[position].stringfile:
                 cut_option_y_black.append(layer * 10)
                 cut_option_x_black.append(position * 10 - (layer_length * 10) / 2)
             elif cut_dag.layers.get(layer)[position].RMS == 1:

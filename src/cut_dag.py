@@ -119,7 +119,7 @@ def insert_childs_mp(stringfile, cd, child_sets, placement):
         return tasks
     return []
 
-def run_blackbox(stringfile, overall_folder, cuts, placement, reaction_folder):
+def run_blackbox(stringfile, overall_folder, cuts, reaction_folder):
     # make cut molecules
     rdk_mol, atom_core, energy_curve = stringfile_to_rdkit(stringfile, False)
     molecule, lookup_dict = make_cut_molecule(rdk_mol, atom_core)
@@ -137,10 +137,22 @@ def run_blackbox(stringfile, overall_folder, cuts, placement, reaction_folder):
     # call true black box
     stringfile_path = run_gsm_cuts([xyz_file], overall_folder, reaction_folder, cut_folder, order)
     #stringfile_path = run_zstruct_and_gsm([xyz_file], overall_folder, order, atom_core, reaction_folder, cut_folder, logfile=True)
-    if stringfile_path != "NO REACTION" and check_product(stringfile, stringfile_path, cuts, order, molecule, lookup_dict) and check_educt_to_product(stringfile_path): # check if reaction is the same
-        return [stringfile_path, placement]
-    else: # return data
-        return ["NO REACTION", placement]
+    error_message = ""
+    error_code = False
+    if stringfile_path == "EMPTY":
+        error_code = True
+        error_message += "GSM NO DATA"
+    else:
+        if not check_educt_to_product(stringfile_path): # check if reaction is the same
+            error_code = True
+            error_message += "NO REACTION"
+            stringfile_path = "ERROR"
+        elif not check_product(stringfile, stringfile_path, cuts, order, molecule, lookup_dict, rdk_mol):
+            error_code = True
+            error_message += "WRONG REACTION"
+            stringfile_path = "ERROR"
+
+    return stringfile_path, error_code, error_message
 
 # generate root node
 # input: Stringfile from Xtb, boolean for making visuals of the cut molecute
