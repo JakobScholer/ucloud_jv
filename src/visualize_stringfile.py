@@ -1,3 +1,5 @@
+from os.path import isdir
+
 import openbabel.pybel as pybel
 from openbabel import openbabel
 from src.stringfile_helper_functions import build_bond_map
@@ -9,7 +11,23 @@ from rdkit.Chem.rdmolops import RemoveHs
 import numpy as np
 import PIL
 from PIL import Image
-from os import remove
+from os import remove, listdir
+
+
+def visualise_stringfiles(overall_folder, debug: bool=False):
+    # go over each cut folder
+    for folder in listdir(overall_folder):
+        folder_name = overall_folder + "/" + str(folder)
+        if isdir(folder_name): # its a folder
+            for file in listdir(folder_name): # find stringfile
+                if "stringfile" in file:
+                    if debug:
+                        print("    stringfile path: " + folder_name + "/" + str(file))
+                        print("    image path: " + folder_name)
+                    visualize_2D(folder_name + "/" + str(file), folder_name)
+        elif "stringfile" in folder: # Make a visual version of the original stringfile
+            visualize_2D(overall_folder + "/" + str(folder), overall_folder)
+            visualize_2D(overall_folder + "/" + str(folder), overall_folder)
 
 def read_stringfile(strfile): # read a stringfile and return a list with energy and openbabel mol, for each step in the reaction
     # read xyz data as string

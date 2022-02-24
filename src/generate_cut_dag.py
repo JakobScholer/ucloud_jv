@@ -1,64 +1,61 @@
-from src.cut_dag import make_childs, make_root, run_blackbox
+from src.cut_dag import make_childs, make_root, run_blackbox, CutDag, CutDagNode
 from src.energy_curve_comparison import root_mean_square
 from src.stringfile_helper_functions import read_energy_profiles
 from src.visualizers import visualize_cut_dag
-from src.visualize_stringfile import visualize_2D
+
 from os import listdir
-from os.path import isdir, isfile
+from os.path import isfile
+from multiprocessing import Queue
+from portalocker import lock, unlock, LOCK_EX
 
-def removeDuplicates(arr): # midlertidig methode. lav core_ring_check i cut molecule for at fikse det.
-    temp = []
-    for e in arr:
-        if e not in temp:
-            temp.append(e)
-    return temp
-
-# Function run by worker processes
-def worker(input, output):
-    for func, args in iter(input.get, 'STOP'):
-        result = func(*args)
-        output.put(result)
 
 # generate the empty dag
-def generate_empty_dag(stringfile, DEBUG_MODE: bool=False):
-    cd = make_root(stringfile, DEBUG_MODE)
-    if cd is None:
-        return None, 0
+def generate_empty_dag(stringfile: str, debug: bool=False):
+    cut_dag = make_root(stringfile, debug)
+    if cut_dag is None:
+        return None
 
     # loop as while there is new nodes in the cut dag
-    current_layer = [cd.layers[0][0]] # insert first the root
+    current_layer = [cut_dag.layers[0][0]] # insert first the root
     next_layer = []
     layer = 0
     while len(current_layer) > 0 or len(next_layer) > 0:
-        next_layer = next_layer + make_childs(cd, current_layer[0], layer) # add new nodes to next layer iteration
+        next_layer = next_layer + make_childs(cut_dag, current_layer[0], layer) # add new nodes to next layer iteration
         current_layer.pop(0) # remove already visited node
         if len(current_layer) == 0: # go to next layer if no more nodes to work with
             current_layer = next_layer.copy()
             next_layer = []
             layer += 1
-    return cd
+    return cut_dag
 
-def generate_dag_data(cd, stringfile, overall_folder, reaction_folder, DEBUG_MODE: bool=False):
+def generate_dag_data(task_queue: Queue, cut_dag: CutDag, stringfile: str, overall_folder: str, reaction_folder: str):
     if isfile(f"{overall_folder}/{reaction_folder}/done.txt"):
         print(f"    skipping {overall_folder}/{reaction_folder}")
-    else:
-        for k in cd.layers.keys():
-            if k > 0:
-                for i in range(len(cd.layers[k])):
-                    stringfile_path, error_code, error_message = run_blackbox(stringfile, overall_folder, cd.layers[k][i].cuts, reaction_folder) # call black box
-                    node = cd.layers[k][i]
-                    node.stringfile = stringfile_path
+        return
 
-                    if error_code: # the data is not usefull insert in no reaction list file
-                        cut_reaction = ""
-                        for c in sorted(node.cuts):
-                            cut_reaction += str(c) + "_"
-                        cut_reaction = cut_reaction[:-1]
-                        with open(f"{overall_folder}/{reaction_folder}/no_reaction.txt", 'a') as f:
-                            f.write(f"{cut_reaction},{error_message}\n")
-                    else: # teh data is usefull!
-                        node.energy = read_energy_profiles(stringfile_path)
-                        node.RMS = root_mean_square(cd.layers[0][0].energy, node.energy)
+    assigned_tasks = 0
+    for k in cut_dag.layers.keys():
+        if k > 0:
+            for i in range(len(cut_dag.layers[k])):
+                assigned_tasks += 1
+                node = cut_dag.layers[k][i]
+                task_queue.put((dag_point_task, (stringfile, overall_folder, reaction_folder, node)))  # insert new tasks
+    return assigned_tasks
+
+
+def dag_point_task(stringfile: str, overall_folder: str, reaction_folder: str, node: CutDagNode):
+    stringfile_path, error_code, error_message = run_blackbox(stringfile, overall_folder, node.cuts, reaction_folder) # call black box
+    node.stringfile = stringfile_path
+
+    if error_code: # the data is not usefull insert in no reaction list file
+        cut_reaction = ""
+        for c in sorted(node.cuts):
+            cut_reaction += str(c) + "_"
+        cut_reaction = cut_reaction[:-1]
+        with open(f"{overall_folder}/{reaction_folder}/no_reaction.txt", 'a') as f:
+            lock(f, LOCK_EX)
+            f.write(f"{cut_reaction},{error_message}\n")
+            unlock(f)
 
 def read_dag_data(cut_dag, reaction_folder_path):
     # check if any data exist
@@ -90,76 +87,65 @@ def read_dag_data(cut_dag, reaction_folder_path):
                     cut_folder += str(c) + "_"
                 cut_folder = cut_folder[:-1]
                 # go to folder and find stringfile
-                if isfile(f"{reaction_folder_path}/{cut_folder}/stringfile.xyz0000") and cut_folder not in no_reaction_folders:
-                    node.stringfile = f"{reaction_folder_path}/{cut_folder}/stringfile.xyz0000"
+                if isfile(f"{reaction_folder_path}/{cut_folder}/stringfile.xyz") and cut_folder not in no_reaction_folders:
+                    node.stringfile = f"{reaction_folder_path}/{cut_folder}/stringfile.xyz"
                     node.energy = read_energy_profiles(node.stringfile)
                     node.RMS = root_mean_square(cut_dag.layers[0][0].energy, node.energy)
                 else:
                     node.stringfile = no_reaction_errors.get(cut_folder)
 
-def visualise_stringfiles(overall_folder, DEBUG_MODE: bool=False):
-    # go over each cut folder
-    for folder in listdir(overall_folder):
-        folder_name = overall_folder + "/" + str(folder)
-        if isdir(folder_name): # its a folder
-            for file in listdir(folder_name): # find stringfile
-                if "stringfile" in file:
-                    if DEBUG_MODE:
-                        print("    stringfile path: " + folder_name + "/" + str(file))
-                        print("    image path: " + folder_name)
-                    visualize_2D(folder_name + "/" + str(file), folder_name)
-        elif "stringfile" in folder: # Make a visual version of the original stringfile
-            if DEBUG_MODE:
-                print("    stringfile path: " + folder_name + "/" + str(file))
-                print("    image path: " + folder_name)
-            visualize_2D(overall_folder + "/" + str(folder), overall_folder)
-            visualize_2D(overall_folder + "/" + str(folder), overall_folder)
 
-
-def make_cut_dag(blackbox: bool, stringfile, visual_cut_dag: bool=False, visual_stringfiles: bool=False, DEBUG_MODE: bool = False):
+def cut_dag_setup(stringfile: str, debug: bool=False):
     # from stringfile path, get overall path and reaction_folder
     split_path = stringfile.rsplit("/")
     overall_path = ""
-    for i in range(len(split_path)-2): # make the complete overall path down to the folder before the reaction folder
+    for i in range(len(split_path) - 2):  # make the complete overall path down to the folder before the reaction folder
         overall_path += split_path[i] + "/"
     overall_path = overall_path[:-1]
-    split_path.reverse() # reverse the list to get the folders easy
+    split_path.reverse()  # reverse the list to get the folders easy
     reaction_folder = split_path[1]
-
     # generate empty dag and check if its done
-    if DEBUG_MODE:
+    if debug:
         print("generate empty dag: Start")
-    cd = generate_empty_dag(stringfile, DEBUG_MODE)
-    if cd is None:
+    cut_dag = generate_empty_dag(stringfile, debug)
+    if cut_dag is None:
         print("ERROR no cut dag for " + str(stringfile))
         return None
-    if DEBUG_MODE:
+    if debug:
         print("generate empty dag: done")
+    return cut_dag, overall_path, reaction_folder
 
+
+def make_cut_dag(task_queue: Queue, blackbox: bool, stringfile: str, debug: bool = False):
+    cut_dag, overall_path, reaction_folder = cut_dag_setup(stringfile, debug)
     if blackbox: # Run black box
-        if DEBUG_MODE:
+        if debug:
             print("Blackbox run: start")
-        generate_dag_data(cd, stringfile, overall_path, reaction_folder, DEBUG_MODE)
-        if DEBUG_MODE:
+        assigned_tasks = generate_dag_data(task_queue, cut_dag, stringfile, overall_path, reaction_folder)
+        if debug:
             print("Blackbox run: done")
-    else: # read data drom folder
-        if DEBUG_MODE:
-            print("read dag data: start")
-        read_dag_data(cd, f"{overall_path}/{reaction_folder}")
-        if DEBUG_MODE:
-            print("read dag data: done")
+        return assigned_tasks
+
+
+def show_cut_dag(stringfile: str, visual_cut_dag: bool=False, visual_stringfiles: bool=False, debug: bool = False):
+    cut_dag, overall_path, reaction_folder = cut_dag_setup(stringfile, debug)
+    if debug:
+        print("read dag data: start")
+    read_dag_data(cut_dag, f"{overall_path}/{reaction_folder}")
+    if debug:
+        print("read dag data: done")
     # visualise every stringfile in cut dag data
     if visual_stringfiles:
-        if DEBUG_MODE:
+        if debug:
             print("visualise stringfiles: start")
+        from src.visualize_stringfile import visualise_stringfiles
         visualise_stringfiles(f"{overall_path}/{reaction_folder}")
-        if DEBUG_MODE:
+        if debug:
             print("visualise stringfiles: done")
     # visualize the cut dag
     if visual_cut_dag:
-        if DEBUG_MODE:
+        if debug:
             print("visualise cut dag: start")
-        visualize_cut_dag(cd)
-        if DEBUG_MODE:
+        visualize_cut_dag(cut_dag)
+        if debug:
             print("visualise cut dag: Done")
-    #print("Generate cut dag complete.")
