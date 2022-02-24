@@ -4,7 +4,7 @@ from src.stringfile_helper_functions import read_energy_profiles
 from src.visualizers import visualize_cut_dag
 
 from os import listdir
-from os.path import isfile
+from os.path import isfile, isdir
 from multiprocessing import Queue
 from portalocker import lock, unlock, LOCK_EX
 
@@ -29,11 +29,20 @@ def generate_empty_dag(stringfile: str, debug: bool=False):
     return cut_dag
 
 def generate_dag_data(task_queue: Queue, cut_dag: CutDag, stringfile: str, overall_folder: str, reaction_folder: str):
-    if isfile(f"{overall_folder}/{reaction_folder}/done.txt"):
-        print(f"    skipping {overall_folder}/{reaction_folder}")
-        return
-
     assigned_tasks = 0
+    # check if all cuts have been performed for reaction
+    if isfile(f"{overall_folder}/{reaction_folder}/done.txt"):
+        with open(f"{overall_folder}/{reaction_folder}/done.txt") as f:
+            correct_cut_amount = int(f.readline().rstrip())
+        real_cut_amount = 0
+        for element in listdir(f"{overall_folder}/{reaction_folder}"):
+            if isdir(f"{overall_folder}/{reaction_folder}/{element}"):
+                if isfile(f"{overall_folder}/{reaction_folder}/{element}/stringfile.xyz"):
+                    real_cut_amount += 1
+        if correct_cut_amount == real_cut_amount:
+            print(f"skipping {overall_folder}/{reaction_folder}")
+            return assigned_tasks
+    # perform cuts
     for k in cut_dag.layers.keys():
         if k > 0:
             for i in range(len(cut_dag.layers[k])):

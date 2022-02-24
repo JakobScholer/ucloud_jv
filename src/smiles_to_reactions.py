@@ -79,6 +79,7 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=100, frozen=None
                 log_data += f"{assigned_tasks}\n"
                 total_tasks += assigned_tasks
             else:
+                log_data += "0\n"
                 log_data += "Cut dag not generated\n"
                 log_data += f"Educt to product: {check_ep}\n"
                 log_data += f"Max energy curve: {max_ec}\n"
