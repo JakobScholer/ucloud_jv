@@ -1,12 +1,15 @@
-from shutil import copytree
-from sys import argv
 from src.stringfile_to_gml import stringfile_to_gml
-from src.generate_cut_dag import make_cut_dag, visualise_stringfiles
+from src.generate_cut_dag import make_cut_dag, show_cut_dag
 from src.smiles_to_reactions import make_reactions
-from src.visualize_stringfile import visualize_2D
+from src.visualize_stringfile import visualize_2D, visualise_stringfiles
 from src.visualizers import visualize_energy_curves, energy_curve_all_reactions
 
+import time
+from shutil import copytree
+from sys import argv
+
 if __name__ == '__main__':
+    start_time = time.time()
     if len(argv) == 2:
         # ---------------visualizers---------------visualizers---------------visualizers---------------visualizers---------------
         if str(argv[1]) == "ec":                        # show energy curves for stringfiles of reaction
@@ -24,22 +27,16 @@ if __name__ == '__main__':
         elif str(argv[1]) == "smiles_to_reactions_bb":  # Compute all reactions as stringfiles from smiles
             make_reactions(blackbox=True, string_data=["CC=CC=CC=CC"], max_energy=200, debug=False)
         elif str(argv[1]) == "smiles_to_reactions_bb_multirun":  # Compute all reactions as stringfiles from smiles
-            #energy_curves("blackbox/output/CC=CCCCC_sigmatropicForced_multirun")
             for i in range(20):
                 copytree("blackbox/output/CC=CCCCC_sigmatropicForced_3/original", f"blackbox/output/CC=CCCCC_sigmatropicForced_3/{i}")
-                make_reactions(blackbox=True, string_data=f"CC=CCCCC_sigmatropicForced_3/{i}", max_energy=200)
+                make_reactions(blackbox=True, string_data=f"CC=CCCCC_sigmatropicForced_3/{i}", max_energy=200, frozen=[])
         elif str(argv[1]) == "smiles_to_reactions_bb_continue":  # Compute all reactions as stringfiles from smiles on existing folder
-            make_reactions(blackbox=True, string_data="CC(CCC)=CC=CC=CO_04a5", max_energy=200)
+            make_reactions(blackbox=True, string_data="CC=CC=CC=CO_456f", max_energy=200, number_of_processes=4)
         elif str(argv[1]) == "smiles_to_reactions_nb":  # Read all reactions from stringfiles
             make_reactions(blackbox=False, string_data="blackbox/output/CCCO[O]_c014", max_energy=50, visual_cut_dag=True, visual_stringfiles=True, debug=False)
-        elif str(argv[1]) == "smiles_to_reactions_bb_skip":  # Compute all reactions from pre-computed stringfiles
-            make_reactions(blackbox=True, string_data="blackbox/output/CCCO[O]_c014", generate_initial_stringfiles=False, max_energy=200)
         elif str(argv[1]) == "gml":                     # create gml rule
             gml = stringfile_to_gml(filename="blackbox/output/CC(C)C(C)C(C)N=C([O-])OC=O_5ae5/reaction0000/stringfile.xyz0000")
             print(gml)
-        elif str(argv[1]) == "compare_multirun":
-            for i in range(100):
-                f"blackbox/output/CC=CCCCC_sigmatropicForced_multirun/{i}"
         else:
             print("input argument is unknown")
     else:
@@ -59,3 +56,5 @@ if __name__ == '__main__':
         #print(get_removed_atoms({2,3,4,6,7,8,9,10,11}, molecule, lookup, rdk_mol))
         '''
         print("input argument required")
+    print("Total run time took:")
+    print("--- %s seconds ---" % (time.time() - start_time))

@@ -1,4 +1,4 @@
-from src.blackbox2 import run_gsm_cuts
+from src.blackbox import run_gsm_cuts
 from src.cut_molecule import make_cut_molecule, find_all_cuts, make_cut
 from src.stringfile_helper_functions import mol_to_xyz
 from src.stringfile_to_rdkit import stringfile_to_rdkit
@@ -13,11 +13,13 @@ class CutDagNode:
         self.cuts = cuts  # which cuts on the molecule was made
         self.childs = []  # Childs made from the molecule
 
+
 class CutDag:
     def __init__(self, cut_molecule, lookup_dict):
         self.layers = {} # Dictionary for each layer of the cut tree. Keys are ints of cuts made for a certain tree_layers
         self.cut_molecule = cut_molecule # the molecule to perfom cuts on
         self.cut_molecule_lookup_dict = lookup_dict # dict for cut_molecule
+
 
 def removeDuplicates(arr): # midlertidig methode. lav core_ring_check i cut molecule for at fikse det.
     temp = []
