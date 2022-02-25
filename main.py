@@ -26,13 +26,13 @@ if __name__ == '__main__':
 
         # ---------------Calc---------------Calc---------------Calc---------------Calc---------------Calc---------------
         elif str(argv[1]) == "smiles_to_reactions_bb":  # Compute all reactions as stringfiles from smiles
-            make_reactions(blackbox=True, string_data=["CC=CC=CC=CO"], max_energy=200, frozen=[4,5,6,7,8,12,13,14,15,16,17,18], number_of_processes=4, debug=False)
+            make_reactions(blackbox=True, string_data=["CC=C"], max_energy=200, frozen=[], number_of_processes=8, debug=False)
         elif str(argv[1]) == "smiles_to_reactions_bb_multirun":  # Compute all reactions as stringfiles from smiles
             for i in range(20):
                 copytree("blackbox/output/CC=CCCCC_sigmatropicForced_3/original", f"blackbox/output/CC=CCCCC_sigmatropicForced_3/{i}")
                 make_reactions(blackbox=True, string_data=f"CC=CCCCC_sigmatropicForced_3/{i}", max_energy=200, frozen=[])
         elif str(argv[1]) == "smiles_to_reactions_bb_continue":  # Compute all reactions as stringfiles from smiles on existing folder
-            make_reactions(blackbox=True, string_data="CC=CC=CC=CO_456f", max_energy=200, number_of_processes=4)
+            make_reactions(blackbox=True, string_data="CC=C_4270", max_energy=200, number_of_processes=4)
         elif str(argv[1]) == "smiles_to_reactions_nb":  # Read all reactions from stringfiles
             make_reactions(blackbox=False, string_data="blackbox/output/CCCO[O]_c014", max_energy=50, visual_cut_dag=True, visual_stringfiles=True, debug=False)
         elif str(argv[1]) == "gml":                     # create gml rule
