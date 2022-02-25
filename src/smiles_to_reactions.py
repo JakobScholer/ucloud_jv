@@ -70,21 +70,19 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=100, frozen=None
     for folder in reaction_folders:
         stringfiles = glob(f"{folder}/stringfile*")
         if stringfiles: # check if stringfile exists
-            log_data = ""
             check_ep = check_educt_to_product(stringfiles[0])
             max_ec = max_energy_curve(stringfiles[0], max_energy)
             if check_ep and max_ec: # if there is a reaction in the stringfile. make a cut dag!
                 stringfile_list.append(stringfiles[0])
                 assigned_tasks = make_cut_dag(task_queue, blackbox, stringfiles[0], debug)
-                log_data += f"{assigned_tasks}\n"
                 total_tasks += assigned_tasks
             else:
-                log_data += "0\n"
+                log_data = "0\n"
                 log_data += "Cut dag not generated\n"
                 log_data += f"Educt to product: {check_ep}\n"
                 log_data += f"Max energy curve: {max_ec}\n"
-            with open(f"{folder}/done.txt", "w") as f:
-                f.write(log_data)
+                with open(f"{folder}/done.txt", "w") as f:
+                    f.write(log_data)
     while not done_queue.qsize() == total_tasks:
         sleep(5)
     # Tell child processes to stop

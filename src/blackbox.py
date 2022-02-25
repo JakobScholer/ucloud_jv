@@ -125,7 +125,7 @@ def run_gsm_round_cuts(clone_name: str, output_folder: str, reaction_folder: str
             #print(e.output)
             pass
         except TimeoutExpired as e:
-            print("Timeout error!")
+            print(f"    Timeout for {output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz")
             print(e)
         # find stringfile if one was made and move to output
         if exists(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000"):
@@ -137,10 +137,11 @@ def run_gsm_round_cuts(clone_name: str, output_folder: str, reaction_folder: str
         elif exists(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g1"):
             move(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g1",
                  f"{output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz")
+        print(f"    Completed work on {output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz")
 
 
 def run_gsm_cuts(xyz_strings: list, output_folder: str, reaction_folder: str, cuts_folder: str = "", ordering=None, logfile: bool = False):
-    print(f"    working on {output_folder}/{reaction_folder}{cuts_folder}stringfile.xyz")
+    print(f"working on {output_folder}/{reaction_folder}{cuts_folder}stringfile.xyz")
     if not isdir(output_folder):
         print(f"{output_folder} not made yet")
         return "ERROR"

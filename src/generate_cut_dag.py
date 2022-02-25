@@ -41,7 +41,7 @@ def generate_dag_data(task_queue: Queue, cut_dag: CutDag, stringfile: str, overa
                     real_cut_amount += 1
         if correct_cut_amount == real_cut_amount:
             print(f"skipping {overall_folder}/{reaction_folder}")
-            return assigned_tasks
+            return 0
     # perform cuts
     for k in cut_dag.layers.keys():
         if k > 0:
@@ -49,6 +49,9 @@ def generate_dag_data(task_queue: Queue, cut_dag: CutDag, stringfile: str, overa
                 assigned_tasks += 1
                 node = cut_dag.layers[k][i]
                 task_queue.put((dag_point_task, (stringfile, overall_folder, reaction_folder, node)))  # insert new tasks
+    if not isfile(f"{overall_folder}/{reaction_folder}/done.txt"):
+        with open(f"{overall_folder}/{reaction_folder}/done.txt", "w") as f:
+            f.write(f"{assigned_tasks}\n")
     return assigned_tasks
 
 
@@ -61,6 +64,7 @@ def dag_point_task(stringfile: str, overall_folder: str, reaction_folder: str, n
         for c in sorted(node.cuts):
             cut_reaction += str(c) + "_"
         cut_reaction = cut_reaction[:-1]
+        print(f"{overall_folder}/{reaction_folder}/no_reaction.txt")
         with open(f"{overall_folder}/{reaction_folder}/no_reaction.txt", 'a') as f:
             lock(f, LOCK_EX)
             f.write(f"{cut_reaction},{error_message}\n")
