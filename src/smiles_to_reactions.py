@@ -74,7 +74,7 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=100, frozen=None
             max_ec = max_energy_curve(stringfiles[0], max_energy)
             if check_ep and max_ec: # if there is a reaction in the stringfile. make a cut dag!
                 stringfile_list.append(stringfiles[0])
-                assigned_tasks = make_cut_dag(task_queue, blackbox, stringfiles[0], debug)
+                assigned_tasks = make_cut_dag(task_queue, stringfiles[0], debug)
                 total_tasks += assigned_tasks
             else:
                 log_data = "0\n"
@@ -91,6 +91,22 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=100, frozen=None
     # show cut dags
     for stringfile in stringfile_list:
         show_cut_dag(stringfile, visual_cut_dag, visual_stringfiles, debug)
+
+
+def make_single_reaction(stringfile: str, number_of_processes: int=1, debug: bool=False):
+    # set up multi threading
+    freeze_support()
+    task_queue = Queue()
+    done_queue = Queue()
+    for i in range(number_of_processes):
+        Process(target=worker, args=(task_queue, done_queue)).start()
+
+    total_tasks = make_cut_dag(task_queue, stringfile, debug)
+    while not done_queue.qsize() == total_tasks:
+        sleep(5)
+    # Tell child processes to stop
+    for i in range(number_of_processes):
+        task_queue.put('STOP')
 
 
 # Function run by worker processes

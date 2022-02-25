@@ -130,14 +130,14 @@ def run_gsm_round_cuts(clone_name: str, output_folder: str, reaction_folder: str
         # find stringfile if one was made and move to output
         if exists(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000"):
             move(f"blackbox/gsm_clones/{clone_name}/stringfile.xyz0000",
-                 f"{output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz")
+                 f"{output_folder}/{reaction_folder}{cuts_folder}stringfile.xyz")
         elif exists(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g"):
             move(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g",
-                 f"{output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz")
+                 f"{output_folder}/{reaction_folder}{cuts_folder}stringfile.xyz")
         elif exists(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g1"):
             move(f"blackbox/gsm_clones/{clone_name}/scratch/stringfile.xyz0000g1",
-                 f"{output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz")
-        print(f"    Completed work on {output_folder}/{reaction_folder}{cuts_folder}/stringfile.xyz")
+                 f"{output_folder}/{reaction_folder}{cuts_folder}stringfile.xyz")
+        print(f"    Completed work on {output_folder}/{reaction_folder}{cuts_folder}stringfile.xyz")
 
 
 def run_gsm_cuts(xyz_strings: list, output_folder: str, reaction_folder: str, cuts_folder: str = "", ordering=None, logfile: bool = False):

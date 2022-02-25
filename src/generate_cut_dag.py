@@ -64,7 +64,6 @@ def dag_point_task(stringfile: str, overall_folder: str, reaction_folder: str, n
         for c in sorted(node.cuts):
             cut_reaction += str(c) + "_"
         cut_reaction = cut_reaction[:-1]
-        print(f"{overall_folder}/{reaction_folder}/no_reaction.txt")
         with open(f"{overall_folder}/{reaction_folder}/no_reaction.txt", 'a') as f:
             lock(f, LOCK_EX)
             f.write(f"{cut_reaction},{error_message}\n")
@@ -129,15 +128,10 @@ def cut_dag_setup(stringfile: str, debug: bool=False):
     return cut_dag, overall_path, reaction_folder
 
 
-def make_cut_dag(task_queue: Queue, blackbox: bool, stringfile: str, debug: bool = False):
+def make_cut_dag(task_queue: Queue, stringfile: str, debug: bool = False):
     cut_dag, overall_path, reaction_folder = cut_dag_setup(stringfile, debug)
-    if blackbox: # Run black box
-        if debug:
-            print("Blackbox run: start")
-        assigned_tasks = generate_dag_data(task_queue, cut_dag, stringfile, overall_path, reaction_folder)
-        if debug:
-            print("Blackbox run: done")
-        return assigned_tasks
+    assigned_tasks = generate_dag_data(task_queue, cut_dag, stringfile, overall_path, reaction_folder)
+    return assigned_tasks
 
 
 def show_cut_dag(stringfile: str, visual_cut_dag: bool=False, visual_stringfiles: bool=False, debug: bool = False):

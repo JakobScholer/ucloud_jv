@@ -1,6 +1,6 @@
 from src.stringfile_to_gml import stringfile_to_gml
-from src.generate_cut_dag import make_cut_dag, show_cut_dag
-from src.smiles_to_reactions import make_reactions
+from src.generate_cut_dag import show_cut_dag
+from src.smiles_to_reactions import make_reactions, make_single_reaction
 from src.visualize_stringfile import visualize_2D, visualise_stringfiles
 from src.visualizers import visualize_energy_curves, energy_curve_all_reactions
 
@@ -21,8 +21,9 @@ if __name__ == '__main__':
         elif str(argv[1]) == "img_stringfile":          # create image for specific stringfile
             visualize_2D(stringfile_path="blackbox/output/CC(CCC)=C(CCC)C=CO_164c/reaction0001/stringfile.xyz0001", image_path="blackbox/output/CC(CCC)=C(CCC)C=CO_164c/reaction0001")
         elif str(argv[1]) == "make_cut_dag":  # create cut dag for specific stringfile
-            str_file = "blackbox/output/CC=CC=CC=CO_a6b6/reaction0000/stringfile.xyz"
-            show_cut_dag(stringfile=str_file, visual_cut_dag=True, visual_stringfiles=True, debug=False)
+            str_file = "blackbox/output/CC=CC=CC=CO_7498/reaction0001/stringfile.xyz"
+            make_single_reaction(stringfile=str_file, number_of_processes=4, debug=False)   # computes cuts for single reaction
+            show_cut_dag(stringfile=str_file, visual_cut_dag=True, visual_stringfiles=True, debug=False)    # shows cut dag for single reaction
 
         # ---------------Calc---------------Calc---------------Calc---------------Calc---------------Calc---------------
         elif str(argv[1]) == "smiles_to_reactions_bb":  # Compute all reactions as stringfiles from smiles
