@@ -3,17 +3,16 @@ from src.stringfile_helper_functions import max_energy_curve
 from src.blackbox import run_zstruct, run_gsm_initial_multi_threaded
 from src.stringfile_tester import check_educt_to_product
 
-from rdkit.Chem import RWMol, AddHs, MolFromSmiles, MolToXYZBlock, rdDepictor
+from rdkit.Chem import RWMol, AddHs, MolFromSmiles, MolToXYZBlock, rdDepictor, GetPeriodicTable
 from rdkit.Chem.AllChem import EmbedMolecule
 from os import listdir
 from glob import glob
 from multiprocessing import freeze_support, Queue, Process
 from time import sleep
 
-
 '''
 takes a mode and a string or list of strings as input
-    blackbox True  -  generates stringfiles, either from scratch using list of smiles strings as input 
+    blackbox True  -  generates stringfiles, either from scratch using list of smiles strings as input
 or from existing folder of reactions using name of folder
     blackbox False -  reads data from a folder. string_data must be the path to the already compiled cut dag data
 '''
@@ -39,6 +38,7 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=100, frozen=None
                 rdDepictor.Compute2DCoords(mol)         # add 2D-coordinates to mol object
                 EmbedMolecule(mol, randomSeed=0xf00d)   # convert to 3D-coordinates
                 xyz_list.append(MolToXYZBlock(mol))     # convert to xyz file
+
             # set folder name based on input smiles strings
             reaction_name = string_data[0]
             for i in range(1, len(string_data)):

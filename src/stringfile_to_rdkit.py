@@ -67,7 +67,6 @@ def stringfile_to_rdkit(filename: str, visualize: bool = False):
         conf.SetAtomPosition(atom_id, atom_position)
         atom_id += 1
     mol.AddConformer(conf)
-
     mol.UpdatePropertyCache()
     mol = RemoveHs(mol, True)
     #print(f"mol educt to smiles: {MolToSmiles(mol)}")

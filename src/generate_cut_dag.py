@@ -149,6 +149,7 @@ def show_cut_dag(stringfile: str, visual_cut_dag: bool=False, visual_stringfiles
         visualise_stringfiles(f"{overall_path}/{reaction_folder}")
         if debug:
             print("visualise stringfiles: done")
+
     # visualize the cut dag
     if visual_cut_dag:
         if debug:

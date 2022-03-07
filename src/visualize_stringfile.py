@@ -24,10 +24,18 @@ def visualise_stringfiles(overall_folder, debug: bool=False):
                     if debug:
                         print("    stringfile path: " + folder_name + "/" + str(file))
                         print("    image path: " + folder_name)
-                    visualize_2D(folder_name + "/" + str(file), folder_name)
-        elif "stringfile" in folder: # Make a visual version of the original stringfile
-            visualize_2D(overall_folder + "/" + str(folder), overall_folder)
-            visualize_2D(overall_folder + "/" + str(folder), overall_folder)
+                    try:
+                        visualize_2D(folder_name + "/" + str(file), folder_name)
+                    except:
+                        if debug:
+                            print("ERROR! Stringfile could not be visualized")
+        elif "stringfile" in folder: # Make a visual version of the original stringfil
+            try:
+                visualize_2D(overall_folder + "/" + str(folder), overall_folder)
+            except:
+                if debug:
+                    print("ERROR! Stringfile could not be visualized")
+
 
 def read_stringfile(strfile): # read a stringfile and return a list with energy and openbabel mol, for each step in the reaction
     # read xyz data as string
