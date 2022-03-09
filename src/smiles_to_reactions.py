@@ -5,6 +5,7 @@ from src.stringfile_tester import check_educt_to_product
 
 from rdkit.Chem import RWMol, AddHs, MolFromSmiles, MolToXYZBlock, rdDepictor, GetPeriodicTable
 from rdkit.Chem.AllChem import EmbedMolecule
+from openbabel.pybel import readstring
 from os import listdir
 from glob import glob
 from multiprocessing import freeze_support, Queue, Process
@@ -16,7 +17,7 @@ takes a mode and a string or list of strings as input
 or from existing folder of reactions using name of folder
     blackbox False -  reads data from a folder. string_data must be the path to the already compiled cut dag data
 '''
-def make_reactions(blackbox: bool, string_data, max_energy: int=100, frozen=None, visual_cut_dag: bool=False, visual_stringfiles: bool=False, number_of_processes: int=1, debug: bool=False):
+def make_reactions(blackbox: bool, string_data, max_energy: int=100, frozen=None, visual_cut_dag: bool=False, visual_stringfiles: bool=False, number_of_processes: int=1, coordinate_generator: str="openbabel", debug: bool=False):
     if frozen is None:
         frozen = []
 
@@ -33,11 +34,21 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=100, frozen=None
             xyz_list = []
             # convert smiles strings to xyz files
             for string in string_data:
-                mol = RWMol(MolFromSmiles(string))      # make rdkit mol object from smiles string
-                mol = AddHs(mol, explicitOnly=False)    # add hydrogen for good measure.
-                rdDepictor.Compute2DCoords(mol)         # add 2D-coordinates to mol object
-                EmbedMolecule(mol, randomSeed=0xf00d)   # convert to 3D-coordinates
-                xyz_list.append(MolToXYZBlock(mol))     # convert to xyz file
+                if coordinate_generator == "openbabel":
+                    # openbabel 3D coordinates
+                    print("openbabel start")
+                    babel_mol = readstring("smi", string)  # make openBabel mol object from smiles string
+                    babel_mol.make3D()  # Compute 3D-coordinates for mol object
+                    babel_mol.localopt()  # coordinate optimization
+                    xyz_list.append(babel_mol.write(format="xyz"))  # convert to xyz string
+                    print("openbabel done")
+                else:
+                    # rdkit 3D coordinates
+                    mol = RWMol(MolFromSmiles(string))  # make rdkit mol object from smiles string
+                    mol = AddHs(mol, explicitOnly=False)  # add hydrogen for good measure.
+                    rdDepictor.Compute2DCoords(mol)  # add 2D-coordinates to mol object
+                    EmbedMolecule(mol, randomSeed=0xf00d)  # convert to 3D-coordinates
+                    xyz_list.append(MolToXYZBlock(mol))  # convert to xyz file
 
             # set folder name based on input smiles strings
             reaction_name = string_data[0]
