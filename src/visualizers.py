@@ -270,7 +270,7 @@ def energy_curve_all_reactions(folder: str, max_energy: int = 100):
             from glob import glob
             stringfiles = glob(f"{folder}/{react_folder}/stringfile*")
             energy_profile = read_energy_profiles(stringfiles[0])
-            if check_educt_to_product(stringfiles[0]) and max(energy_profile) < max_energy: # test the stringfile if a reaction happens
+            if check_educt_to_product(stringfiles[0]) and max(energy_profile) < max_energy and max(energy_profile) > energy_profile[-1]+5: # test the stringfile if a reaction happens
                 energy_profiles.append(energy_profile)
                 energy_profiles_names.append(react_folder)
     fig = go.Figure()
