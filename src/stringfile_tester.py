@@ -1,5 +1,7 @@
 import openbabel.pybel as pybel
+from openbabel import openbabel
 from src.stringfile_helper_functions import build_bond_map
+from rdkit.Chem import RWMol, Atom, MolToSmiles, MolFromSmiles
 
 def get_educt(strfile):
     with open(strfile) as f:
@@ -99,3 +101,34 @@ def check_educt_to_product(stringfile):
         return False
     else:
         return True
+
+
+def check_initial_file(initial_file):
+    # take the path of initial file as input
+    with open(initial_file) as f: # read in initial file
+        content = f.readlines()
+    num_atoms = int(content[0]) # number of atoms in molecule
+    molecules = "".join(content[:(num_atoms + 2)]) # reads info on all atoms in educt molecule
+
+    babel_mol = pybel.readstring("xyz", molecules) # read moelcules in with openbabel
+    mol = RWMol(MolFromSmiles('')) # empty mol to add atoms and bonds to
+
+    # create rdkit atoms based on openbabel reading of stringfile
+    for i in range(num_atoms):
+        atom = babel_mol.atoms[i]
+        symbol = openbabel.GetSymbol(atom.atomicnum)
+        new_atom = Atom(symbol)
+        new_atom.SetFormalCharge(atom.formalcharge)
+        mol.AddAtom(new_atom)
+
+    # add the bonds to the molecules
+    bmap = build_bond_map(babel_mol)
+    for (src, tar), ob_bond in bmap.items():
+        mol.AddBond((src - 1), (tar - 1), ob_bond)
+
+    smiles = MolToSmiles(mol).split(".") # split smiles strings
+
+    if smiles[0] == smiles[1]: # if they are the same return true
+        return True
+    else: # return false if they are the NOT the same
+        return False

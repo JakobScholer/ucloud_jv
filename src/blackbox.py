@@ -48,7 +48,11 @@ def run_zstruct_computation(clone_name: str, output_folder: str, multiple_molecu
         # print(e.output)
         pass
     isomer_count = sum(filename.startswith("ISOMER") for filename in listdir(f"blackbox/zstruct_clones/{clone_name}/scratch"))  # find number of ISOMER files created
-    for i in range(isomer_count):                                                                                            # move all ISOMER and initial files to output folder
+    for i in range(isomer_count): # move all ISOMER and initial files to output folder
+        if multiple_molecules == 1: # if more than one molecule, check if reactions arre the same
+            initial_file = f"blackbox/zstruct_clones/{clone_name}/scratch/initial{str_id}.xyz"
+            if check_initial_file(initial_file): # check if the molecules are the same
+                continue # skip to next initial and isomer file
         str_id = str(i).zfill(4)
         makedirs(f"{output_folder}/reaction{str_id}")
         move(f"blackbox/zstruct_clones/{clone_name}/scratch/ISOMERS{str_id}", f"{output_folder}/reaction{str_id}/ISOMERS0000")

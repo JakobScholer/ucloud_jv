@@ -26,10 +26,6 @@ def stringfile_to_rdkit(filename: str, visualize: bool = False):
     reactant = pybel.readstring("xyz", xyz_str_reactant) # use openbabel to read in the xyz data
     product = pybel.readstring("xyz", xyz_str_product)
 
-    #print("Babel educt and prduct: ")
-    #print(reactant.write("smi"))
-    #print(product.write("smi"))
-
     mol = RWMol(MolFromSmiles(''))
 
     # create rdkit atoms based on openbabel reading of stringfile
