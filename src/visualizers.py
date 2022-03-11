@@ -253,7 +253,7 @@ def visualize_energy_curves(folder: str):
     fig.show()
 
 
-def energy_curve_all_reactions(folder: str, max_energy: int = 100):
+def energy_curve_all_reactions(folder: str, max_energy: int = 200, check_for_reaction: bool = False, max_end_diff: int = 0, max_end: int = 200):
     energy_profiles = []
     energy_profiles_names = []
 
@@ -270,9 +270,14 @@ def energy_curve_all_reactions(folder: str, max_energy: int = 100):
             from glob import glob
             stringfiles = glob(f"{folder}/{react_folder}/stringfile*")
             energy_profile = read_energy_profiles(stringfiles[0])
-            if check_educt_to_product(stringfiles[0]) and max(energy_profile) < max_energy and max(energy_profile) > energy_profile[-1]+5: # test the stringfile if a reaction happens
-                energy_profiles.append(energy_profile)
-                energy_profiles_names.append(react_folder)
+            if max(energy_profile) < max_energy and max(energy_profile) > energy_profile[-1]+max_end_diff and energy_profile[-1] < max_end: # test the stringfile if a reaction happens
+                if check_for_reaction: # check if we want to sort "no reactions" from the curve
+                    if check_educt_to_product(stringfiles[0]): # sort
+                        energy_profiles.append(energy_profile)
+                        energy_profiles_names.append(react_folder)
+                else: # allow all "no reactions"
+                    energy_profiles.append(energy_profile)
+                    energy_profiles_names.append(react_folder)
     fig = go.Figure()
     for ep, epc in zip(energy_profiles, energy_profiles_names):
         fig.add_trace(go.Scatter(x=list(range(0, len(ep))), y=ep,

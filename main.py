@@ -16,20 +16,24 @@ if __name__ == '__main__':
         if str(argv[1]) == "ec":                        # show energy curves for stringfiles of reaction
             visualize_energy_curves(folder="blackbox/output/C=O_+_C(O)=CO_custom/reaction0043")
         elif str(argv[1]) == "ec_all_reactions":        # show energy curves for all reactions
-            energy_curve_all_reactions(folder="blackbox/output/CC(N)=C(N)C(O)=C(N)C(O)=C(C)O_e5bc/reaction0021")
+            max_peak = 200 # max value for the peak of the energi curve
+            remove_no_reactions = True # remove all reactions where the educt and product are the same
+            peak_end_diff_max = 5 # max diff between the peak and the end point of the curve
+            max_endpoint = 50 # max value for the end point on the curve
+            energy_curve_all_reactions(folder="blackbox/output/C(O)=CO_+_C(C(CO)O)=O_decc/reaction0140", max_peak, remove_no_reactions, peak_end_diff_max, max_endpoint)
         elif str(argv[1]) == "img_all_stringfiles":     # create image for all stringfiles in folder
-            visualise_stringfiles(overall_folder="blackbox/output/C=O_+_C(O)=CO_custom/reaction0043")
+            visualise_stringfiles(overall_folder="blackbox/output/C(O)=CO_+_C(C(CO)O)=O_decc/reaction0140")
         elif str(argv[1]) == "img_stringfile":          # create image for specific stringfile
             visualize_2D(stringfile_path="blackbox/output/CC(N)=C(N)C(O)=C(N)C(O)=C(C)O_220d/reaction0027/stringfile.xyz", image_path="CC(N)=C(N)C(O)=C(N)C(O)=C(C)O_220d/reaction0027")
         elif str(argv[1]) == "show_cut_dag":  # create cut dag for specific stringfile
-            str_file = "blackbox/output/CC=C_2305/reaction0030/stringfile.xyz"
+            str_file = "blackbox/output/C(O)=CO_+_C(C(CO)O)=O_decc/reaction0140/stringfile.xyz"
             show_cut_dag(stringfile=str_file, visual_cut_dag=True, visual_stringfiles=False, debug=False)
 
         # ---------------Calc---------------Calc---------------Calc---------------Calc---------------Calc---------------
         elif str(argv[1]) == "smiles_to_reactions_bb":  # Compute all reactions as stringfiles from smiles
-            make_reactions(blackbox=True, string_data=["CC=C"], max_energy=200, frozen=[], number_of_processes=4, coordinate_generator="openbabel", debug=False)
+            make_reactions(blackbox=True, string_data=['C=O', 'C(O)=CO'], max_energy=200, frozen=[], number_of_processes=4, coordinate_generator="openbabel", debug=False)
         elif str(argv[1]) == "make_cut_dag":
-            make_single_reaction(stringfile = "blackbox/output/CC(N)=C(N)C(O)=C(N)C(O)=C(C)O_e5bc/reaction0021/stringfile.xyz", number_of_processes = 4, debug = False)
+            make_single_reaction(stringfile = "blackbox/output/C(O)=CO_+_C(C(CO)O)=O_decc/reaction0140/stringfile.xyz", number_of_processes = 4, debug = False)
         elif str(argv[1]) == "smiles_to_reactions_bb_multirun":  # Compute all reactions as stringfiles from smiles
             for i in range(20):
                 copytree("blackbox/output/CC(N)=C(N)C(O)=C(N)C(O)=C(C)O_220d - reaction21 - 2_4_6_8_9_10_11_12_13 - second/original", f"blackbox/output/CC(N)=C(N)C(O)=C(N)C(O)=C(C)O_220d - reaction21 - 2_4_6_8_9_10_11_12_13 - second/{i}")
