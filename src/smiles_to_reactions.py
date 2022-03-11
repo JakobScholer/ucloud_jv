@@ -64,6 +64,8 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=100, frozen=None
         run_gsm_initial_multi_threaded(task_queue, smiles_path, isomer_count)
         # wait for all gsm runs to finish
         while not done_queue.qsize() == isomer_count:
+            if debug:
+                print(f"Finished: {done_queue.qsize()} of {isomer_count}, sleep")
             sleep(5)
         # empty done_queue
         while not done_queue.empty():

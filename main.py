@@ -16,11 +16,11 @@ if __name__ == '__main__':
         if str(argv[1]) == "ec":                        # show energy curves for stringfiles of reaction
             visualize_energy_curves(folder="blackbox/output/C=O_+_C(O)=CO_custom/reaction0043")
         elif str(argv[1]) == "ec_all_reactions":        # show energy curves for all reactions
-            max_peak = 200 # max value for the peak of the energi curve
+            max_peak = 200 # max value for the peak of the energi curveS
             remove_no_reactions = True # remove all reactions where the educt and product are the same
             peak_end_diff_max = 5 # max diff between the peak and the end point of the curve
             max_endpoint = 50 # max value for the end point on the curve
-            energy_curve_all_reactions(folder="blackbox/output/C(O)=CO_+_C(C(CO)O)=O_decc/reaction0140", max_peak, remove_no_reactions, peak_end_diff_max, max_endpoint)
+            energy_curve_all_reactions("blackbox/output/C(O)=CO_+_C(C(CO)O)=O_decc/reaction0140", max_peak, remove_no_reactions, peak_end_diff_max, max_endpoint)
         elif str(argv[1]) == "img_all_stringfiles":     # create image for all stringfiles in folder
             visualise_stringfiles(overall_folder="blackbox/output/C(O)=CO_+_C(C(CO)O)=O_decc/reaction0140")
         elif str(argv[1]) == "img_stringfile":          # create image for specific stringfile
@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
         # ---------------Calc---------------Calc---------------Calc---------------Calc---------------Calc---------------
         elif str(argv[1]) == "smiles_to_reactions_bb":  # Compute all reactions as stringfiles from smiles
-            make_reactions(blackbox=True, string_data=['C=O', 'C(O)=CO'], max_energy=200, frozen=[], number_of_processes=4, coordinate_generator="openbabel", debug=False)
+            make_reactions(blackbox=True, string_data=['C=O', 'C(O)=CO'], max_energy=200, frozen=[], number_of_processes=4, coordinate_generator="openbabel", debug=True)
         elif str(argv[1]) == "make_cut_dag":
             make_single_reaction(stringfile = "blackbox/output/C(O)=CO_+_C(C(CO)O)=O_decc/reaction0140/stringfile.xyz", number_of_processes = 4, debug = False)
         elif str(argv[1]) == "smiles_to_reactions_bb_multirun":  # Compute all reactions as stringfiles from smiles
