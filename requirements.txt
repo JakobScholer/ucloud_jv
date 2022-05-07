@@ -1,0 +1,7 @@
+###### Requirements without Version Specifiers ######
+seaborn
+panda
+portalocker
+plotly
+###### Requirements with Version Specifiers ######
+rdkit-pypi==2022.3.2
