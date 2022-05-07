@@ -4,7 +4,6 @@ from src.stringfile_helper_functions import mol_to_xyz
 from src.stringfile_to_rdkit import stringfile_to_rdkit
 from src.stringfile_tester import check_product, check_educt_to_product
 
-
 class CutDagNode:
     def __init__(self, cuts):
         self.energy = []  # List for energy leves at different notes for the reaction
@@ -13,13 +12,11 @@ class CutDagNode:
         self.cuts = cuts  # which cuts on the molecule was made
         self.childs = []  # Childs made from the molecule
 
-
 class CutDag:
     def __init__(self, cut_molecule, lookup_dict):
         self.layers = {} # Dictionary for each layer of the cut tree. Keys are ints of cuts made for a certain tree_layers
         self.cut_molecule = cut_molecule # the molecule to perfom cuts on
         self.cut_molecule_lookup_dict = lookup_dict # dict for cut_molecule
-
 
 def removeDuplicates(arr): # midlertidig methode. lav core_ring_check i cut molecule for at fikse det.
     temp = []
@@ -31,7 +28,7 @@ def removeDuplicates(arr): # midlertidig methode. lav core_ring_check i cut mole
 # generate childs of a node
 def make_childs(tree: CutDag, node: CutDagNode, layer: int):
     # find all cuts på moleculet
-    child_cuts = removeDuplicates(find_all_cuts(tree.cut_molecule, node.cuts, tree.cut_molecule_lookup_dict)) ################# fjern duplicate function når core ring er done #######################
+    child_cuts = find_all_cuts(tree.cut_molecule, node.cuts, tree.cut_molecule_lookup_dict) # HUSK DUPLICATE VAR HER!!!!
     # generate all childs
     child_sets = []
     for cut in child_cuts:

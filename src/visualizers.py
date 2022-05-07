@@ -140,20 +140,20 @@ def visualize_cut_dag(cut_dag):
         layer_length = len(cut_dag.layers.get(layer))
         for position in range(layer_length):
             if not "blackbox"  in cut_dag.layers.get(layer)[position].stringfile:
-                cut_option_y_black.append(layer * -10)
+                cut_option_y_black.append(layer * 10)
                 cut_option_x_black.append(position * 10 - (layer_length * 10) / 2)
             elif cut_dag.layers.get(layer)[position].RMS == 1:
-                cut_option_y_green.append(layer * -10)
+                cut_option_y_green.append(layer * 10)
                 cut_option_x_green.append(position * 10 - (layer_length * 10) / 2)
             elif cut_dag.layers.get(layer)[position].RMS == 0:
-                cut_option_y_red.append(layer * -10)
+                cut_option_y_red.append(layer * 10)
                 cut_option_x_red.append(position * 10 - (layer_length * 10) / 2)
-            cut_option_y.append(layer * -10)
+            cut_option_y.append(layer * 10)
             cut_option_x.append(position * 10 - (layer_length * 10) / 2)
             cut_info.append(cut_dag.layers.get(layer)[position].cuts)
             stringfiles.append(cut_dag.layers.get(layer)[position].stringfile)
             for child_position in cut_dag.layers.get(layer)[position].childs:
-                bond_y += [layer * -10, (layer+1) * -10, None]
+                bond_y += [layer * 10, (layer+1) * 10, None]
                 bond_x += [position * 10 - (layer_length * 10)/2, child_position * 10 - (len(cut_dag.layers.get(layer+1)) * 10)/2, None]
 
     fig = go.Figure()
@@ -169,6 +169,7 @@ def visualize_cut_dag(cut_dag):
                              y=cut_option_y,
                              mode='markers',
                              name='Cuts',
+                             opacity=0,
                              marker=dict(symbol='circle-dot',
                                          size=20,
                                          color='#800080'
@@ -180,8 +181,9 @@ def visualize_cut_dag(cut_dag):
                              y=cut_option_y_red,
                              mode='markers',
                              name='Cuts',
+                             opacity=0.5,
                              marker=dict(symbol='circle-dot',
-                                         size=20,
+                                         size=40,
                                          color='#FF0000'
                                          ),
                              text=cut_info,
@@ -191,8 +193,9 @@ def visualize_cut_dag(cut_dag):
                              y=cut_option_y_green,
                              mode='markers',
                              name='Cuts',
+                             opacity=0.5,
                              marker=dict(symbol='circle-dot',
-                                         size=20,
+                                         size=40,
                                          color='#008000'
                                          ),
                              text=cut_info,
@@ -203,8 +206,8 @@ def visualize_cut_dag(cut_dag):
                              mode='markers',
                              name='Cuts',
                              marker=dict(symbol='circle-dot',
-                                         size=20,
-                                         color='#000000'
+                                         size=40,
+                                         color='#8a8a8a'
                                          ),
                              text=cut_info,
                              hoverinfo='skip',
@@ -215,7 +218,7 @@ def visualize_cut_dag(cut_dag):
                              name='Cut info',
                              text=cut_info,
                              hoverinfo='skip',
-                             textfont_size=10
+                             textfont_size=13
                              ))
     fig.add_trace(go.Scatter(x=cut_option_x,
                              y=[k - 1 for k in cut_option_y],
@@ -269,15 +272,16 @@ def energy_curve_all_reactions(folder: str, max_energy: int = 200, check_for_rea
         if isdir(f"{folder}/{react_folder}"): # take only folders
             from glob import glob
             stringfiles = glob(f"{folder}/{react_folder}/stringfile*")
-            energy_profile = read_energy_profiles(stringfiles[0])
-            if max(energy_profile) < max_energy and max(energy_profile) > energy_profile[-1]+max_end_diff and energy_profile[-1] < max_end: # test the stringfile if a reaction happens
-                if check_for_reaction: # check if we want to sort "no reactions" from the curve
-                    if check_educt_to_product(stringfiles[0]): # sort
-                        energy_profiles.append(energy_profile)
-                        energy_profiles_names.append(react_folder)
-                else: # allow all "no reactions"
-                    energy_profiles.append(energy_profile)
-                    energy_profiles_names.append(react_folder)
+            if len(stringfiles) > 0:
+                energy_profile = read_energy_profiles(stringfiles[0])
+                if max(energy_profile) < max_energy and max(energy_profile) >= energy_profile[-1]+max_end_diff and energy_profile[-1] <= max_end: # test the stringfile if a reaction happens
+                    if check_for_reaction: # check if we want to sort "no reactions" from the curve
+                        if check_educt_to_product(stringfiles[0]): # sort
+                            energy_profiles.append(energy_profile)
+                            energy_profiles_names.append(react_folder)
+                        else: # allow all "no reactions"
+                            energy_profiles.append(energy_profile)
+                            energy_profiles_names.append(react_folder)
     fig = go.Figure()
     for ep, epc in zip(energy_profiles, energy_profiles_names):
         fig.add_trace(go.Scatter(x=list(range(0, len(ep))), y=ep,

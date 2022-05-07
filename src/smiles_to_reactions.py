@@ -29,6 +29,8 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=100, frozen=None
         Process(target=worker, args=(task_queue, done_queue)).start()
 
     if blackbox:
+        if debug:
+            print("Running WITH Blackbox")
         # input is list of smiles strings (runs zstruct to find reactions for them)
         if isinstance(string_data, list):
             xyz_list = []
@@ -56,6 +58,8 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=100, frozen=None
                 reaction_name = reaction_name + "_+_" + string_data[i]
             # run zstruct
             smiles_path, isomer_count = run_zstruct(reaction_name, xyz_list, core=frozen, debug=False)
+            if debug:
+                print(f"folder: {reaction_name}, with {isomer_count} reactions")
         else:
             # input is name of folder containing reactions
             smiles_path = f"blackbox/output/{string_data}"
@@ -71,6 +75,8 @@ def make_reactions(blackbox: bool, string_data, max_energy: int=100, frozen=None
         while not done_queue.empty():
             done_queue.get()
     else:
+        if debug:
+            print("Running WITHOUT Blackbox")
         smiles_path = string_data
 
     stringfile_path = listdir(smiles_path)

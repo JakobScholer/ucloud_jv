@@ -8,7 +8,7 @@ from math import pow, sqrt
 class MoleculeNode:
     def __init__(self, molecule_id, node_type):
         self.id = molecule_id  #set of atom ID's
-        self.children = set()  # A list of ints representing the list placement of the children
+        self.children = set()  # A list of atom id's of the children
         self.root = node_type  # 1 = root, 0 = not root
 
 # core = set(atom ID's) a set of ints
@@ -44,41 +44,9 @@ def make_cut_molecule(rdk_mol, core, DEBUG: bool = False):
         for atom in data: # update the atoms_in_big_nodes
             atom_list.add(atom)
 
-    def core_ring(cut_molecule, look_up): # check for a ring, where core connects duo to the chemical reaction. Using recursive depth first search
-        # use a dict to keep track on parents
-        parent_dict = {}
-        # Make a list of all atoms already visited and to look at
-        visited_nodes = [0] # root has already been visited
-        current_nodes = [0] # starting with root
-        # Go over each atom starting from the core with breath first search
-        while len(current_nodes) > 0:
-            node_id = current_nodes[0]
-            children = cut_molecule[node_id].children # get the kids of the molecule
-            for child in children: # for each child, tjek if they have already been visted
-                if look_up.get(child) in visited_nodes: # WE HAVE FUND A RING!
-                    ring_list = cut_molecule[0].id.copy() # add all placements of the ring, core already added
-                    # child and current node is the last edge in the ring. follow them up through the parent dict to the core
-                    ring_id = node_id # for the first connecter in the ring
-                    while ring_id != 0:
-                        for atom in cut_molecule[ring_id].id:
-                            ring_list.add(atom) # add to ring list
-                        ring_id = parent_dict.get(ring_id)
-                    ring_id = look_up.get(child) # for the second connecter in the ring
-                    while ring_id != 0:
-                        for atom in cut_molecule[ring_id].id:
-                            ring_list.add(atom) # add to ring list
-                        ring_id = parent_dict.get(ring_id)
-                    return ring_list
-                else: # no ring add to visted and parent dict
-                    parent_dict[look_up.get(child)] = node_id
-                    visited_nodes.append(look_up.get(child))
-                    current_nodes.append(look_up.get(child)) # add the child to the current node list
-            current_nodes.pop(0)
-        return None
-
     lookup = {} # look up dict
     cut_molecule = [] # The "atom" list for the cut molecule
-    ### Find all double bonds, triple adn rings and insert the atoms together ###
+    ### Find all double bonds, triple and rings and insert the atoms together ###
     big_nodes = [core.copy()] # all the nodes with more than one id
     big_nodes_look_up = {} # atom maps to which big node its in
     atoms_in_big_nodes = core.copy() # all atoms in a set, which is in the big node
@@ -108,8 +76,7 @@ def make_cut_molecule(rdk_mol, core, DEBUG: bool = False):
         rdk_mol.RemoveBond(new_atom_id, id)
     rdk_mol.RemoveAtom(new_atom_id) # remove the new atom
 
-    # find alle rings first, and add them as big nodes.
-    rings = GetSymmSSSR(rdk_mol)
+    # add rings as big nodes.
     for data in new_rings:
         big_node_update(big_nodes, big_nodes_look_up, atoms_in_big_nodes, data)
 
@@ -124,16 +91,13 @@ def make_cut_molecule(rdk_mol, core, DEBUG: bool = False):
             else:
                 bonds.append(bond) # get the bonds that are not internal in a big node, to reduce later iteration over bonds
 
-    # add core ring!
-
-
     if DEBUG: # debug mode for big nodes
         print(f"All the atoms currently in big nodes: {atoms_in_big_nodes}")
         print(f"The dict for big nodes {big_nodes_look_up}")
-        derp = 0
+        i = 0
         for m in big_nodes:
-            print(f"Big node {derp} contains: {m}")
-            derp += 1
+            print(f"Big node {i} contains: {m}")
+            i += 1
 
     # add all nodes to the cut molecule, based on big nodes
     node_holder = []
@@ -159,17 +123,14 @@ def make_cut_molecule(rdk_mol, core, DEBUG: bool = False):
             lookup[int(atom.GetIdx())] = len(cut_molecule)
             cut_molecule.append(MoleculeNode({int(atom.GetIdx())}, 0))
 
-    # add all edges missing. One child layer at the time
-    parent_list = cut_molecule[0].id
+    parent_list = cut_molecule[0].id # add all edges missing. One child layer at the time
     while len(parent_list) > 0:
-        # list of edges to work with
-        new_parent = set()
+        new_parent = set() # list of edges to work with
         new_bonds = bonds.copy()
-        # loop over every edge and parent to find matches
         if DEBUG:
             print(f"new parent: {new_parent}")
             print(f"Matching with: {parent_list}")
-        for b in bonds:
+        for b in bonds: # loop over every edge and parent to find matches
             if DEBUG:
                 print(f"    Working on bond: {b.GetBeginAtomIdx()} {b.GetEndAtomIdx()}")
             for p in parent_list:
@@ -299,7 +260,6 @@ def make_cut(mol, cuts, molecule, lookup_dict):
     for bond in bonds_to_remove: # removing bond
         mol.RemoveBond(bond.GetBeginAtom().GetIdx(), bond.GetEndAtom().GetIdx())
 
-    #print("length of list: " + str(atoms_to_compute_coordinates))
 
     conformer_3D = mol.GetConformer() # get conformer for the 3D coordinates
     # recompute coordinates of replaced atoms
@@ -316,10 +276,7 @@ def make_cut(mol, cuts, molecule, lookup_dict):
 
         # compute the new langth based on the covelent radii
         new_length = element_table.get(mol.GetAtomWithIdx(atom_id).GetAtomicNum()) + element_table.get(mol.GetAtomWithIdx(atom_id).GetNeighbors()[0].GetAtomicNum())
-        #print(mol.GetAtomWithIdx(atom_id).GetNeighbors()[0].GetAtomicNum())
-        #print(new_length)
         length_scalar = new_length / sqrt(pow(vector[0],2) + pow(vector[1],2) + pow(vector[2],2))
-        #print(length_scalar)
 
         # insert new coordinates
         replaced_atom_x = (vector[0] * length_scalar) + anker_atom_position.x
