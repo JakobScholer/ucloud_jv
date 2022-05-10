@@ -1,0 +1,5 @@
+NEW
+ BOND 12 1
+ ADD 12 10
+ BREAK 10 2
+
