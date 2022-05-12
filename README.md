@@ -5,7 +5,7 @@
   https://ubuntu.com/tutorials/install-ubuntu-on-wsl2-on-windows-10#1-overview
   
   (Follow the first 4 steps)
-## Windows and Linux
+## In WSL/Linux
 ### Download and configure our git repository
 ```
 git clone https://github.com/JakobScholer/ucloud_jv.git 
@@ -31,6 +31,10 @@ sudo apt-get update
 ```
 ```
 sudo apt-get install intel-hpckit
+```
+The intel compiler comes with its own python version using conda. We do not want to use python and disable it with:
+```
+mv /opt/intel/oneapi/intelpython /opt/intel/oneapi/disable_intelpython
 ```
 
 ### Install xTB
