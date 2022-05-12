@@ -17,7 +17,7 @@ mkdir ucloud_jv/blackbox/zstruct_clones/original/scratch
 mkdir ucloud_jv/blackbox/gsm_clones/original/scratch
 ```
 ```
-sudo chmod -R 777 ucloud_jv/blackbox/
+sudo chmod -R 777 ucloud_jv/
 ```
 ### Install the Intel compiler used by ZStruct and xTB
 ```
