@@ -32,16 +32,7 @@ sudo apt-get update
 ```
 sudo apt-get install intel-hpckit
 ```
-  (the latest version of the intel compiler 2022.0.2 has changed the naming of the compiler dependencies for ZStruct. Therefore we change the naming to match what ZStruct expects)
-```
-cd /opt/intel/oneapi/mkl/2022.0.2/lib/intel64
-```
-```
-sudo apt install rename
-```
-```
-sudo rename 's/\.2$/\.1/' *.2
-```
+
 ### Install xTB
 Enable the Intel compiler before installing xTB by running
 ```
@@ -69,6 +60,23 @@ make
 ```
 sudo make install
 ```
+### Install ZStruct
+Enable the Intel compiler before installing ZStruct by running
+```
+source /opt/intel/oneapi/setvars.sh
+```
+Installing ZStruct
+```
+git clone https://github.com/JakobScholer/ZStruct.git
+```
+```
+cd ZStruct
+```
+```
+make
+```
+Copy the created zstruct.exe file into the folder ucloud_jv/blackbox/zstruct_clones/original
+
 ### Install Python packages
 ```
 sudo apt install python3-openbabel
