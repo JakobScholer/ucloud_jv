@@ -68,6 +68,9 @@ source /opt/intel/oneapi/setvars.sh
 ```
 Installing ZStruct
 ```
+sudo apt-get install git build-essential
+```
+```
 git clone https://github.com/JakobScholer/ZStruct.git
 ```
 ```
