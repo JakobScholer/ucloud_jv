@@ -32,10 +32,7 @@ sudo apt-get update
 ```
 sudo apt-get install intel-hpckit
 ```
-The intel compiler comes with its own python version using conda. We do not want to use python and disable it with:
-```
-mv /opt/intel/oneapi/intelpython /opt/intel/oneapi/disable_intelpython
-```
+The intel compiler comes with its own python version using conda. We do not want to use conda and disable it by renaming the folder /opt/intel/oneapi/intelpython to disable_intelpython
 
 ### Install xTB
 Enable the Intel compiler before installing xTB by running
