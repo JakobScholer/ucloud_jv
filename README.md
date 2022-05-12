@@ -8,76 +8,76 @@
 ## Windows and Linux
 ### Download and configure our git repository
 ```
-  git clone https://github.com/JakobScholer/ucloud_jv.git 
+git clone https://github.com/JakobScholer/ucloud_jv.git 
 ```
 ```
-  mkdir ucloud_jv/blackbox/zstruct_clones/original/scratch
+mkdir ucloud_jv/blackbox/zstruct_clones/original/scratch
 ```
 ```
-  mkdir ucloud_jv/blackbox/gsm_clones/original/scratch
+mkdir ucloud_jv/blackbox/gsm_clones/original/scratch
 ```
 ```
-  mkdir sudo chmod -R 777 ucloud_jv/blackbox/
+sudo chmod -R 777 ucloud_jv/blackbox/
 ```
 ### Install the Intel compiler used by ZStruct and xTB
 ```
-  curl -sL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | sudo apt-key add -
+curl -sL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | sudo apt-key add -
 ```
 ```
-  sudo add-apt-repository "deb https://apt.repos.intel.com/oneapi all main"
+sudo add-apt-repository "deb https://apt.repos.intel.com/oneapi all main"
 ```
 ```
-  sudo apt-get update
+sudo apt-get update
 ```
 ```
-  sudo apt-get install intel-hpckit
+sudo apt-get install intel-hpckit
 ```
   (the latest version of the intel compiler 2022.0.2 has changed the naming of the compiler dependencies for ZStruct. Therefore we change the naming to match what ZStruct expects)
 ```
-  cd /opt/intel/oneapi/mkl/2022.0.2/lib/intel64
+cd /opt/intel/oneapi/mkl/2022.0.2/lib/intel64
 ```
 ```
-  sudo apt install rename
+sudo apt install rename
 ```
 ```
-  sudo rename 's/\.2$/\.1/' *.2
+sudo rename 's/\.2$/\.1/' *.2
 ```
 ### Install xTB
 Enable the Intel compiler before installing xTB by running
 ```
-  source /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
 ```
 Installing xTB
 ```
-  git clone https://github.com/grimme-lab/xtb.git
+git clone https://github.com/grimme-lab/xtb.git
 ```
 ```
-  cd xtb
+cd xtb
 ```
 ```
-  mkdir build
+mkdir build
 ```
 ```
-  cd build
+cd build
 ```
 ```
-  cmake ../ -DCMAKE_BUILD_TYPE=Release
+cmake ../ -DCMAKE_BUILD_TYPE=Release
 ```
 ```
-  make
+make
 ```
 ```
-  sudo make install
+sudo make install
 ```
 ### Install Python packages
 ```
-  sudo apt install python3-openbabel
+sudo apt install python3-openbabel
 ```
 ```
-  sudo apt install python3-pip
+sudo apt install python3-pip
 ```
 ```
-  pip3 install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 
@@ -85,33 +85,33 @@ Installing xTB
 # Running program
 Individual functions can be called through main.py with arguments, fx:
 ```
-  python3 main.py ec
+python3 main.py ec
 ```
 ```
-  python3 main.py img_all_stringfiles
+python3 main.py img_all_stringfiles
 ```
 ```
-  python3 main.py img_stringfile
+python3 main.py img_stringfile
 ```
 ```
-  python3 main.py make_cut_dag
+python3 main.py make_cut_dag
 ```
 ```
-  python3 main.py smiles_to_reactions_bb
+python3 main.py smiles_to_reactions_bb
 ```
 ```
-  python3 main.py smiles_to_reactions_nb
+python3 main.py smiles_to_reactions_nb
 ```
 ```
-  python3 main.py gml
+python3 main.py gml
 ```
 
 # Running tests:
 All tests can be run with the command
 ```
-  python3 -m unittest discover test
+python3 -m unittest discover test
 ```
 Or a single test with the command
 ```
-  python3 -m unittest test/filename.py
+python3 -m unittest test/filename.py
 ```
