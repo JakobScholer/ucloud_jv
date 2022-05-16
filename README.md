@@ -95,6 +95,10 @@ pip3 install -r requirements.txt
 
 
 # Running program
+Before running our program enable the Intel compiler:
+```
+source /opt/intel/oneapi/setvars.sh
+```
 Individual functions can be called through main.py with arguments, fx:
 ```
 python3 main.py ec
