@@ -1,0 +1,6 @@
+This reaction is formed with input molecules
+OH3+
+CC(C)C(=O)C
+
+with input parameters in xTB
+--chrg 1 --alpb water

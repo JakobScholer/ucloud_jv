@@ -1,0 +1,6 @@
+NEW
+ BOND 17 1
+ ADD 17 6
+ BREAK 6 4
+ BREAK 5 4
+

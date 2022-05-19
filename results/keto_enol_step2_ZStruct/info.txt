@@ -1,0 +1,6 @@
+This reaction is formed with input molecules:
+O
+C-C(C)-C(C)=[O+]
+
+with input parameters in xTB:
+--chrg 1 --alpb water
