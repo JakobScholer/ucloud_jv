@@ -1,0 +1,5 @@
+This reaction is formed with input molecules:
+CC=CC=CC=CC
+
+with input parameters in xTB:
+None

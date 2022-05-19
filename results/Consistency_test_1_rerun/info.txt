@@ -1,0 +1,8 @@
+This reaction is formed with input molecules:
+CC=CC=CC=CC, but with the same files from Consistency_test_1
+
+And inpur list for FROZEN file:
+[4,5,6,7,8], but with the same files from Consistency_test_1
+
+with input parameters in xTB:
+None
