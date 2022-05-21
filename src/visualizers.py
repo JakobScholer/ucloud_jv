@@ -279,9 +279,9 @@ def energy_curve_all_reactions(folder: str, max_energy: int = 200, check_for_rea
                         if check_educt_to_product(stringfiles[0]): # sort
                             energy_profiles.append(energy_profile)
                             energy_profiles_names.append(react_folder)
-                        else: # allow all "no reactions"
-                            energy_profiles.append(energy_profile)
-                            energy_profiles_names.append(react_folder)
+                    else: # allow all "no reactions"
+                        energy_profiles.append(energy_profile)
+                        energy_profiles_names.append(react_folder)
     fig = go.Figure()
     for ep, epc in zip(energy_profiles, energy_profiles_names):
         fig.add_trace(go.Scatter(x=list(range(0, len(ep))), y=ep,
