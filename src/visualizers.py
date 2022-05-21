@@ -253,6 +253,17 @@ def visualize_energy_curves(folder: str):
         fig.add_trace(go.Scatter(x=list(range(0, len(ep))), y=ep,
                                  mode='lines',
                                  name=epc))
+    fig.update_layout(
+        title=f"Energycurve for {folder}",
+        xaxis_title="GSM nodes",
+        yaxis_title="Kcal/mol",
+        legend_title="Energy curves",
+        font=dict(
+            family="Courier New, monospace",
+            size=18,
+            color="RebeccaPurple"
+        )
+    )
     fig.show()
 
 
@@ -287,4 +298,16 @@ def energy_curve_all_reactions(folder: str, max_energy: int = 200, check_for_rea
         fig.add_trace(go.Scatter(x=list(range(0, len(ep))), y=ep,
                                  mode='lines',
                                  name=epc))
+
+    fig.update_layout(
+        title=f"Energycurves for {folder}",
+        xaxis_title="GSM nodes",
+        yaxis_title="Kcal/mol",
+        legend_title="Energy curves",
+        font=dict(
+            family="Courier New, monospace",
+            size=18,
+            color="RebeccaPurple"
+        )
+    )
     fig.show()
