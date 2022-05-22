@@ -50,6 +50,7 @@ def generate_dag_data(task_queue: Queue, cut_dag: CutDag, stringfile: str, overa
                 node = cut_dag.layers[k][i]
                 task_queue.put((dag_point_task, (stringfile, overall_folder, reaction_folder, node)))  # insert new tasks
     if not isfile(f"{overall_folder}/{reaction_folder}/done.txt"):
+        print(f"{overall_folder}/{reaction_folder}")
         with open(f"{overall_folder}/{reaction_folder}/done.txt", "w") as f:
             f.write(f"{assigned_tasks}\n")
     return assigned_tasks
