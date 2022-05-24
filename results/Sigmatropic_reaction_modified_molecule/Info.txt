@@ -1,0 +1,11 @@
+Oxygen sigmatropic [1,3]
+75 77, 89, 91
+
+carbon sigmatropic [1,3] CHECK IGEN!
+130, 131, 132, 133, 136, 140
+
+special break case
+117, 115
+
+carbon sigmatropic [1,3] mid stuff
+108

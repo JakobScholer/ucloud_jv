@@ -1,1 +1,4 @@
-47
+0
+Cut dag not generated
+Educt to product: True
+Max energy curve: False

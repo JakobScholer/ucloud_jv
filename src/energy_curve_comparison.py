@@ -1,7 +1,7 @@
 from math import sqrt
 
 def root_mean_square(energy_curve_original, energy_curve_new):
-    deviation = 1.10
+    deviation = 1.20
     original_ep = [max(energy_curve_original), energy_curve_original[-1]]
     modified_ep = [max(energy_curve_new), energy_curve_new[-1]]
     border_curve = [max(energy_curve_original) * deviation, energy_curve_original[-1] * deviation]
